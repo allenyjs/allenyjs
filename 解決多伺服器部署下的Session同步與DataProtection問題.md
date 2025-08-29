@@ -8,8 +8,8 @@
 
 ## 問題概述
 
-  - **Session 不同步：** 每個使用者在單一伺服器上建立 Session，當負載平衡將使用者導向另一台伺服器時，後者無法讀取原先的 Session，導致狀態遺失。
-  - **Data Protection 失敗：** 在 ASP.NET Core 中，`Data Protection` 服務負責加密與解密敏感資料（如防偽造 Token、OAuth Token 等）。如果應用程式部署在多台伺服器上，且未共用相同的金鑰，就會導致驗證失敗。最典型的例子是使用 `@Html.AntiForgeryToken()` 產生的 Token，在後端透過 `[ValidateAntiForgeryToken]` 驗證時，會因為金鑰不一致而驗證失敗。
+  - **Session 不同步：** 每個使用者在單一伺服器上建立 Session，當負載平衡將使用者導向另一台伺服器時，後者無法讀取原先的 Session，導致狀態遺失。如果應用程式部署在多台伺服器上，且沒有做 Session 同步，那麼同一個 SessionID 在不同伺服器上查不到對應資料，就會導致驗證失敗。最典型的例子是前端的JavaScript透過SessionID與HTTP Session 互動，在需要透過後端驗證時，可能會因為金鑰不一致而驗證失敗。
+  - **Data Protection 失敗：** 在 ASP.NET Core 中，`Data Protection` 服務負責加密與解密敏感資料（如防偽造 Token、OAuth Token 等）。最典型的例子是使用者登入時由 A 伺服器簽發的身份驗證 Cookie，在經過 Load Balancer 被導向到 B 伺服器時，因金鑰不一致而無法解密 Cookie，最終造成使用者被登出或驗證失敗。
 
 ## 解決方案
 
@@ -34,13 +34,13 @@ MyWeb
 
 ```csharp
 // 設定 MongoDB 連線字串
-var brandDomainMongoDbConnectionString = builder.Configuration["BrandDomainMongoDbConnectionString"]!;
-var BrandDomainMongoDbName = builder.Configuration["BrandDomainMongoDb"]!;
+var myWebDbConnectionString = builder.Configuration["MyWebMongoDbConnectionString"]!;
+var myWebDbName = builder.Configuration["MyWebMongoDb"]!;
 
 // 使用自訂的擴充方法來註冊服務
 builder.Services.AddMongoDbDistributedCache(
-    brandDomainMongoDbConnectionString,
-    BrandDomainMongoDbName,  // 您想要的資料庫名稱
+    myWebDbConnectionString,
+    myWebDbName,  // 您想要的資料庫名稱
     "WebDistributedCache"    // 您想要的集合名稱
 );
 
@@ -67,11 +67,11 @@ builder.Services.AddSession(options =>
 我們需要實作 `IDistributedCache` 介面，以定義如何將快取資料存入 MongoDB。
 
 ```csharp
-using BrandDomainWeb.Common.Configuration;
+using MyWeb.Common.Configuration;
 using MongoDB.Driver;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace BrandDomainWeb.Data.Cache
+namespace MyWeb.Data.Cache
 {
     public class MongoDBDistributedCache : IDistributedCache
     {
@@ -185,12 +185,12 @@ namespace BrandDomainWeb.Data.Cache
 為了讓 `Program.cs` 中的程式碼更簡潔，我們建立一個服務擴充方法來處理 MongoDB 的依賴注入。
 
 ```csharp
-using BrandDomainWeb.Common.Configuration;
+using MyWeb.Common.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
-namespace BrandDomainWeb.Data.Cache
+namespace MyWeb.Data.Cache
 {
     public static class CacheServiceCollectionExtensions
     {
