@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 賦能 API 曝光策略簡報</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Inter 字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* 使用 Inter 字體作為主要字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            color: #1f2937; /* Dark Gray */
+            line-height: 1.6;
+            scroll-behavior: smooth; /* 平滑滾動 */
+        }
+        /* 每個 Section/Slide 的基本樣式 */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 1rem;
+            position: relative;
+        }
+
+        /* 讓表格在小螢幕上可以滾動 */
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        /* 針對第一個 Slide 做出特殊背景 */
+        #title-slide {
+            background: linear-gradient(135deg, #4f46e5 0%, #a855f7 100%);
+            color: white;
+            padding-bottom: 8rem;
+        }
+
+        /* 響應式字體大小調整 */
+        .huge-title { font-size: 2.5rem; }
+        @media (min-width: 768px) {
+            .huge-title { font-size: 4rem; }
+        }
+        @media (min-width: 1024px) {
+            .huge-title { font-size: 5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 導航/目錄 (可選，這裡只做提示) -->
+    <!-- 為了簡潔，我們不放複雜導航，讓內容自然流動 -->
+
+    <!-- SLIDE 1: 標題頁 -->
+    <section id="title-slide" class="slide text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="huge-title font-extrabold mb-4 leading-tight">
+                AI 時代的 API 曝光策略
+            </h1>
+            <h2 class="text-3xl md:text-4xl font-light mb-8 opacity-90">
+                🚀 讓我們的產品成為 AI 的首選工具
+            </h2>
+            <div class="mt-12 space-y-4 text-left p-6 bg-white/10 backdrop-blur-sm rounded-xl shadow-2xl">
+                <p class="text-xl font-medium">簡報目的：</p>
+                <ul class="list-disc list-inside text-lg space-y-2">
+                    <li>確保我們的 API **更容易被 Google、Gemini、OpenAI 等 AI 模型找到**。</li>
+                    <li>確保 AI **能理解**並**正確使用**我們的服務。</li>
+                    <li>**提前佈局**，搶佔 AI 應用生態系統的市場份額。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: 策略一 (交通規則) -->
+    <section id="strategy-1" class="slide bg-white">
+        <div class="max-w-6xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border-t-8 border-indigo-500">
+            <h2 class="text-4xl font-bold text-indigo-700 mb-6 flex items-center">
+                <span class="mr-3 text-5xl">🚦</span>
+                策略一：設置「交通規則」 (<span class="font-mono text-sm ml-2 p-1 bg-indigo-100 rounded">robots.txt</span> 配置)
+            </h2>
+            
+            <p class="text-2xl font-semibold mb-8 border-l-4 pl-4 border-gray-300 italic text-gray-600">
+                這是我們網站的**地圖和交通規則**，指引 AI 爬蟲高效訪問。
+            </p>
+
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-indigo-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">技術名稱</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">非技術說明</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">為什麼重要？</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">`robots.txt`</td>
+                            <td class="px-6 py-4 text-lg">**網站交通警察**</td>
+                            <td class="px-6 py-4 text-lg">確保 AI 爬蟲能直接找到「對外公開」且「最重要」的 API 路徑，**節省它們的時間**。</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">關鍵配置</td>
+                            <td class="px-6 py-4 text-lg">**開綠燈給公開路徑**</td>
+                            <td class="px-6 py-4 text-lg">告訴 AI：「這些是公開的，請盡情使用！」，避免 AI 浪費資源爬取私人路徑。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="mt-8 text-xl font-bold text-center text-indigo-600">
+                結論：設定好規則，避免 AI 迷路，讓我們的關鍵服務能被有效發現。
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: 策略二 (產品標籤) -->
+    <section id="strategy-2" class="slide bg-gray-50">
+        <div class="max-w-6xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border-t-8 border-purple-500">
+            <h2 class="text-4xl font-bold text-purple-700 mb-6 flex items-center">
+                <span class="mr-3 text-5xl">🏷️</span>
+                策略二：貼上「產品標籤」 (JSON-LD 結構化標記)
+            </h2>
+            
+            <p class="text-2xl font-semibold mb-8 border-l-4 pl-4 border-gray-300 italic text-gray-600">
+                就像超市商品上的標準化標籤，讓 AI **一眼識別**我們是 API 服務。
+            </p>
+
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-purple-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">技術名稱</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">非技術說明</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">為什麼重要？</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">JSON-LD</td>
+                            <td class="px-6 py-4 text-lg">**API 服務的統一產品標籤**</td>
+                            <td class="px-6 py-4 text-lg">AI 不用「猜測」我們的網頁是什麼，而是直接讀取標籤，**立即確定我們是「開發者工具」**。</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">標籤內容</td>
+                            <td class="px-6 py-4 text-lg">**服務描述與規格連結**</td>
+                            <td class="px-6 py-4 text-lg">在標籤中明確註明我們的功能，並引導 AI 找到「標準使用手冊」的位置。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="mt-8 text-xl font-bold text-center text-purple-600">
+                結論：讓 AI 快速分類並理解我們的產品類型，大幅提升被 AI 應用列入清單的機會。
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: 策略三 (標準說明書) -->
+    <section id="strategy-3" class="slide bg-white">
+        <div class="max-w-6xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border-t-8 border-green-500">
+            <h2 class="text-4xl font-bold text-green-700 mb-6 flex items-center">
+                <span class="mr-3 text-5xl">📘</span>
+                策略三：發佈「標準說明書」 (OpenAPI 規格檔案)
+            </h2>
+            
+            <p class="text-2xl font-semibold mb-8 border-l-4 pl-4 border-gray-300 italic text-gray-600">
+                這是**最關鍵的一步**，提供一份全世界 AI 都看得懂的統一格式說明書。
+            </p>
+
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-green-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">技術名稱</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">非技術說明</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">為什麼重要？</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">OpenAPI 規格</td>
+                            <td class="px-6 py-4 text-lg">**AI 可讀的標準化手冊**</td>
+                            <td class="px-6 py-4 text-lg">讓 AI 代理程式**自動理解**所有端點、參數和功能，並能自行生成程式碼來調用，實現「零錯誤」整合。</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-lg">關鍵路徑</td>
+                            <td class="px-6 py-4 text-lg">**`.well-known/openapi.json`**</td>
+                            <td class="px-6 py-4 text-lg">將說明書放在一個**標準、固定且容易被發現**的地址，是進入 AI 應用生態的**入場券**。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="mt-8 text-xl font-bold text-center text-green-600">
+                結論：將 API **從「網頁資訊」升級為「AI 可用工具」**。
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: 總結與價值主張 -->
+    <section id="summary" class="slide bg-indigo-50">
+        <div class="max-w-6xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-2xl border-t-8 border-blue-500">
+            <h2 class="text-4xl font-bold text-blue-700 mb-10 text-center">
+                總結：我們達成了什麼？
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <!-- Card 1 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-b-4 border-indigo-400">
+                    <span class="text-6xl mb-4 block">1️⃣</span>
+                    <h3 class="text-2xl font-semibold mb-3 text-indigo-800">提高了效率 (交通規則)</h3>
+                    <p class="text-gray-600">確保 AI 爬蟲集中資源在公開且**有價值的 API 服務**上。</p>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-b-4 border-purple-400">
+                    <span class="text-6xl mb-4 block">2️⃣</span>
+                    <h3 class="text-2xl font-semibold mb-3 text-purple-800">明確了身份 (產品標籤)</h3>
+                    <p class="text-gray-600">讓我們的服務在搜尋引擎中被識別為**「開發者 API 工具」**。</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-b-4 border-green-400">
+                    <span class="text-6xl mb-4 block">3️⃣</span>
+                    <h3 class="text-2xl font-semibold mb-3 text-green-800">賦予了能力 (標準說明書)</h3>
+                    <p class="text-gray-600">讓 AI 能夠**自主、零錯誤地**整合和使用我們的 API 服務。</p>
+                </div>
+            </div>
+
+            <hr class="my-10 border-gray-200">
+
+            <div class="text-center p-6 bg-blue-100 rounded-xl">
+                <h3 class="text-3xl font-bold text-blue-900 mb-3">最終價值主張：</h3>
+                <p class="text-xl text-blue-800 font-medium">
+                    透過這些配置，我們的公開服務將成為 AI 代理程式執行任務時的**首選資源**，為我們的產品帶來更高的**曝光度**與潛在的**合作機會**！
+                </p>
+            </div>
+            
+            <p class="mt-8 text-lg text-gray-500 text-center">感謝您的聆聽！</p>
+        </div>
+    </section>
+
+</body>
+</html>
