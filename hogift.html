@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 驅動的企業禮品客製化平台 - 簡報</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 設置 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .slide {
+            height: 80vh; /* 簡報高度 */
+            width: 95vw; /* 簡報寬度 */
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            display: none;
+            overflow: hidden;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .slide.active {
+            display: flex;
+        }
+        .slide-content {
+            flex-grow: 1; /* 這邊修正一下，= 1 應為 : 1 */
+            padding-bottom: 2rem; /* 為頁腳留出空間 */
+            overflow-y: auto;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);
+        }
+        /* 美化表格 */
+        .slide table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+        .slide th, .slide td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .slide th {
+            background-color: #eef2ff;
+            font-weight: 600;
+            color: #4f46e5;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+
+        /* =============== [新增] SVG Lightbox 樣式 =============== */
+        
+        /* Lightbox 啟用時的樣式 (圖層至頂、全螢幕) */
+        .lightbox-active {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 5000 !important; /* 確保在簡報之上 */
+            
+            /* 使用微透明的背景並模糊化 */
+            background-color: rgba(247, 249, 252, 0.9) !important; /* 來自 body 的背景色 */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 1rem !important;
+            margin: 0 !important; 
+            border-radius: 0 !important; /* 全螢幕時不要圓角 */
+            cursor: default !important; /* 恢復預設鼠標 */
+        }
+
+        /* Lightbox 啟用時，內部的 img 樣式 */
+        .lightbox-active img {
+            width: auto;
+            max-width: 90%;
+            max-height: 90vh; /* 確保圖片在可視範圍內 */
+            object-fit: contain;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); /* 加上陰影更專業 */
+        }
+
+        /* Lightbox 啟用時，顯示對應的關閉按鈕 */
+        .lightbox-active .svg-lightbox-close-btn {
+            display: flex !important; /* 因為我們用 flex 置中 'X' */
+        }
+
+        /* =============== [END] SVG Lightbox 樣式 =============== */
+
+    </style>
+</head>
+<body class="p-4">
+
+    <div id="presentation-container" class="w-full flex justify-center items-center">
+        <div id="slide-1" class="slide active">
+            <div class="slide-content flex flex-col justify-center items-center text-center">
+                <h1 class="text-6xl font-extrabold text-indigo-700 mb-6">AI 驅動的企業禮品客製化平台</h1>
+                <h2 class="text-4xl font-light text-gray-600">系統架構總覽與商業價值</h2>
+                <div class="mt-12 text-gray-400">
+                    <svg class="w-16 h-16 text-indigo-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7-2.45h10m-3.5-5.32c-.52-.38-1.12-.58-1.75-.58s-1.23.2-1.75.58M12 14v1m0-8V6m-4 5h8a4 4 0 004-4V7a4 4 0 00-4-4H8a4 4 0 00-4 4v.001C4 9.1 5.9 11 8 11z"></path></svg>
+                </div>
+            </div>
+            <div class="text-right text-gray-500 text-sm">投影片 1 / 11</div>
+        </div>
+
+        <div id="slide-2" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">
+                     禮品客製化平台系統規劃
+                 </h2>
+                 <ol class="list-decimal pl-12 space-y-4 text-2xl text-gray-800 font-medium">
+                     <li>系統核心目標：提升效率與體驗</li>
+                     <li>企業客戶前台架構 (Client-Facing)</li>
+                     <li>AI 禮品推薦流程 (自然語言)</li>
+                     <li>AI 禮品打樣流程 (圖像生成)</li>
+                     <li>營運人員後台架構 (Operation-Facing)</li>
+                     <li>AI 輔助營運功能：文案與提案簡報生成</li>
+                     <li>自動化排程服務</li>
+                     <li>核心技術組件與數據架構</li>
+                     <li>成本預估</li>
+                 </ol>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 2 / 11</div>
+        </div>
+
+        <div id="slide-3" class="slide">
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">1. 系統核心目標</h2>
+                <p class="text-3xl font-semibold text-gray-700 mb-10">透過 AI 輔助，實現企業禮品客製化流程的<strong class="text-red-500">高效、智慧與精準</strong>。</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-indigo-50 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-indigo-800 mb-4">對客戶 (前台): 提升體驗與效率</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-xl text-gray-700">
+                            <li>提供<strong class="text-indigo-600">即時、個人化</strong>的禮品推薦。</li>
+                            <li>提供<strong class="text-indigo-600">視覺預覽 (打樣)</strong>，加速決策流程。</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-green-50 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-green-800 mb-4">對營運 (後台): 賦能智慧管理與精準行銷</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-xl text-gray-700">
+                            <li><strong class="text-green-600">自動化</strong>
+                                產品<span class="text-red-500">標籤</span>
+                                、產品<span class="text-red-500">文案</span>
+                                與<span class="text-red-500">提案簡報</span>
+                                生成。
+                            </li>
+                            <li><strong class="text-green-600">智慧管理</strong>商品與客戶數據，可供後續生成受眾包或數據分析使用。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div id="hofontsvgbx" class="p-6 bg-indigo-50 rounded-xl shadow-lg relative">
+                        <div id="close-hofont" class="svg-lightbox-close-btn hidden fixed top-8 right-8 w-12 h-12 bg-gray-800 text-white rounded-full items-center justify-center text-3xl font-bold cursor-pointer z-[5001] hover:bg-red-500 hover:scale-110 transition-all">
+                            &times; </div>
+                        
+                        <img src="https://allenyjs.github.io/allenyjs/img/HoFont-2025-10-28-080650.svg" alt="HoFont SVG">
+                    </div>
+                    
+                    <div id="hocmssvgbx" class="p-6 bg-green-50 rounded-xl shadow-lg relative">
+                        <div id="close-hocms" class="svg-lightbox-close-btn hidden fixed top-8 right-8 w-12 h-12 bg-gray-800 text-white rounded-full items-center justify-center text-3xl font-bold cursor-pointer z-[5001] hover:bg-red-500 hover:scale-110 transition-all">
+                            &times; </div>
+                        
+                        <img src="https://allenyjs.github.io/allenyjs/img/HoCms-2025-10-28-020706.svg" alt="HoCms SVG">
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="text-right text-gray-500 text-sm">投影片 3 / 11</div>
+        </div>
+
+        <div id="slide-4" class="slide">
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">2. 企業客戶前台架構 (Client-Facing)</h2>
+                <h3 class="text-3xl font-semibold text-gray-700 mb-6">核心服務：前台 Web 服務</h3>
+                <p class="text-xl text-gray-600 mb-8 font-medium">使用者: 企業客戶</p>
+                <div class="mb-8">
+                    <h4 class="text-2xl font-bold text-indigo-700 mb-3">AI 輔助功能</h4>
+                    <ul class="list-disc pl-6 text-xl text-gray-800 space-y-1">
+                        <li>禮品推薦: 透過自然語言對話進行精準推薦。</li>
+                        <li>圖像生成: 實時生成客製化禮品打樣預覽圖。</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                    <h4 class="text-2xl font-bold text-indigo-700 mb-3">核心技術組件</h4>
+                    <table class="w-full text-lg">
+                        <thead>
+                            <tr>
+                                <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">組件名稱</th>
+                                <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">職責</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="odd:bg-white even:bg-gray-100"><td>前台服務 (Web App)</td><td>處理客戶請求、UI 互動</td></tr>
+                            <tr class="odd:bg-white even:bg-gray-100"><td>Giftpack AI (前台)</td><td>圖像生成模型、打樣</td></tr>
+                            <tr class="odd:bg-white even:bg-gray-100"><td>MongoDB</td><td>存取商品主檔、會員資料</td></tr>
+                            <tr class="odd:bg-white even:bg-gray-100"><td>BigQuery</td><td>存取標籤數據、推薦媒合數據 (高階分析)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="text-right text-gray-500 text-sm">投影片 4 / 11</div>
+        </div>
+
+        <div id="slide-5" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">3. AI 禮品推薦流程 (前台流程 1)</h2>
+                 <p class="text-3xl font-semibold text-gray-700 mb-8">透過自然語言對話，獲得 AI 提供的禮品推薦。</p>
+                 <div class="space-y-6">
+                     <div class="p-4 border-l-4 border-indigo-500 bg-indigo-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-indigo-700">1.1 客戶發起對話 (HTTPS Request)</div>
+                         <p class="text-gray-700 mt-1">企業客戶輸入需求 (e.g., "我需要 100 份送給 IT 工程師的環保禮品")</p>
+                     </div>
+                     <div class="flex items-center justify-center">
+                         <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                     </div>
+                     <div class="p-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-blue-700">1.2 取得禮品主檔 (MongoDB 查詢)</div>
+                         <p class="text-gray-700 mt-1">AI Agent 向 MongoDB 查詢所有商品主檔資料。</p>
+                     </div>
+                      <div class="flex items-center justify-center">
+                         <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                     </div>
+                     <div class="p-4 border-l-4 border-green-500 bg-green-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-green-700">1.3 媒合與篩選 (BigQuery 查詢)</div>
+                         <p class="text-gray-700 mt-1">AI Agent 向 BigQuery 查詢預貼好的產品標籤，進行媒合 (提供AI向量查詢與全文檢索結果)。</p>
+                     </div>
+                     <div class="flex items-center justify-center">
+                         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                     </div>
+                     <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-purple-700">1.4 反饋推薦 (HTTPS Response)</div>
+                         <p class="text-gray-700 mt-1">AI Agent 將經過排序與精選的推薦結果回傳至前台。</p>
+                     </div>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 5 / 11</div>
+        </div>
+
+        <div id="slide-6" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">4. AI 禮品打樣流程 (前台流程 2)</h2>
+                 <p class="text-3xl font-semibold text-gray-700 mb-8">客戶可上傳素材或提供創意，即時生成禮品打樣的預覽圖。</p>
+                 <div class="space-y-6 flex flex-col items-center">
+                     <div class="w-full p-4 border-l-4 border-indigo-500 bg-indigo-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-indigo-700">2.1 客戶提供素材/創意 (HTTPS Request)</div>
+                         <p class="text-gray-700 mt-1">客戶上傳 Logo 或輸入設計理念 (e.g., "將 Logo 以燙金印在杯子上")</p>
+                     </div>
+                     <div class="flex items-center justify-center">
+                         <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                     </div>
+                     <div class="w-full p-4 border-l-4 border-red-500 bg-red-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-red-700">2.2 生成預覽圖 (AI Agent 服務呼叫)</div>
+                         <p class="text-gray-700 mt-1">Giftpack AI 執行圖像生成 (Image Generation) 服務，將客製化效果應用於產品圖。</p>
+                     </div>
+                     <div class="flex items-center justify-center">
+                         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                     </div>
+                     <div class="w-full p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg shadow-md">
+                         <div class="text-2xl font-bold text-purple-700">2.3 客戶確認與訂單成立 (MongoDB 寫入)</div>
+                         <p class="text-gray-700 mt-1">客戶確認打樣預覽圖，系統將最終訂單資料寫入 MongoDB。</p>
+                     </div>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 6 / 11</div>
+        </div>
+
+        <div id="slide-7" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">5. 營運人員後台架構 (Operation-Facing)</h2>
+                 <h3 class="text-3xl font-semibold text-gray-700 mb-6">核心服務：後台管理系統</h3>
+                 <p class="text-xl text-gray-600 mb-8 font-medium">使用者: 營運人員、客服、產品經理</p>
+                 <div class="mb-8">
+                     <h4 class="text-2xl font-bold text-indigo-700 mb-3">AI 輔助功能</h4>
+                     <ul class="list-disc pl-6 text-xl text-gray-800 space-y-1">
+                         <li>產品貼標 / 媒合: 自動化數據分類與處理。</li>
+                         <li>產品文案: 輔助上架時的內容生成。</li>
+                         <li>提案簡報: 根據客戶訂單內容自動生成提案簡報。</li>
+                     </ul>
+                 </div>
+                 <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                     <h4 class="text-2xl font-bold text-indigo-700 mb-3">核心技術組件</h4>
+                     <table class="w-full text-lg">
+                         <thead>
+                             <tr>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">組件名稱</th>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">職責</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             <tr class="odd:bg-white even:bg-gray-100"><td>後台管理系統</td><td>供營運人員 CRUD 資料與觸發 AI 任務</td></tr>
+                             <tr class="odd:bg-white even:bg-gray-100"><td>AI Agent (後台)</td><td>執行貼標、文案生成、簡報內容生成等背景任務</td></tr>
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 7 / 11</div>
+        </div>
+
+        <div id="slide-8" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">6. AI 輔助營運功能</h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-yellow-50 rounded-xl shadow-lg border-t-4 border-yellow-500">
+                         <h3 class="text-3xl font-bold text-yellow-800 mb-4">AI 產品文案生成</h3>
+                         <div class="space-y-4 text-lg">
+                             <div class="border-l-4 border-yellow-300 pl-3">
+                                 <p class="font-semibold text-gray-700">1.1 產品上架</p>
+                                 <p class="text-gray-600">營運人員提供產品圖片素材。</p>
+                             </div>
+                             <div class="border-l-4 border-yellow-300 pl-3">
+                                 <p class="font-semibold text-gray-700">1.2 AI 生成文案 (AI Agent 呼叫)</p>
+                                 <p class="text-gray-600">AI 根據素材生成多版本產品文案。</p>
+                             </div>
+                             <div class="border-l-4 border-yellow-300 pl-3">
+                                 <p class="font-semibold text-gray-700">1.3 文案回存 (MongoDB 寫入)</p>
+                                 <p class="text-gray-600">存入MongoDB(作為 AI 草稿或產品主檔)。</p>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="p-6 bg-teal-50 rounded-xl shadow-lg border-t-4 border-teal-500">
+                         <h3 class="text-3xl font-bold text-teal-800 mb-4">AI 提案簡報生成</h3>
+                         <div class="space-y-4 text-lg">
+                             <div class="border-l-4 border-teal-300 pl-3">
+                                 <p class="font-semibold text-gray-700">2.1 取得訂單/需求資料 (MongoDB 查詢)</p>
+                                 <p class="text-gray-600">後台系統取得相關訂單或產品資料。</p>
+                             </div>
+                             <div class="border-l-4 border-teal-300 pl-3">
+                                 <p class="font-semibold text-gray-700">2.2 請求生成簡報內容 (AI Agent 呼叫)</p>
+                                 <p class="text-gray-600">系統將資料傳送給 AI Agent 請求生成文字結構。</p>
+                             </div>
+                             <div class="border-l-4 border-teal-300 pl-3">
+                                 <p class="font-semibold text-gray-700">2.3 Response 簡報 (HTTPS Response)</p>
+                                 <p class="text-gray-600">AI Agent 生成簡報內容並回傳至後台。</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 8 / 11</div>
+        </div>
+
+        <div id="slide-9" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">7. 自動化排程服務 (後台流程 3)</h2>
+                 <p class="text-3xl font-semibold text-gray-700 mb-8">確保數據品質與行銷精準度。</p>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-pink-50 rounded-xl shadow-lg">
+                         <h3 class="text-2xl font-bold text-pink-700 mb-4">排程 G1: 商品族群貼標排程</h3>
+                         <p class="text-lg font-medium text-pink-600 mb-3">目標: 自動分類產品與貼上標籤 (e.g., #環保, #高階)。</p>
+                         <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                             <li>撈取MongoDB 中未貼標產品。</li>
+                             <li>AI Agent 將貼標結果儲存至BigQuery。</li>
+                         </ul>
+                     </div>
+                     <div class="p-6 bg-cyan-50 rounded-xl shadow-lg">
+                         <h3 class="text-2xl font-bold text-cyan-700 mb-4">排程 G2: 行銷受眾包媒合排程</h3>
+                         <p class="text-lg font-medium text-cyan-600 mb-3">目標: 建立產品與潛在客戶群的精準媒合包。</p>
+                         <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                             <li>取得產品 (Mongo) & 客戶資料 (BigQuery) 傳給AI Agent。</li>
+                             <li>AI Agent 進行媒合，將受眾包結果回存BigQuery。</li>
+                         </ul>
+                     </div>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 9 / 11</div>
+        </div>
+
+        <div id="slide-10" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">8. 核心技術組件</h2>
+                 <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                     <table class="w-full text-lg">
+                         <thead>
+                             <tr>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">技術層</th>
+                                 <th class="bg-indigo-100 text-indigo-800">組件名稱</th>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">核心職責</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">應用服務層</td>
+                                 <td class="font-medium">Azure App Service</td>
+                                 <td>負責運行前台與後台服務，處理所有 Web 請求。</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">AI 輔助服務</td>
+                                 <td class="font-medium">AI Agent</td>
+                                 <td>實現所有 AI 智能：圖像生成、自然語言推薦、貼標、文案與簡報生成。</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">資料層</td>
+                                 <td class="font-medium">MongoDB</td>
+                                 <td><strong class="text-red-600">結構化主檔資料：</strong> 儲存商品、會員、訂單、AI 文案草稿等。</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">資料層</td>
+                                 <td class="font-medium">BigQuery</td>
+                                 <td><strong class="text-red-600">分析型數據：</strong> 儲存 Log、AI 貼標結果、受眾包，用於複雜查詢。</td>
+                             </tr>
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 10 / 11</div>
+        </div>
+
+        <div id="slide-11" class="slide">
+             <div class="slide-content">
+                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">成本預估</h2>
+                 <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                     <table class="w-full text-lg">
+                         <thead>
+                             <tr>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">項目</th>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">成本</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">圖像打樣</td>
+                                 <td>Giftpack AI API 調用年費NT$ 180,000 (含 25,000 次視覺成果)</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">AI(Gemini LLM) 輔助服務</td>
+                                 <td>LLM Token預約 費用預約</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">應用服務層</td>
+                                 <td><strong class="text-red-600">Azure App Service × 2 (前台+後台)機器規格 費用</td>
+                             </tr>
+                             <tr class="odd:bg-white even:bg-gray-100">
+                                 <td class="font-bold text-indigo-700">資料層</td>
+                                 <td><strong class="text-red-600">MongoDB：</strong>NT$ ???<strong class="text-red-600">BigQuery：</strong>NT$ ???</td>
+                             </tr>
+                             <tr>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">預估總計</th>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">NT$ ??</th>
+                             </tr>
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+             <div class="text-right text-gray-500 text-sm">投影片 11 / 11</div>
+        </div>
+    </div>
+
+    <div class="mt-6 flex space-x-4">
+        <button id="prev-btn" class="nav-button bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            上一頁
+        </button>
+        <button id="next-btn" class="nav-button bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center">
+            下一頁
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+    </div>
+
+    <script>
+        // =============== [原有的] 簡報換頁功能 ===============
+        let currentSlide = 1;
+        const totalSlides = 11;
+        const slides = [];
+
+        // 獲取所有投影片元素
+        for (let i = 1; i <= totalSlides; i++) {
+            slides.push(document.getElementById(`slide-${i}`));
+        }
+
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        function updateSlideDisplay() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide - 1) {
+                    slide.classList.add('active');
+                }
+            });
+
+            // 更新按鈕狀態
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        function goToNextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlideDisplay();
+            }
+        }
+
+        function goToPrevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlideDisplay();
+            }
+        }
+
+        // 註冊事件監聽器
+        nextBtn.addEventListener('click', goToNextSlide);
+        prevBtn.addEventListener('click', goToPrevSlide);
+
+        // 允許鍵盤控制
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                goToNextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                goToPrevSlide();
+            }
+        });
+
+        // 初始顯示
+        updateSlideDisplay();
+
+
+        // =============== [新增] SVG Lightbox 功能 ===============
+        
+        // 1. 獲取所有需要的元素
+        const hofontBox = document.getElementById('hofontsvgbx');
+        const hocmsBox = document.getElementById('hocmssvgbx');
+        const closeHofontBtn = document.getElementById('close-hofont');
+        const closeHocmsBtn = document.getElementById('close-hocms');
+
+        // 2. 幫可點擊的 div 加上 cursor-zoom-in 和 hover 效果 (使用 Tailwind class)
+        hofontBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+        hocmsBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+
+        // 3. 綁定 hofontBox 的點擊事件
+        hofontBox.addEventListener('click', function() {
+            // 加上 'lightbox-active' class 來放大
+            this.classList.add('lightbox-active');
+        });
+
+        // 4. 綁定 hocmsBox 的點擊事件
+        hocmsBox.addEventListener('click', function() {
+            // 加上 'lightbox-active' class 來放大
+            this.classList.add('lightbox-active');
+        });
+
+        // 5. 綁定 hofontBox 關閉按鈕的點擊事件
+        closeHofontBtn.addEventListener('click', function(event) {
+            // 阻止事件冒泡，避免觸發父層 (hofontBox) 的點擊事件
+            event.stopPropagation();
+            // 移除 'lightbox-active' class 來恢復
+            hofontBox.classList.remove('lightbox-active');
+        });
+
+        // 6. 綁定 hocmsBox 關閉按鈕的點擊事件
+        closeHocmsBtn.addEventListener('click', function(event) {
+            // 阻止事件冒泡
+            event.stopPropagation();
+            // 移除 'lightbox-active' class
+            hocmsBox.classList.remove('lightbox-active');
+        });
+
+        // =============== [END] SVG Lightbox 功能 ===============
+    </script>
+</body>
+</html>
