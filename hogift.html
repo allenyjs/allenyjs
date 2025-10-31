@@ -36,7 +36,7 @@
             display: flex;
         }
         .slide-content {
-            flex-grow: 1; /* 這邊修正一下，= 1 應為 : 1 */
+            flex-grow: 1; 
             padding-bottom: 2rem; /* 為頁腳留出空間 */
             overflow-y: auto;
         }
@@ -66,45 +66,35 @@
             border-top-right-radius: 0.5rem;
         }
 
-        /* =============== [新增] SVG Lightbox 樣式 =============== */
-        
-        /* Lightbox 啟用時的樣式 (圖層至頂、全螢幕) */
+        /* =============== SVG Lightbox 樣式 =============== */
         .lightbox-active {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            z-index: 5000 !important; /* 確保在簡報之上 */
-            
-            /* 使用微透明的背景並模糊化 */
-            background-color: rgba(247, 249, 252, 0.9) !important; /* 來自 body 的背景色 */
+            z-index: 5000 !important; 
+            background-color: rgba(247, 249, 252, 0.9) !important; 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            
             display: flex !important;
             justify-content: center !important;
             align-items: center !important;
             padding: 1rem !important;
-            margin: 0 !important; 
-            border-radius: 0 !important; /* 全螢幕時不要圓角 */
-            cursor: default !important; /* 恢復預設鼠標 */
+            margin: 0 !important;  
+            border-radius: 0 !important; 
+            cursor: default !important; 
         }
-
-        /* Lightbox 啟用時，內部的 img 樣式 */
         .lightbox-active img {
             width: auto;
             max-width: 90%;
-            max-height: 90vh; /* 確保圖片在可視範圍內 */
+            max-height: 90vh; 
             object-fit: contain;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); /* 加上陰影更專業 */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
         }
-
-        /* Lightbox 啟用時，顯示對應的關閉按鈕 */
         .lightbox-active .svg-lightbox-close-btn {
-            display: flex !important; /* 因為我們用 flex 置中 'X' */
+            display: flex !important; 
         }
-
         /* =============== [END] SVG Lightbox 樣式 =============== */
 
     </style>
@@ -120,7 +110,7 @@
                     <svg class="w-16 h-16 text-indigo-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7-2.45h10m-3.5-5.32c-.52-.38-1.12-.58-1.75-.58s-1.23.2-1.75.58M12 14v1m0-8V6m-4 5h8a4 4 0 004-4V7a4 4 0 00-4-4H8a4 4 0 00-4 4v.001C4 9.1 5.9 11 8 11z"></path></svg>
                 </div>
             </div>
-            <div class="text-right text-gray-500 text-sm">投影片 1 / 11</div>
+            <div class="text-right text-gray-500 text-sm">投影片 1 / 13</div>
         </div>
 
         <div id="slide-2" class="slide">
@@ -131,23 +121,22 @@
                  <ol class="list-decimal pl-12 space-y-4 text-2xl text-gray-800 font-medium">
                      <li>系統核心目標：提升效率與體驗</li>
                      <li>企業客戶前台架構 (Client-Facing)</li>
-                     <li>AI 禮品推薦流程 (自然語言)</li>
-                     <li>AI 禮品打樣流程 (圖像生成)</li>
+                     <li>AI 禮品推薦流程 (自然語言)⚙️</li>
+                     <li>AI 禮品打樣流程 (圖像生成)⚙️</li>
                      <li>營運人員後台架構 (Operation-Facing)</li>
-                     <li>AI 輔助營運功能：文案與提案簡報生成</li>
-                     <li>自動化排程服務</li>
+                     <li>AI 輔助營運功能：文案與提案簡報生成⚙️</li>
+                     <li>自動化排程服務⚙️</li>
                      <li>核心技術組件與數據架構</li>
                      <li>成本預估</li>
                  </ol>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 2 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 2 / 13</div>
         </div>
 
         <div id="slide-3" class="slide">
             <div class="slide-content">
                 <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">1. 系統核心目標</h2>
                 <p class="text-3xl font-semibold text-gray-700 mb-10">透過 AI 輔助，實現企業禮品客製化流程的<strong class="text-red-500">高效、智慧與精準</strong>。</p>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="p-6 bg-indigo-50 rounded-xl shadow-lg">
                         <h3 class="text-2xl font-bold text-indigo-800 mb-4">對客戶 (前台): 提升體驗與效率</h3>
@@ -170,24 +159,19 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
                     <div id="hofontsvgbx" class="p-6 bg-indigo-50 rounded-xl shadow-lg relative">
                         <div id="close-hofont" class="svg-lightbox-close-btn hidden fixed top-8 right-8 w-12 h-12 bg-gray-800 text-white rounded-full items-center justify-center text-3xl font-bold cursor-pointer z-[5001] hover:bg-red-500 hover:scale-110 transition-all">
                             &times; </div>
-                        
                         <img src="https://allenyjs.github.io/allenyjs/img/HoFont-2025-10-28-080650.svg" alt="HoFont SVG">
                     </div>
-                    
                     <div id="hocmssvgbx" class="p-6 bg-green-50 rounded-xl shadow-lg relative">
                         <div id="close-hocms" class="svg-lightbox-close-btn hidden fixed top-8 right-8 w-12 h-12 bg-gray-800 text-white rounded-full items-center justify-center text-3xl font-bold cursor-pointer z-[5001] hover:bg-red-500 hover:scale-110 transition-all">
                             &times; </div>
-                        
                         <img src="https://allenyjs.github.io/allenyjs/img/HoCms-2025-10-28-020706.svg" alt="HoCms SVG">
                     </div>
-                    
                 </div>
             </div>
-            <div class="text-right text-gray-500 text-sm">投影片 3 / 11</div>
+            <div class="text-right text-gray-500 text-sm">投影片 3 / 13</div>
         </div>
 
         <div id="slide-4" class="slide">
@@ -220,7 +204,7 @@
                     </table>
                 </div>
             </div>
-            <div class="text-right text-gray-500 text-sm">投影片 4 / 11</div>
+            <div class="text-right text-gray-500 text-sm">投影片 4 / 13</div>
         </div>
 
         <div id="slide-5" class="slide">
@@ -255,7 +239,7 @@
                      </div>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 5 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 5 / 13</div>
         </div>
 
         <div id="slide-6" class="slide">
@@ -283,7 +267,7 @@
                      </div>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 6 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 6 / 13</div>
         </div>
 
         <div id="slide-7" class="slide">
@@ -315,7 +299,7 @@
                      </table>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 7 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 7 / 13</div>
         </div>
 
         <div id="slide-8" class="slide">
@@ -358,7 +342,7 @@
                      </div>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 8 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 8 / 13</div>
         </div>
 
         <div id="slide-9" class="slide">
@@ -384,7 +368,7 @@
                      </div>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 9 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 9 / 13</div>
         </div>
 
         <div id="slide-10" class="slide">
@@ -407,7 +391,7 @@
                              </tr>
                              <tr class="odd:bg-white even:bg-gray-100">
                                  <td class="font-bold text-indigo-700">AI 輔助服務</td>
-                                 <td class="font-medium">AI Agent</td>
+                                 <td class="font-medium">Gemini LLM(AI Agent)</td>
                                  <td>實現所有 AI 智能：圖像生成、自然語言推薦、貼標、文案與簡報生成。</td>
                              </tr>
                              <tr class="odd:bg-white even:bg-gray-100">
@@ -424,7 +408,7 @@
                      </table>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 10 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 10 / 13</div>
         </div>
 
         <div id="slide-11" class="slide">
@@ -441,31 +425,235 @@
                          <tbody>
                              <tr class="odd:bg-white even:bg-gray-100">
                                  <td class="font-bold text-indigo-700">圖像打樣</td>
-                                 <td>Giftpack AI API 調用年費NT$ 180,000 (含 25,000 次視覺成果)</td>
+                                 <td>Giftpack AI API 調用年費NT$ 180,000 / 年(含 25,000 次視覺成果)</td>
                              </tr>
                              <tr class="odd:bg-white even:bg-gray-100">
                                  <td class="font-bold text-indigo-700">AI(Gemini LLM) 輔助服務</td>
-                                 <td>LLM Token預約 費用預約</td>
+                                 <td>LLM Token費用預估 NT$ 3,000 - 10,000 / 月</td>
                              </tr>
                              <tr class="odd:bg-white even:bg-gray-100">
                                  <td class="font-bold text-indigo-700">應用服務層</td>
-                                 <td><strong class="text-red-600">Azure App Service × 2 (前台+後台)機器規格 費用</td>
+                                 <td>
+                                    Azure App Service × 2 (前台+後台) NT$ 4,500 - 9,000 / 月
+                                    <br/>
+                                    預估使用 2 台 Premium P0v3 (1 vCPU, 4GB RAM) Linux 規格 (約 $70 USD/台/月)。
+                                 </td>
                              </tr>
                              <tr class="odd:bg-white even:bg-gray-100">
                                  <td class="font-bold text-indigo-700">資料層</td>
-                                 <td><strong class="text-red-600">MongoDB：</strong>NT$ ???<strong class="text-red-600">BigQuery：</strong>NT$ ???</td>
+                                 <td>MongoDB： NT$ 3,000 - 10,000 / 月 BigQuery：約NT$ 1,500 / 月</td>
                              </tr>
                              <tr>
                                  <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">預估總計</th>
-                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">NT$ ??</th>
+                                 <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">NT$ 27,000 - 45,500 / 月</th>
                              </tr>
                          </tbody>
                      </table>
                  </div>
              </div>
-             <div class="text-right text-gray-500 text-sm">投影片 11 / 11</div>
+             <div class="text-right text-gray-500 text-sm">投影片 11 / 13</div>
         </div>
-    </div>
+
+        <div id="slide-12" class="slide">
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">附錄：(開店平台 vs .NET Team)</h2>
+                <p class="text-3xl font-semibold text-gray-700 mb-8">以下列舉開店平台與自行開發差異：</p>
+                
+                <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                    <table class="w-full text-lg">
+                        <thead>
+                            <tr>
+                                <th class="bg-indigo-100 text-indigo-800 rounded-tl-lg">項目</th>
+                                <th class="bg-indigo-100 text-indigo-800">開店平台</th>
+                                <th class="bg-indigo-100 text-indigo-800 rounded-tr-lg">.NET Team</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="odd:bg-white even:bg-gray-100">
+                                <td>商品庫存管理</td>
+                                <td>只會用到商品管理</td>
+                                <td>自行開發可做到黑客松比賽提到的 AI 文案、標籤、SEO 產生、圖片轉成文字...等功能</td>
+                            </tr>
+                            <tr class="odd:bg-white even:bg-gray-100">
+                                <td>商店設計</td>
+                                <td>多樣化設計主題，自由打造風格網店</td>
+                                <td>
+                                    可串接 Giftpack Api 做到 AI 即時模擬、創意設計生成圖片。
+                                    在商品搜尋除了一般的商品關鍵字、分類搜尋，自行開發可能做到提供對話式諮詢、智慧篩選功能
+                                </td>
+                            </tr>
+                            <tr class="odd:bg-white even:bg-gray-100">
+                                <td>訂購流程</td>
+                                <td>
+                                    B2C訂購流程，標準版不適用於HO禮
+                                    <br/>
+                                    <i><mark>(如需客製需洽詢原廠)</mark></i>
+                                </td>
+                                <td>可以依需求設計預先收集所需資訊，讓業務對接更快速了解客戶需求</td>
+                            </tr>
+                            <tr class="odd:bg-white even:bg-gray-100">
+                                <td>後續數據分析</td>
+                                <td>
+                                    有自己的後台，不確定能否與數據部
+                                    <br/>
+                                    <i><mark>(如需客製需洽詢原廠)</mark></i>
+                                </td>
+                                <td>可與OmniU短網址平台整合回數據部</td>
+                            </tr>
+           
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="text-right text-gray-500 text-sm">投影片 12 / 13</div>
+        </div>
+
+        <div id="slide-13" class="slide">
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">WBS</h2>
+                <p class="text-3xl font-semibold text-gray-700 mb-8">開發工項</p>
+                
+                <div class.="bg-gray-50 p-6 rounded-xl shadow-inner">
+                    <!-- A. 企業客戶前台 (Client-Facing Web App) -->
+                <section class="p-6 rounded-xl shadow-lg bg-indigo-50 border-l-8 border-indigo-700">
+                    <h2 class="text-2xl font-bold text-indigo-800 mb-6 border-b border-indigo-200 pb-2">A. 企業客戶前台 (Client-Facing Web App)</h2>
+                    
+                    <ol class="module-list space-y-6">
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-indigo-900">基礎介面與訂單/會員系統</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>基礎介面：開發使用者介面 (UI/UX)，包含首頁、商品列表、商品詳情頁等。| (7)</li>
+                                <li>會員系統：開發企業客戶的註冊、登入、帳戶管理、歷史訂單查詢功能。| (10)</li>
+                                <li>訂單系統：建立完整的下單與結帳流程。| (7)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-indigo-900">AI 禮品推薦 (流程 1)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>開發自然語言輸入介面 (e.g., 聊天視窗或搜尋框)。 | (3)</li>
+                                <li>開發 API 接收客戶需求，並實作核心流程： | (20)
+                                    <ul class="list-circle list-inside ml-4 mt-1 space-y-0.5 text-sm text-indigo-700">
+                                        <li>串接 **MongoDB** 查詢商品主檔。</li>
+                                        <li>串接 **BigQuery** 查詢產品標籤與媒合數據 (可能涉及向量搜尋)。</li>
+                                        <li>串接 **Gemini LLM (AI Agent)** 進行語意理解與推薦排序。</li>
+                                    </ul>
+                                </li>
+                                <li>將 AI 生成的推薦結果回傳並呈現在 UI 上。 | (1)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-indigo-900">AI 禮品打樣 (流程 2)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>開發介面，讓客戶能上傳 Logo 素材或輸入設計理念。 | (3)</li>
+                                <li>串接 Giftpack AI API，傳送產品與客製化需求，並接收生成的打樣預覽圖。 | (4)</li>
+                                <li>開發訂單確認流程，將客戶確認的打樣圖資料寫入MongoDB。 | (2)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <!-- B. 營運人員後台 (Operation-Facing Web App) -->
+                <section class="p-6 rounded-xl shadow-lg bg-teal-50 border-l-8 border-teal-700">
+                    <h2 class="text-2xl font-bold text-teal-800 mb-6 border-b border-teal-200 pb-2">B. 營運人員後台 (Operation-Facing Web App)</h2>
+                    
+                    <ol class="module-list space-y-6">
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-teal-900">基礎介面與核心 CRUD 功能</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>基礎介面：開發後台管理系統 (CMS) 的 UI/UX。 | (5)</li>
+                                <li>商品管理：** 包含商品主檔的上稿、編輯、下架 (CRUD)。 | (5)</li>
+                                <li>訂單管理：** 檢視、管理、更新前台傳來的訂單狀態。 | (5)</li>
+                                <li>客戶管理：** 管理企業客戶資料。 | (5)</li>
+                                <li>權限管理：** 系統登入登出、帳號管理。 | (5)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-teal-900">AI 輔助 - 文案生成 (流程 1)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>在商品管理介面中，開發觸發 AI 生成文案的功能 (e.g., 傳送產品圖片/規格)。 | (3)</li>
+                                <li>串接 Gemini LLM (AI Agent) API 來生成文案。 | (3)</li>
+                                <li>將 AI 回傳的文案草稿存入 MongoDB。 | (1)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-teal-900">AI 輔助 - 提案簡報生成 (流程 2)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>在訂單或客戶管理介面，開發觸發功能，並撈取MongoDB的訂單/產品資料。 | (3)</li>
+                                <li>串接 Gemini LLM (AI Agent) API，傳送資料以生成簡報文字內容。 | (3)</li>
+                                <li>接收 AI 回傳的簡報結構或內容。 | (1)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+                
+                <!-- C. AI 核心與自動化排程 (AI Agent & Automation) -->
+                <section class="p-6 rounded-xl shadow-lg bg-orange-50 border-l-8 border-orange-700">
+                    <h2 class="text-2xl font-bold text-orange-800 mb-6 border-b border-orange-200 pb-2">C. AI 核心與自動化排程 (AI Agent & Automation)</h2>
+                    
+                    <ol class="module-list space-y-6">
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-orange-900">Gemini LLM 串接服務層</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>建立一個統一的 AI Agent 服務層 (作為後台服務)，集中管理所有對Gemini API的呼叫 (包含推薦、文案、貼標、媒合)。 | (3)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-orange-900">排程 G1 (商品貼標)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>開發一個自動化排程工作 (e.g., Cron Job / Azure Function Timer)。 | (2)</li>
+                                <li>流程：撈取MongoDB中未貼標的產品呼叫AI Agen將標籤結果回存至BigQuery。 | (2)</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-orange-900">排程 G2 (行銷受眾包媒合)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>開發另一個自動化排程工作。</li>
+                                <li>流程：撈取MongoDB(產品) 與BigQuery(客戶資料/標籤)呼叫 AI Agent 進行媒合將生成的「受眾包」結果回存至BigQuery。 | (2)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <!-- D. 數據與基礎設施 (Data & DevOps) -->
+                <section class="p-6 rounded-xl shadow-lg bg-gray-200 border-l-8 border-gray-700">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-400 pb-2">D. 數據與基礎設施 (Data & DevOps)</h2>
+                    
+                    <ol class="module-list space-y-6">
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-gray-900">資料庫設計 (Schema)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>**MongoDB Schema:** 設計 Product, User, Order, AI_Draft 等的 Schema (資料結構)。</li>
+                                <li>**BigQuery Schema:** 設計 Product\_Tags, Customer\_Segments, Audience\_Packages, Usage\_Logs 等的 Schema。</li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <p class="font-bold text-lg mb-1 text-gray-900">雲端建置 (DevOps)</p>
+                            <ul class="sub-bullet-list text-base text-gray-700">
+                                <li>設定與配置兩台 Azure App Service (前台 Web App, 後台 Web App)。</li>
+                                <li>設定 **MongoDB (e.g., Atlas)** 的連線與安全配置。</li>
+                                <li>設定 Google BigQuery 的專案與權限。</li>
+                                <li>(建議) 建立 CI/CD (持續整合/持續部署) 管線，自動化部署更新。</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+                 <section class="p-6 rounded-xl shadow-lg bg-teal-50 border-l-8 border-teal-700">
+                    <h2 class="text-2xl text-gray-800 ">總計約 105/人天</h2>       
+                </section>
+                </div>
+
+            </div>
+            <div class="text-right text-gray-500 text-sm">投影片 13 / 13</div>
+        </div>
+        </div>
 
     <div class="mt-6 flex space-x-4">
         <button id="prev-btn" class="nav-button bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -481,10 +669,14 @@
     <script>
         // =============== [原有的] 簡報換頁功能 ===============
         let currentSlide = 1;
-        const totalSlides = 11;
+        
+        // =============== [修改處] 將 totalSlides 改為 13 ===============
+        const totalSlides = 13; 
+        // =============== [END] 修改處 ===============
+
         const slides = [];
 
-        // 獲取所有投影片元素
+        // 獲取所有投影片元素 (現在會自動抓到 slide-13)
         for (let i = 1; i <= totalSlides; i++) {
             slides.push(document.getElementById(`slide-${i}`));
         }
@@ -536,43 +728,31 @@
         updateSlideDisplay();
 
 
-        // =============== [新增] SVG Lightbox 功能 ===============
+        // =============== [原有的] SVG Lightbox 功能 ===============
         
-        // 1. 獲取所有需要的元素
         const hofontBox = document.getElementById('hofontsvgbx');
         const hocmsBox = document.getElementById('hocmssvgbx');
         const closeHofontBtn = document.getElementById('close-hofont');
         const closeHocmsBtn = document.getElementById('close-hocms');
 
-        // 2. 幫可點擊的 div 加上 cursor-zoom-in 和 hover 效果 (使用 Tailwind class)
         hofontBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
         hocmsBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
 
-        // 3. 綁定 hofontBox 的點擊事件
         hofontBox.addEventListener('click', function() {
-            // 加上 'lightbox-active' class 來放大
             this.classList.add('lightbox-active');
         });
 
-        // 4. 綁定 hocmsBox 的點擊事件
         hocmsBox.addEventListener('click', function() {
-            // 加上 'lightbox-active' class 來放大
             this.classList.add('lightbox-active');
         });
 
-        // 5. 綁定 hofontBox 關閉按鈕的點擊事件
         closeHofontBtn.addEventListener('click', function(event) {
-            // 阻止事件冒泡，避免觸發父層 (hofontBox) 的點擊事件
             event.stopPropagation();
-            // 移除 'lightbox-active' class 來恢復
             hofontBox.classList.remove('lightbox-active');
         });
 
-        // 6. 綁定 hocmsBox 關閉按鈕的點擊事件
         closeHocmsBtn.addEventListener('click', function(event) {
-            // 阻止事件冒泡
             event.stopPropagation();
-            // 移除 'lightbox-active' class
             hocmsBox.classList.remove('lightbox-active');
         });
 
