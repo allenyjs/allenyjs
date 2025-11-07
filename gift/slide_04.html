@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 驅動的企業禮品客製化平台 - [請填入投影片標題]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="sidebar.js"></script>
+    <style>
+        /* 設置 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fc;
+            /* 調整 body 佈局以容納側邊欄 */
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+        }
+        
+        /* ------------------------------------------- */
+        /* ✨ 載入動畫樣式 (已修改) */
+        /* ------------------------------------------- */
+
+        /* 載入動畫容器：關鍵在於 position: absolute 和 z-index */
+        #loading-screen {
+            position: absolute; /* 相對於父元素 (.slide) 定位 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* 確保它覆蓋在 .slide 的內容之上 */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            border-radius: 1rem; /* 配合 .slide 的圓角 */
+        }
+
+        /* 載入中的文字樣式 */
+        #loading-screen p {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-top: 1rem;
+        }
+
+        /* 載入圓圈樣式 */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e0e7ff;
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* 載入動畫關鍵幀 */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 隱藏主內容 */
+        .content-hidden {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s 0.5s, opacity 0.5s linear;
+        }
+
+
+        /* ------------------------------------------- */
+        /* ✨ 載入動畫樣式 (結束) */
+        /* ------------------------------------------- */
+
+
+        /* 側邊導覽列樣式 (略) */
+        .sidebar {
+            width: 280px;
+            padding: 2rem 1.5rem;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .nav-item.active {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+
+        /* 主要內容區域 (略) */
+        .main-content-wrapper {
+            flex-grow: 1;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 投影片容器樣式 (已新增 position: relative) */
+        .slide {
+            min-height: 80vh;
+            width: 100%;
+            max-width: 1000px;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative; /* <<<<<< 關鍵: 設為相對定位，讓 #loading-screen 絕對定位在它內部 */
+        }
+        
+        /* 其他樣式 (略) */
+        /* ... 省略 Lightbox、表格和卡片樣式 ... */
+        .lightbox-active { /* ... */ }
+        .lightbox-active img { /* ... */ }
+        .lightbox-active .svg-lightbox-close-btn { /* ... */ }
+        .slide table { /* ... */ }
+        .slide th, .slide td { /* ... */ }
+        .slide th { /* ... */ }
+        .product-card { /* ... */ }
+        .image-box { /* ... */ }
+        .image-box img { /* ... */ }
+        .product-title { /* ... */ }
+        .select-btn { /* ... */ }
+    </style>
+</head>
+
+<body>
+
+    <nav id="sidebar-placeholder" class="sidebar"></nav>
+
+    <div class="main-content-wrapper">
+        <main id="slide-1" class="slide"> 
+            <div id="loading-screen">
+                <div class="spinner"></div>
+                <p>AI媒合中。。。</p>
+            </div>
+            <div id="product-selection-interface" class="w-full h-full flex flex-col p-4 sm:p-0">
+
+                <div class="text-center mb-8 sm:mb-10">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700 mb-2">
+                        AI 推薦結果：精選禮品清單
+                    </h1>
+                    <p class="text-lg text-gray-500 font-light">
+                        請根據預算與創意選擇最合適的禮品進行打樣。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 flex-grow">
+                    <div class="product-card">
+                        <div class="image-box">
+                            <img src="https://www.hotaigo.com.tw/media/catalog/product/2/0/20221227115318951630524_L85.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
+                                onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=圖片載入失敗';"
+                                alt="字母印花休閒女帽(粉橘)" loading="lazy">
+                        </div>
+                        <h3 class="product-title">字母印花休閒女帽(粉橘)</h3>
+                        <button class="select-btn w-full font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition  hover:scale-[1.01] focus:outline-none focus:ring-4 justify-center">選取</button>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="image-box">
+                            <img src="https://www.hotaigo.com.tw/media/catalog/product/2/0/202204022233431417474101_L75.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
+                                onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=圖片載入失敗';"
+                                alt="86真皮壓紋名片夾" loading="lazy">
+                        </div>
+                        <h3 class="product-title">86真皮壓紋名片夾</h3>
+                        <button class="select-btn w-full font-bold bg-indigo-600 text-white rounded-xl shadow-lg over:bg-indigo-700 transition  hover:scale-[1.01] focus:outline-none focus:ring-4 justify-center">選取</button>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="image-box">
+                            <img src="https://www.hotaigo.com.tw/media/catalog/product/2/0/2024012214004940175862_L85.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
+                                onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=圖片載入失敗';"
+                                alt="折疊野營桌" loading="lazy">
+                        </div>
+                        <h3 class="product-title">折疊野營桌</h3>
+                        <button class="select-btn w-full font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition  hover:scale-[1.01] focus:outline-none focus:ring-4 justify-center">選取</button>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="image-box">
+                            <img src="https://www.hotaigo.com.tw/media/catalog/product/2/0/20220402225857450410118_L75.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
+                                onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=圖片載入失敗';"
+                                alt="玫瑰荔枝紋隨身卡片鑰匙包" loading="lazy">
+                        </div>
+                        <h3 class="product-title">荔枝紋隨身卡片鑰匙包</h3>
+                        <button class="select-btn w-full font-bold bg-indigo-600 text-white rounded-xl shadow-lg 
+                           hover:bg-indigo-700 transition  hover:scale-[1.01]
+                           focus:outline-none focus:ring-4 justify-center">選取</button>
+                    </div>
+
+                </div>
+
+                <div class="text-right text-gray-400 text-sm mt-8">
+                    商品推薦與選取介面展示
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+
+    <script>
+        // -------------------------------------------
+        // ✨ 載入動畫 JavaScript (已修改)
+        // -------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            // 鎖定要隱藏/顯示的目標元素 ID
+            const mainContent = document.getElementById('product-selection-interface'); 
+            
+            // 1. 初始隱藏內容 (在載入動畫消失前，讓內容保持隱藏)
+            if (mainContent) {
+                mainContent.classList.add('content-hidden');
+            }
+
+            // 2. 延遲 2 秒後移除載入畫面
+            setTimeout(() => {
+                // 開始淡出載入畫面
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                }
+                
+                // 移除內容隱藏 class，讓主內容顯現
+                if (mainContent) {
+                    mainContent.classList.remove('content-hidden');
+                }
+
+                // 淡出結束後，從 DOM 中徹底移除載入畫面
+                setTimeout(() => {
+                    if (loadingScreen) {
+                        loadingScreen.remove();
+                    }
+                }, 500); // 這裡的 500ms 必須與 CSS 中的 transition: opacity 0.5s 匹配
+
+            }, 2000); // 載入動畫持續 2000 毫秒 (2 秒)
+
+        // -------------------------------------------
+        // ✨ 載入動畫 JavaScript (結束)
+        // -------------------------------------------
+            
+            // ... 其他原有的 JS 程式碼 (略) ...
+            const path = window.location.pathname;
+            const currentFile = path.substring(path.lastIndexOf('/') + 1);
+            const navItems = document.querySelectorAll('#nav-list a');
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentFile) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 投影片 9 的 Lightbox 功能（僅需要貼入 slide_09.html 中）
+            if (currentFile === 'slide_09.html') {
+                const hofontBox = document.getElementById('hofontsvgbx');
+                const hocmsBox = document.getElementById('hocmssvgbx');
+                const closeHofontBtn = document.getElementById('close-hofont');
+                const closeHocmsBtn = document.getElementById('close-hocms');
+
+                if (hofontBox && hocmsBox) {
+                    hofontBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+                    hocmsBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+
+                    hofontBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    hocmsBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    closeHofontBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hofontBox.classList.remove('lightbox-active');
+                    });
+
+                    closeHocmsBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hocmsBox.classList.remove('lightbox-active');
+                    });
+                }
+            }
+        });
+    </script>
+    <script>
+        // 點擊按鈕的模擬互動 (略)
+        document.querySelectorAll('.select-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const productTitle = this.parentElement.querySelector('.product-title').textContent;
+                alertUser(`您已選取：${productTitle}，準備進入客製化打樣流程。`, 'success');
+
+                document.querySelectorAll('.select-btn').forEach(btn => {
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                    btn.textContent = '選取';
+                });
+
+                this.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                this.classList.add('bg-green-600', 'hover:bg-green-700');
+                this.textContent = '已選取';
+            });
+        });
+
+        // 替代 alert() 的自訂訊息框函數 (略)
+        function alertUser(message, type) {
+            let messageBox = document.getElementById('custom-alert-box');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'custom-alert-box';
+                messageBox.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 6000; padding: 15px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.5s, transform 0.5s; opacity: 0; transform: translateY(-20px); max-width: 300px;';
+                document.body.appendChild(messageBox);
+            }
+
+            let bgColor, textColor;
+            if (type === 'success') {
+                bgColor = '#dcfce7'; // green-100
+                textColor = '#16a34a'; // green-600
+            } else {
+                bgColor = '#fee2e2'; // red-100
+                textColor = '#dc2626'; // red-600
+            }
+
+            messageBox.style.backgroundColor = bgColor;
+            messageBox.style.color = textColor;
+            messageBox.innerHTML = `<p class="font-bold">${message}</p>`;
+
+            messageBox.style.opacity = '1';
+            messageBox.style.transform = 'translateY(0)';
+
+            clearTimeout(messageBox.timeoutId);
+            messageBox.timeoutId = setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.style.transform = 'translateY(-20px)';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

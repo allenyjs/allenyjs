@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 驅動的企業禮品客製化平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="sidebar.js"></script>
+    <style>
+        /* 設置 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fc;
+            /* 調整 body 佈局以容納側邊欄 */
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 側邊導覽列樣式 */
+        .sidebar {
+            width: 280px;
+            /* 固定寬度 */
+            padding: 2rem 1.5rem;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            /* 防止被內容擠壓 */
+            overflow-y: auto;
+            position: sticky;
+            /* 保持在頂部，如果內容區塊過長可捲動 */
+            top: 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .nav-item.active {
+            background-color: #4f46e5;
+            /* 活躍狀態背景色 */
+            color: white;
+            /* 活躍狀態文字顏色 */
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+
+        /* 主要內容區域 */
+        .main-content-wrapper {
+            flex-grow: 1;
+            /* 佔據剩餘空間 */
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* 讓內容從頂部開始 */
+        }
+
+        /* 投影片容器樣式 (調整為不佔滿整個螢幕高度，更像文件瀏覽) */
+        .slide {
+            min-height: 80vh;
+            /* 最小高度 */
+            width: 100%;
+            max-width: 1000px;
+            /* 內容區塊最大寬度 */
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* =============== SVG Lightbox 樣式 (僅用於 slide_09.html) =============== */
+        .lightbox-active {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 5000 !important;
+            background-color: rgba(247, 249, 252, 0.9) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 1rem !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            cursor: default !important;
+        }
+
+        .lightbox-active img {
+            width: auto;
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .lightbox-active .svg-lightbox-close-btn {
+            display: flex !important;
+        }
+
+        /* =============== [END] SVG Lightbox 樣式 =============== */
+
+        /* 原有表格美化樣式 (保留) */
+        .slide table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        .slide th,
+        .slide td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .slide th {
+            background-color: #eef2ff;
+            font-weight: 600;
+            color: #4f46e5;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+
+        /* 統一按鈕樣式，沿用前一個檔案的專業風格 */
+        .action-btn {
+            @apply w-full py-3 text-lg font-extrabold tracking-wider text-white rounded-xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 flex items-center justify-center;
+        }
+
+        /* 確保在小螢幕上捲動順暢 */
+        @media (max-width: 767px) {
+            .flex-grow {
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav id="sidebar-placeholder" class="sidebar">
+    </nav>
+
+    <div class="main-content-wrapper">
+        <main id="slide-1" class="slide">
+            <!--
+    投影片 5: AI 禮品打樣流程模擬介面
+    此介面模擬客戶上傳 Logo 並將其合成到選定的商品上進行預覽。
+    樣式沿用 Indigo 色系，並保持專業俐落的風格。
+-->
+            <div id="ai-proofing-interface" class="w-full h-full flex flex-col">
+
+                <div class="text-center mb-6">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700 mb-1">
+                        AI 禮品打樣流程
+                    </h1>
+                    <p class="text-lg text-gray-500 font-light">
+                        上傳您的 Logo，即時合成客製化預覽圖。
+                    </p>
+                </div>
+
+                <!-- Main Content: Left (Product Preview) & Right (Customization) -->
+                <div class="flex-grow flex flex-col md:flex-row gap-6 md:gap-10 overflow-hidden">
+
+                    <!-- 左側區塊：商品預覽 -->
+                    <div class="md:w-1/2 flex flex-col items-center p-4 bg-gray-50 rounded-xl shadow-inner relative">
+                        <h2 class="text-xl font-bold text-gray-700 mb-4">
+                            商品預覽：字母印花休閒女帽
+                        </h2>
+                        <div id="product-canvas-container"
+                            class="w-full relative overflow-hidden rounded-xl shadow-xl border-4 border-indigo-200"
+                            style="aspect-ratio: 1/1; max-width: 460px;">
+                            <!-- 底層商品圖片 -->
+                            <img id="base-product-img"
+                                src="https://www.hotaigo.com.tw/media/catalog/product/2/0/20221227115318951630524_L85.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
+                                onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=商品圖片';"
+                                alt="字母印花休閒女帽"
+                                class="w-full h-full object-cover absolute top-0 left-0 transition duration-500">
+
+                            <!-- 覆蓋層：Logo 打樣位置 (預設隱藏，模擬合成後出現) -->
+                            <img id="logo-overlay" src="" alt="客製化 Logo 預覽"
+                                class="absolute transition duration-300 opacity-0"
+                                style="top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 30%; max-height: 30%; pointer-events: none;">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">打樣合成後，Logo 將自動定位於產品中心。</p>
+                    </div>
+
+                    <!-- 右側區塊：客製化設定 -->
+                    <div class="md:w-1/2 flex flex-col space-y-6">
+
+                        <!-- 右上區塊：上傳與預覽 Logo -->
+                        <div class="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                            <h2 class="text-xl font-bold text-indigo-600 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                步驟一：上傳 Logo/設計圖 (PNG 佳)
+                            </h2>
+
+                            <input type="file" id="logo-upload" accept="image/*"
+                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+
+                            <div id="logo-preview-box"
+                                class="mt-4 h-24 w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                                <span id="preview-text" class="text-gray-400 text-sm">Logo 預覽區</span>
+                                <img id="uploaded-logo-img" src="" alt="上傳的 Logo"
+                                    class="max-h-full max-w-full hidden object-contain p-2">
+                            </div>
+                        </div>
+
+                        <!-- 右下區塊：想法與按鈕 -->
+                        <div class="flex-grow flex flex-col p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+                            <h2 class="text-xl font-bold text-indigo-600 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 8h10M7 12h4m-4 4h10m0 0V4a2 2 0 00-2-2H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2v-3m-6-3h6m-6 0h.01">
+                                    </path>
+                                </svg>
+                                步驟二：輸入客製化備註
+                            </h2>
+                            <textarea id="custom-ideas" rows="3" placeholder="輸入你的想法與創意 (例如：Logo 顏色需為白色、刻印位置需向左移 5mm)"
+                                class="w-full p-3 border border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150 flex-grow resize-none"></textarea>
+
+                            <!-- 按鈕區塊 -->
+                            <div class="mt-6 space-y-4">
+                                <!-- 將 action-btn 的所有樣式直接移到 class 屬性中，確保樣式正確渲染 -->
+                                <button id="synth-btn"
+                                    class="w-full py-3 text-lg font-extrabold tracking-wider text-white rounded-xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-400/70">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6V4m0 2v2m0 4v2m-6 0h2m-2 4h2m10-4h2m-2 4h2m-4 0v2m0-2v-2m-8-2h-2m2 4h-2m-2-4a7 7 0 1114 0c0 3.866-2.91 7-7 7s-7-3.134-7-7z">
+                                        </path>
+                                    </svg>
+                                    <span>開始打樣合成</span>
+                                </button>
+
+                                <button id="order-btn"
+                                    class="w-full py-3 text-lg font-extrabold tracking-wider text-white rounded-xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 flex items-center justify-center bg-green-600 hover:bg-green-700 focus:ring-green-400/70">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m5.618-4.21a4.804 4.804 0 00-6.957-6.957L2 10.51l6.84 6.84a4.804 4.804 0 006.957-6.957l-1.353-1.353">
+                                        </path>
+                                    </svg>
+                                    <span>送出訂單</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 投影片編號 -->
+                <div class="text-right text-gray-500 text-sm mt-8">投影片 5 / 13</div>
+
+            </div>
+        </main>
+
+    </div>
+
+
+    <script>
+        // JavaScript 用於自動標記當前投影片為 active
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+            // 取得當前檔案名稱，例如 'slide_01.html'
+            const currentFile = path.substring(path.lastIndexOf('/') + 1);
+
+            // 尋找導覽列中匹配的連結
+            const navItems = document.querySelectorAll('#nav-list a');
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentFile) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 投影片 9 的 Lightbox 功能（僅需要貼入 slide_09.html 中）
+            if (currentFile === 'slide_09.html') {
+                const hofontBox = document.getElementById('hofontsvgbx');
+                const hocmsBox = document.getElementById('hocmssvgbx');
+                const closeHofontBtn = document.getElementById('close-hofont');
+                const closeHocmsBtn = document.getElementById('close-hocms');
+
+                if (hofontBox && hocmsBox) {
+                    hofontBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+                    hocmsBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+
+                    hofontBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    hocmsBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    closeHofontBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hofontBox.classList.remove('lightbox-active');
+                    });
+
+                    closeHocmsBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hocmsBox.classList.remove('lightbox-active');
+                    });
+                }
+            }
+        });
+    </script>
+    <script>
+        const logoUpload = document.getElementById('logo-upload');
+        const uploadedLogoImg = document.getElementById('uploaded-logo-img');
+        const previewText = document.getElementById('preview-text');
+        const logoOverlay = document.getElementById('logo-overlay');
+        const synthBtn = document.getElementById('synth-btn');
+        const orderBtn = document.getElementById('order-btn');
+
+        // 處理圖片上傳預覽
+        logoUpload.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedLogoImg.src = e.target.result;
+                    uploadedLogoImg.classList.remove('hidden');
+                    previewText.classList.add('hidden');
+
+                    // 清除打樣合成結果，讓用戶知道需要重新合成
+                    logoOverlay.classList.remove('opacity-100');
+                    logoOverlay.classList.add('opacity-0');
+                    synthBtn.textContent = '開始打樣合成';
+                    synthBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 點擊「開始打樣合成」
+        synthBtn.addEventListener('click', function () {
+            if (!uploadedLogoImg.src || uploadedLogoImg.classList.contains('hidden')) {
+                alertUser('請先上傳您的 Logo/設計圖!', 'error');
+                return;
+            }
+
+            const originalText = this.innerHTML;
+            const ideas = document.getElementById('custom-ideas').value;
+
+            // 模擬 AI 合成處理中狀態 (3 秒)
+            this.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg> 
+            AI 合成中...
+        `;
+            this.disabled = true;
+
+            setTimeout(() => {
+                // 模擬合成成功：將 Logo 放到產品預覽圖上
+                logoOverlay.src = uploadedLogoImg.src;
+                logoOverlay.classList.remove('opacity-0');
+                logoOverlay.classList.add('opacity-100');
+
+                // 提示成功
+                alertUser('AI 打樣合成完成！請檢查左側預覽圖。', 'success');
+
+                // 重置按鈕狀態
+                this.innerHTML = originalText;
+                this.disabled = false;
+                this.querySelector('span').textContent = '重新合成';
+
+                // 可以在這裡處理 ideas 的資訊，但目前只是模擬
+                console.log('客製化備註：', ideas || '無');
+
+            }, 3000);
+        });
+
+        // 點擊「送出訂單」
+        orderBtn.addEventListener('click', function () {
+            if (logoOverlay.classList.contains('opacity-0')) {
+                alertUser('請先完成打樣合成，再送出訂單！', 'error');
+                return;
+            }
+
+            // 模擬訂單送出
+            this.disabled = true;
+            this.innerHTML = '<svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>訂單處理中...</span>';
+
+            setTimeout(() => {
+                alertUser('訂單已成功送出！業務將盡快與您聯繫確認細節。', 'success');
+                // 重置介面 (可選)
+                this.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.21a4.804 4.804 0 00-6.957-6.957L2 10.51l6.84 6.84a4.804 4.804 0 006.957-6.957l-1.353-1.353"></path></svg> <span>訂單已送出</span>';
+                this.disabled = false;
+            }, 2000);
+        });
+
+        // 替代 alert() 的自訂訊息框函數
+        function alertUser(message, type) {
+            let messageBox = document.getElementById('custom-alert-box');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'custom-alert-box';
+                messageBox.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 6000; padding: 15px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.5s, transform 0.5s; opacity: 0; transform: translateY(-20px); max-width: 300px;';
+                document.body.appendChild(messageBox);
+            }
+
+            let bgColor, textColor;
+            if (type === 'success') {
+                bgColor = '#dcfce7'; // green-100
+                textColor = '#16a34a'; // green-600
+            } else {
+                bgColor = '#fee2e2'; // red-100
+                textColor = '#dc2626'; // red-600
+            }
+
+            messageBox.style.backgroundColor = bgColor;
+            messageBox.style.color = textColor;
+            messageBox.innerHTML = `<p class="font-bold">${message}</p>`;
+
+            // 顯示訊息框
+            messageBox.style.opacity = '1';
+            messageBox.style.transform = 'translateY(0)';
+
+            // 3 秒後隱藏
+            clearTimeout(messageBox.timeoutId);
+            messageBox.timeoutId = setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.style.transform = 'translateY(-20px)';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

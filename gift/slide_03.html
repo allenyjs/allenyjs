@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 驅動的企業禮品客製化平台 - [請填入投影片標題]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="sidebar.js"></script>
+    <style>
+        /* 設置 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fc;
+            /* 調整 body 佈局以容納側邊欄 */
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 側邊導覽列樣式 */
+        .sidebar {
+            width: 280px;
+            /* 固定寬度 */
+            padding: 2rem 1.5rem;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            /* 防止被內容擠壓 */
+            overflow-y: auto;
+            position: sticky;
+            /* 保持在頂部，如果內容區塊過長可捲動 */
+            top: 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .nav-item.active {
+            background-color: #4f46e5;
+            /* 活躍狀態背景色 */
+            color: white;
+            /* 活躍狀態文字顏色 */
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+
+        /* 主要內容區域 */
+        .main-content-wrapper {
+            flex-grow: 1;
+            /* 佔據剩餘空間 */
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* 讓內容從頂部開始 */
+        }
+
+        /* 投影片容器樣式 (調整為不佔滿整個螢幕高度，更像文件瀏覽) */
+        .slide {
+            min-height: 80vh;
+            /* 最小高度 */
+            width: 100%;
+            max-width: 1000px;
+            /* 內容區塊最大寬度 */
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* =============== SVG Lightbox 樣式 (僅用於 slide_09.html) =============== */
+        .lightbox-active {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 5000 !important;
+            background-color: rgba(247, 249, 252, 0.9) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 1rem !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            cursor: default !important;
+        }
+
+        .lightbox-active img {
+            width: auto;
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .lightbox-active .svg-lightbox-close-btn {
+            display: flex !important;
+        }
+
+        /* =============== [END] SVG Lightbox 樣式 =============== */
+
+        /* 原有表格美化樣式 (保留) */
+        .slide table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        .slide th,
+        .slide td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .slide th {
+            background-color: #eef2ff;
+            font-weight: 600;
+            color: #4f46e5;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav id="sidebar-placeholder" class="sidebar"></nav>
+
+    <div class="main-content-wrapper">
+        <main id="slide-1" class="slide">
+            <!--
+    這個 HTML 區塊包含了 AI 禮物推薦的輸入介面。
+    樣式採用 Tailwind CSS，以配合簡報的 Indigo 藍色調和圓角專業設計。
+-->
+<div id="ai-gift-interface" class="w-full h-full flex flex-col p-4 sm:p-8">
+    
+    <div class="text-center mb-10">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-2">
+            AI 禮品推薦模擬器
+        </h1>
+        <p class="text-xl text-gray-500 font-light">
+            輸入您的需求，即時取得客製化禮品提案。
+        </p>
+    </div>
+
+    <!-- 輸入表單區塊 -->
+    <div class="flex-grow flex flex-col items-center">
+        <div class="w-full max-w-2xl space-y-6">
+            
+            <!-- 1. 送給誰 -->
+            <div class="flex flex-col">
+                <label for="recipient" class="text-lg font-semibold text-gray-700 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20h10m-7.747-9.585a2 2 0 01-1.353-2.185 2 2 0 011.353-2.185M7 13a4 4 0 100-8 4 4 0 000 8z"></path></svg>
+                    目標對象
+                </label>
+                <input 
+                    type="text" 
+                    id="recipient"
+                    placeholder="輸入禮物要送給誰 (例如：新入職員工、年會貴賓、潛在客戶)" 
+                    class="w-full p-4 border border-indigo-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150"
+                >
+            </div>
+
+            <!-- 2. 預算 -->
+            <div class="flex flex-col">
+                <label for="budget" class="text-lg font-semibold text-gray-700 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2M12 8V6m0 6v2m0 6v2m-6-10h12a4 4 0 004-4V7a4 4 0 00-4-4H6a4 4 0 00-4 4v7a4 4 0 004 4z"></path></svg>
+                    預算範圍 (TWD)
+                </label>
+                <input 
+                    type="number" 
+                    id="budget"
+                    placeholder="輸入你的預算 (例如：500-1000)" 
+                    class="w-full p-4 border border-indigo-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150"
+                >
+            </div>
+
+            <!-- 3. 想法與創意 -->
+            <div class="flex flex-col">
+                <label for="ideas" class="text-lg font-semibold text-gray-700 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-1.343 3-3s-1.343-3-3-3m0 6c-1.657 0-3-1.343-3-3s1.343-3 3-3m-9 3h2m-2 3h2m-4 3h2"></path></svg>
+                    核心訴求
+                </label>
+                <textarea 
+                    id="ideas" 
+                    rows="4"
+                    placeholder="輸入你的想法與創意 (例如：希望是環保材質、強調品牌識別度、適合戶外活動使用)" 
+                    class="w-full p-4 border border-indigo-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150 resize-none"
+                ></textarea>
+            </div>
+            
+            <!-- 4. 按鈕 -->
+            <div class="pt-4">
+                <button 
+                    id="recommend-btn"
+                    class="w-full py-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg 
+                           hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01]
+                           focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center space-x-3"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span>生成禮物推薦提案</span>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+    
+    <!-- 模擬結果顯示區塊 -->
+    <div id="result-message" class="mt-8 p-4 bg-yellow-50 text-yellow-700 border border-yellow-300 rounded-lg hidden">
+        <p class="font-semibold">模擬訊息：</p>
+        <p>點擊按鈕後，AI 將會在此顯示推薦結果，例如：客製化保溫杯 (TWD 850)、設計草稿與文案。</p>
+    </div>
+
+    <div class="text-right text-gray-400 text-sm mt-8">
+        AI 禮品推薦介面展示
+    </div>
+</div>
+
+<script>
+    document.getElementById('recommend-btn').addEventListener('click', function() {
+        const recipient = document.getElementById('recipient').value;
+        const budget = document.getElementById('budget').value;
+        const ideas = document.getElementById('ideas').value;
+        const resultDiv = document.getElementById('result-message');
+
+        if (!recipient || !budget || !ideas) {
+            resultDiv.classList.remove('bg-yellow-50', 'text-yellow-700', 'border-yellow-300', 'hidden');
+            resultDiv.classList.add('bg-red-50', 'text-red-700', 'border-red-300');
+            resultDiv.innerHTML = '<p class="font-bold">請注意：</p><p>所有欄位都必須填寫才能啟動 AI 推薦！</p>';
+            return;
+        }
+
+        // 模擬 AI 處理中狀態
+        this.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>AI 正在生成提案...</span>';
+        this.disabled = true;
+
+        setTimeout(() => {
+            // 模擬 AI 推薦結果
+            const proposal = `
+                <p class="font-bold mb-2">AI 推薦結果：【高質感輕量化鈦合金保溫杯】</p>
+                <ul class="list-disc pl-5 space-y-1 text-sm">
+                    <li><span class="font-semibold">目標對象：</span>${recipient}</li>
+                    <li><span class="font-semibold">建議預算：</span>TWD ${budget} (單價)</li>
+                    <li><span class="font-semibold">客製化方案：</span>杯體雷射雕刻企業 LOGO，底部刻印客製化訊息。</li>
+                    <li><span class="font-semibold">設計理念：</span>考量到 "${ideas}" 的需求，鈦合金的環保和輕量特性完美契合，且具備專業高端的形象。</li>
+                    <li><span class="font-semibold">下一流程：</span>自動進入 AI 圖像打樣 (Mockup) 介面。</li>
+                </ul>
+            `;
+            
+            resultDiv.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-300');
+            resultDiv.classList.add('bg-green-50', 'text-green-700', 'border-green-300');
+            resultDiv.innerHTML = proposal;
+            
+            // 重置按鈕狀態
+            document.getElementById('recommend-btn').innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> <span>生成禮物推薦提案</span>';
+            this.disabled = false;
+
+        }, 2000); // 延遲 2 秒模擬 API 呼叫
+    });
+</script>
+            <div class="text-right text-gray-500 text-sm">投影片 2 / 13</div>
+        </main>
+
+    </div>
+
+
+    <script>
+        // JavaScript 用於自動標記當前投影片為 active
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+            // 取得當前檔案名稱，例如 'slide_01.html'
+            const currentFile = path.substring(path.lastIndexOf('/') + 1);
+
+            // 尋找導覽列中匹配的連結
+            const navItems = document.querySelectorAll('#nav-list a');
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentFile) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 投影片 9 的 Lightbox 功能（僅需要貼入 slide_09.html 中）
+            if (currentFile === 'slide_09.html') {
+                const hofontBox = document.getElementById('hofontsvgbx');
+                const hocmsBox = document.getElementById('hocmssvgbx');
+                const closeHofontBtn = document.getElementById('close-hofont');
+                const closeHocmsBtn = document.getElementById('close-hocms');
+
+                if (hofontBox && hocmsBox) {
+                    hofontBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+                    hocmsBox.classList.add('cursor-zoom-in', 'transition', 'duration-300', 'hover:scale-105');
+
+                    hofontBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    hocmsBox.addEventListener('click', function () {
+                        this.classList.add('lightbox-active');
+                    });
+
+                    closeHofontBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hofontBox.classList.remove('lightbox-active');
+                    });
+
+                    closeHocmsBtn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        hocmsBox.classList.remove('lightbox-active');
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
