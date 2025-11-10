@@ -7,14 +7,14 @@
                 <li><a href="slide_03.html" class="nav-item">AI推薦流程:1-客戶發起需求</a></li>
                 <li><a href="slide_04.html" class="nav-item">AI推薦流程:2-取得媒合清單</a></li>
                 <li><a href="slide_05.html" class="nav-item">AI推薦流程:3-禮品打樣</a></li>
-                <li><a href="slide_06.html" class="nav-item">AI推薦流程:4-反饋推薦</a></li>
-                <li><a href="slide_07.html" class="nav-item">投影片 7: AI 輔助營運功能</a></li>
-                <li><a href="slide_08.html" class="nav-item">投影片 8: 自動化排程服務</a></li>
-                <li><a href="slide_09.html" class="nav-item">投影片 9: 系統核心目標</a></li>
-                <li><a href="slide_10.html" class="nav-item">投影片 10: 核心技術組件</a></li>
-                <li><a href="slide_11.html" class="nav-item">投影片 11: 成本預估</a></li>
-                <li><a href="slide_12.html" class="nav-item">投影片 12: WBS 開發工項</a></li>
-                <li><a href="slide_13.html" class="nav-item">投影片 13: Shopline vs .NET Team</a></li>
+                <li><a href="slide_06.html" class="nav-item">後台管理系統</a></li>
+                <li><a href="slide_07.html" class="nav-item">AI提案簡報: 需求清單</a></li>
+                <li><a href="slide_08.html" class="nav-item">AI提案簡報: 生成簡報</a></li>
+                <li><a href="slide_09.html" class="nav-item">AI產品上架文案輔助生成文案</a></li>
+                <li><a href="slide_10.html" class="nav-item">自動產品分類與媒合</a></li>
+                <li><a href="slide_11.html" class="nav-item">成本預估</a></li>
+                <li><a href="slide_12.html" class="nav-item">WBS 開發工項</a></li>
+                <li><a href="slide_13.html" class="nav-item">END</a></li>
             </ul>
         `;
 

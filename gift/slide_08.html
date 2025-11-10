@@ -144,6 +144,33 @@
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
         }
+
+        /* 適用於表格內文字的通用樣式 */
+        .table-cell-style {
+            @apply px-4 py-2.5 text-sm text-gray-700;
+        }
+
+        /* 規格卡片的樣式 */
+        .spec-card {
+            @apply bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition duration-150 hover:shadow-md;
+        }
+
+        .spec-label {
+            @apply text-xs font-medium text-gray-500 uppercase mb-1;
+        }
+
+        .spec-value {
+            @apply text-base font-semibold text-gray-900;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 1023px) {
+
+            /* 在平板和手機上，圖片預留框在描述上方 */
+            .lg\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -154,7 +181,157 @@
 
     <div class="main-content-wrapper">
         <main id="slide-1" class="slide">
-            
+            <div id="proposal-detail" class="w-full h-full flex flex-col">
+
+                <div class="text-left mb-6">
+                    <h1 class="text-4xl font-extrabold text-indigo-700 mb-1">
+                        品牌聯名棒球帽提案：時尚移動系列
+                    </h1>
+                    <p class="text-lg text-gray-500 font-light">
+                        Yoxi 聯名款：兼具功能性與高度品牌識別度的周邊商品
+                    </p>
+                </div>
+
+                <!-- 內容區塊：雙欄佈局 (圖片 + 詳細描述) -->
+                <div class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto pr-2">
+
+                    <!-- 左欄: 圖片預留框 (佔 1 份寬度) -->
+                    <div class="lg:col-span-1 flex flex-col items-center justify-start h-full">
+                        <div
+                            class="w-full aspect-square max-w-[400px] bg-gray-100 border-4 border-dashed border-gray-300 rounded-xl flex items-center justify-center p-4 shadow-inner">
+                            <div class="text-center text-gray-500">
+                                <!-- 請在此處填入您的圖片 src -->
+                                <img id="product-image"
+                                    src="../img/mixgift.png"
+                                    alt="產品圖片 Placeholder"
+                                    class="w-full h-full object-cover rounded-lg border border-gray-200">
+                                <p class="mt-2 text-sm font-medium">圖片預留框</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄: 詳細描述與規格 (佔 2 份寬度) -->
+                    <div class="lg:col-span-2 space-y-8">
+
+                        <!-- 區塊 I: 商品描述 -->
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-400 pb-1 mb-4">
+                                一、 商品描述 (Product Description)
+                            </h2>
+
+                            <!-- 核心理念 -->
+                            <div class="mb-4">
+                                <h3 class="text-xl font-semibold text-indigo-600 mb-2">1. 核心理念：移動生活美學</h3>
+                                <p
+                                    class="text-gray-700 leading-relaxed bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-400">
+                                    本款棒球帽不僅是遮陽配件，更是「yoxi時尚移動生活」的代表符號。我們將品牌標誌性的計程車圖案以活潑的設計呈現於經典的粉色帽款上，旨在吸引年輕、注重個性和生活品味的族群，將品牌形象融入日常穿搭。
+                                </p>
+                            </div>
+
+                            <!-- 五大產品優勢 -->
+                            <h3 class="text-xl font-semibold text-indigo-600 mb-3 mt-6">2. 五大產品優勢 (Key Advantages)</h3>
+                            <div class="overflow-x-auto">
+                                <table
+                                    class="min-w-full divide-y divide-indigo-200 rounded-lg overflow-hidden border border-indigo-100">
+                                    <thead class="bg-indigo-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-sm font-bold text-indigo-700">優勢項目</th>
+                                            <th class="px-4 py-2 text-left text-sm font-bold text-indigo-700">詳細說明</th>
+                                            <th
+                                                class="px-4 py-2 text-left text-sm font-bold text-indigo-700 hidden md:table-cell">
+                                                品牌效益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="table-cell-style font-medium">高辨識度設計</td>
+                                            <td class="table-cell-style">以獨特的粉色帽身搭配亮眼的yoxi汽車圖案貼布繡，顏色組合大膽且富有活力。</td>
+                                            <td class="table-cell-style hidden md:table-cell text-indigo-500">
+                                                強化品牌記憶點，創造話題性。</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="table-cell-style font-medium">舒適透氣面料</td>
+                                            <td class="table-cell-style">選用輕量化的棉/聚酯纖維混紡材質，具備良好的吸濕排汗功能。</td>
+                                            <td class="table-cell-style hidden md:table-cell text-indigo-500">
+                                                提升使用者體驗，增加產品好感度。</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="table-cell-style font-medium">百搭時尚單品</td>
+                                            <td class="table-cell-style">經典的六片式棒球帽型，可搭配休閒、運動或街頭風格的服飾。</td>
+                                            <td class="table-cell-style hidden md:table-cell text-indigo-500">
+                                                拓寬品牌周邊商品的受眾範圍。</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="table-cell-style font-medium">高品質細節處理</td>
+                                            <td class="table-cell-style">採用精密車縫線工藝，前片圖案貼布繡邊緣平整細緻。</td>
+                                            <td class="table-cell-style hidden md:table-cell text-indigo-500">
+                                                奠定高品質的品牌形象，避免廉價感。</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="table-cell-style font-medium">可調節性設計</td>
+                                            <td class="table-cell-style">採用金屬扣環或魔術貼可調節頭圍設計，適合大多數成人頭型。</td>
+                                            <td class="table-cell-style hidden md:table-cell text-indigo-500">
+                                                確保產品的普適性與便利性。</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- 區塊 II: 商品規格 -->
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-400 pb-1 mb-4">
+                                二、 商品規格 (Product Specifications)
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- 規格卡片範例 -->
+                                <div class="spec-card">
+                                    <p class="spec-label">商品名稱</p>
+                                    <p class="spec-value">Yoxi 聯名款經典棒球帽</p>
+                                </div>
+                                <div class="spec-card">
+                                    <p class="spec-label">顏色</p>
+                                    <p class="spec-value">灰粉色 (Dusty Rose)</p>
+                                </div>
+                                <div class="spec-card">
+                                    <p class="spec-label">主要成分</p>
+                                    <p class="spec-value">65% 棉，35% 聚酯纖維 (混紡材質兼顧透氣與耐用性)</p>
+                                </div>
+                                <div class="spec-card">
+                                    <p class="spec-label">製造產地</p>
+                                    <p class="spec-value">台灣 (Taiwan) / 或指定代工廠</p>
+                                </div>
+                                <div class="spec-card">
+                                    <p class="spec-label">尺寸</p>
+                                    <p class="spec-value">單一尺寸，可調節頭圍 (54cm ~ 60cm)</p>
+                                </div>
+                                <div class="spec-card">
+                                    <p class="spec-label">帽型與工藝</p>
+                                    <p class="spec-value">標準六片式棒球帽 / 前方：高密度貼布繡</p>
+                                </div>
+                                <div class="spec-card sm:col-span-2">
+                                    <p class="spec-label">洗滌方式</p>
+                                    <p class="spec-value">建議手洗，平鋪晾乾；不可漂白、不可烘乾。</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 提案總結 -->
+                        <section class="mt-8">
+                            <h2 class="text-xl font-bold text-gray-800 mb-2">提案總結</h2>
+                            <p
+                                class="text-gray-700 leading-relaxed bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                                本款聯名棒球帽結合了功能性與高度的品牌識別度，是極具市場潛力和宣傳價值的周邊商品。
+                            </p>
+                        </section>
+
+                    </div>
+                </div>
+
+                <!-- 投影片編號 -->
+                <div class="text-right text-gray-500 text-sm mt-8">投影片 8 / 13</div>
+
+            </div>
         </main>
 
     </div>

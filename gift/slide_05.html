@@ -156,6 +156,42 @@
                 overflow-y: auto;
             }
         }
+
+        /* 新增：模態視窗樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* 預設隱藏 */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            /* 確保在最上層 */
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 480px;
+            width: 90%;
+            position: relative;
+            transform: scale(0.8);
+            /* 初始縮小 */
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+            /* 打開時放大 */
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -166,11 +202,6 @@
 
     <div class="main-content-wrapper">
         <main id="slide-1" class="slide">
-            <!--
-    投影片 5: AI 禮品打樣流程模擬介面
-    此介面模擬客戶上傳 Logo 並將其合成到選定的商品上進行預覽。
-    樣式沿用 Indigo 色系，並保持專業俐落的風格。
--->
             <div id="ai-proofing-interface" class="w-full h-full flex flex-col">
 
                 <div class="text-center mb-6">
@@ -182,10 +213,8 @@
                     </p>
                 </div>
 
-                <!-- Main Content: Left (Product Preview) & Right (Customization) -->
                 <div class="flex-grow flex flex-col md:flex-row gap-6 md:gap-10 overflow-hidden">
 
-                    <!-- 左側區塊：商品預覽 -->
                     <div class="md:w-1/2 flex flex-col items-center p-4 bg-gray-50 rounded-xl shadow-inner relative">
                         <h2 class="text-xl font-bold text-gray-700 mb-4">
                             商品預覽：字母印花休閒女帽
@@ -193,14 +222,12 @@
                         <div id="product-canvas-container"
                             class="w-full relative overflow-hidden rounded-xl shadow-xl border-4 border-indigo-200"
                             style="aspect-ratio: 1/1; max-width: 460px;">
-                            <!-- 底層商品圖片 -->
                             <img id="base-product-img"
                                 src="https://www.hotaigo.com.tw/media/catalog/product/2/0/20221227115318951630524_L85.jpg?optimize=medium&fit=bounds&height=460&width=460&canvas=460:460"
                                 onerror="this.onerror=null; this.src='https://placehold.co/460x460/A5B4FC/3730A3?text=商品圖片';"
                                 alt="字母印花休閒女帽"
                                 class="w-full h-full object-cover absolute top-0 left-0 transition duration-500">
 
-                            <!-- 覆蓋層：Logo 打樣位置 (預設隱藏，模擬合成後出現) -->
                             <img id="logo-overlay" src="" alt="客製化 Logo 預覽"
                                 class="absolute transition duration-300 opacity-0"
                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 30%; max-height: 30%; pointer-events: none;">
@@ -208,10 +235,8 @@
                         <p class="text-sm text-gray-500 mt-2">打樣合成後，Logo 將自動定位於產品中心。</p>
                     </div>
 
-                    <!-- 右側區塊：客製化設定 -->
                     <div class="md:w-1/2 flex flex-col space-y-6">
 
-                        <!-- 右上區塊：上傳與預覽 Logo -->
                         <div class="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
                             <h2 class="text-xl font-bold text-indigo-600 mb-4 flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -233,7 +258,6 @@
                             </div>
                         </div>
 
-                        <!-- 右下區塊：想法與按鈕 -->
                         <div class="flex-grow flex flex-col p-6 bg-white rounded-xl shadow-lg border border-gray-200">
                             <h2 class="text-xl font-bold text-indigo-600 mb-4 flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -244,12 +268,11 @@
                                 </svg>
                                 步驟二：輸入客製化備註
                             </h2>
-                            <textarea id="custom-ideas" rows="3" placeholder="輸入你的想法與創意 (例如：Logo 顏色需為白色、刻印位置需向左移 5mm)"
+                            <textarea id="custom-ideas" rows="3"
+                                placeholder="輸入你的想法與創意 (例如：Logo 顏色需為白色、刻印位置需向左移 5mm)"
                                 class="w-full p-3 border border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150 flex-grow resize-none"></textarea>
 
-                            <!-- 按鈕區塊 -->
                             <div class="mt-6 space-y-4">
-                                <!-- 將 action-btn 的所有樣式直接移到 class 屬性中，確保樣式正確渲染 -->
                                 <button id="synth-btn"
                                     class="w-full py-3 text-lg font-extrabold tracking-wider text-white rounded-xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-400/70">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -278,7 +301,6 @@
 
                 </div>
 
-                <!-- 投影片編號 -->
                 <div class="text-right text-gray-500 text-sm mt-8">投影片 5 / 13</div>
 
             </div>
@@ -286,7 +308,52 @@
 
     </div>
 
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 border-b pb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-1 8h.01M3 16h5l-1-4h3l-1 4h5l-1-4h3l-1 4h5"></path>
+                </svg>
+                填寫聯絡資訊
+            </h2>
 
+            <form id="contact-form" class="space-y-4">
+                <div>
+                    <label for="contact-name" class="block text-sm font-medium text-gray-700 mb-1">聯絡人名稱 (必填)</label>
+                    <input type="text" id="contact-name" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        placeholder="請輸入您的姓名">
+                </div>
+
+                <div>
+                    <label for="contact-email" class="block text-sm font-medium text-gray-700 mb-1">Email (必填)</label>
+                    <input type="email" id="contact-email" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        placeholder="例如: example@company.com">
+                </div>
+
+                <div>
+                    <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">電話/手機 (必填)</label>
+                    <input type="tel" id="contact-phone" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                        placeholder="例如: 09xx-xxxxxx 或 02-xxxxxxxx">
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" id="close-modal-btn"
+                        class="px-5 py-2 text-md font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-150">
+                        取消
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 text-md font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150">
+                        確認送出訂單
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script>
         // JavaScript 用於自動標記當前投影片為 active
         document.addEventListener('DOMContentLoaded', () => {
@@ -345,6 +412,11 @@
         const synthBtn = document.getElementById('synth-btn');
         const orderBtn = document.getElementById('order-btn');
 
+        // 新增的 Modal 相關變數
+        const contactModal = document.getElementById('contact-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const contactForm = document.getElementById('contact-form');
+
         // 處理圖片上傳預覽
         logoUpload.addEventListener('change', function (event) {
             const file = event.target.files[0];
@@ -358,7 +430,13 @@
                     // 清除打樣合成結果，讓用戶知道需要重新合成
                     logoOverlay.classList.remove('opacity-100');
                     logoOverlay.classList.add('opacity-0');
-                    synthBtn.textContent = '開始打樣合成';
+                    synthBtn.innerHTML = `
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6V4m0 2v2m0 4v2m-6 0h2m-2 4h2m10-4h2m-2 4h2m-4 0v2m0-2v-2m-8-2h-2m2 4h-2m-2-4a7 7 0 1114 0c0 3.866-2.91 7-7 7s-7-3.134-7-7z">
+                            </path>
+                        </svg>
+                        <span>開始打樣合成</span>`;
                     synthBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
@@ -405,22 +483,79 @@
             }, 3000);
         });
 
-        // 點擊「送出訂單」
+        // =========================================================================
+        // 新增：處理「送出訂單」按鈕，改為彈出聯絡資訊視窗
+        // =========================================================================
+
+        // 點擊「送出訂單」按鈕，開啟 Modal
         orderBtn.addEventListener('click', function () {
             if (logoOverlay.classList.contains('opacity-0')) {
                 alertUser('請先完成打樣合成，再送出訂單！', 'error');
                 return;
             }
 
-            // 模擬訂單送出
-            this.disabled = true;
-            this.innerHTML = '<svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>訂單處理中...</span>';
+            // 開啟聯絡資訊 Modal
+            contactModal.style.display = 'flex';
+            // 為了實現動畫效果，稍微延遲後添加 open class
+            setTimeout(() => {
+                contactModal.classList.add('open');
+            }, 10);
+        });
+
+        // 點擊「取消」按鈕或 Modal 遮罩，關閉 Modal
+        closeModalBtn.addEventListener('click', hideContactModal);
+        contactModal.addEventListener('click', function (event) {
+            // 如果點擊了遮罩本身 (即 event.target 就是 modal-overlay)
+            if (event.target === contactModal) {
+                hideContactModal();
+            }
+        });
+
+        function hideContactModal() {
+            contactModal.classList.remove('open');
+            // 延遲隱藏 display 屬性，讓動畫有時間播放
+            setTimeout(() => {
+                contactModal.style.display = 'none';
+            }, 300);
+        }
+
+        // 處理聯絡資訊表單提交
+        contactForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // 阻止表單預設提交行為
+
+            // 取得表單資料
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const phone = document.getElementById('contact-phone').value;
+
+            // 簡單的資料驗證（因為 input 已經有 required，這裡主要是模擬後端處理）
+            if (!name || !email || !phone) {
+                alertUser('請填寫所有聯絡資訊欄位！', 'error');
+                return;
+            }
+
+            // 關閉 Modal
+            hideContactModal();
+
+            // 模擬訂單送出 (沿用您原本的邏輯)
+            orderBtn.disabled = true;
+            orderBtn.innerHTML = '<svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>訂單處理中...</span>';
+
+            // 在 console 輸出收集到的聯絡資訊
+            console.log('--- 聯絡資訊 ---');
+            console.log('聯絡人:', name);
+            console.log('Email:', email);
+            console.log('電話:', phone);
+            console.log('-----------------');
 
             setTimeout(() => {
-                alertUser('訂單已成功送出！業務將盡快與您聯繫確認細節。', 'success');
-                // 重置介面 (可選)
-                this.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.21a4.804 4.804 0 00-6.957-6.957L2 10.51l6.84 6.84a4.804 4.804 0 006.957-6.957l-1.353-1.353"></path></svg> <span>訂單已送出</span>';
-                this.disabled = false;
+                alertUser(`訂單已成功送出！業務(${name})將盡快與您聯繫。`, 'success');
+                // 重置按鈕文字
+                orderBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.21a4.804 4.804 0 00-6.957-6.957L2 10.51l6.84 6.84a4.804 4.804 0 006.957-6.957l-1.353-1.353"></path></svg> <span>訂單已送出</span>';
+                orderBtn.disabled = false;
+                
+                // 清空表單 (可選)
+                contactForm.reset();
             }, 2000);
         });
 

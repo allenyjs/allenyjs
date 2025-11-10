@@ -77,7 +77,7 @@
             min-height: 80vh;
             /* 最小高度 */
             width: 100%;
-            max-width: 1000px;
+            max-width: 1400px; /* 🚀 修改為 1400px 以調寬內容區塊 */
             /* 內容區塊最大寬度 */
             background-color: white;
             border-radius: 1rem;
@@ -154,7 +154,155 @@
 
     <div class="main-content-wrapper">
         <main id="slide-1" class="slide">
-            
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold text-indigo-600 mb-8 border-b-4 border-indigo-200 pb-2">WBS</h2>
+                <p class="text-3xl font-semibold text-gray-700 mb-8">開發工項</p>
+
+                <div class.="bg-gray-50 p-6 rounded-xl shadow-inner">
+                    <section class="p-6 rounded-xl shadow-lg bg-indigo-50 border-l-8 border-indigo-700">
+                        <h2 class="text-2xl font-bold text-indigo-800 mb-6 border-b border-indigo-200 pb-2">A. 企業客戶前台
+                            (Web App)〔57/人天〕</h2>
+
+                        <ol class="module-list space-y-6">
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-indigo-900">基礎介面與訂單需求/會員系統〔小計:24/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>基礎介面：開發使用者介面 (UI/UX)，包含首頁、商品列表、商品詳情頁等。| (7)</li>
+                                    <li>會員系統：開發企業客戶的註冊、登入、帳戶管理、歷史訂單需求查詢功能。| (10)</li>
+                                    <li>訂單系統：建立完整的下單。| (7)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-indigo-900">AI 禮品推薦〔小計:24/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>開發自然語言輸入介面 (e.g., 聊天視窗或搜尋框)。 | (3)</li>
+                                    <li>開發 API 接收客戶需求，並實作核心流程： | (20)
+                                        <ul
+                                            class="list-circle list-inside ml-4 mt-1 space-y-0.5 text-sm text-indigo-700">
+                                            <li>串接 **MongoDB** 查詢商品主檔。</li>
+                                            <li>串接 **BigQuery** 查詢產品標籤與媒合數據 (可能涉及向量搜尋)。</li>
+                                            <li>串接 **Gemini LLM (AI Agent)** 進行語意理解與推薦排序。</li>
+                                        </ul>
+                                    </li>
+                                    <li>將 AI 生成的推薦結果回傳並呈現在 UI 上。 | (1)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-indigo-900">AI 禮品打樣〔小計:9/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>開發介面，讓客戶能上傳 Logo 素材或輸入設計理念。 | (3)</li>
+                                    <li>串接 Giftpack AI API，傳送產品與客製化需求，並接收生成的打樣預覽圖。 | (4)</li>
+                                    <li>開發訂單需求確認流程，將客戶確認的打樣圖資料寫入MongoDB。 | (2)</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="p-6 rounded-xl shadow-lg bg-teal-50 border-l-8 border-teal-700">
+                        <h2 class="text-2xl font-bold text-teal-800 mb-6 border-b border-teal-200 pb-2">B. 營運人員後台 (Web
+                            App)〔39/人天〕</h2>
+
+                        <ol class="module-list space-y-6">
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-teal-900">基礎介面與核心 CRUD 功能〔小計:25/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>基礎介面：開發後台管理系統 (CMS) 的 UI/UX。 | (5)</li>
+                                    <li>商品管理：** 包含商品主檔的上稿、編輯、下架 (CRUD)。 | (5)</li>
+                                    <li>訂單需求管理：** 檢視、管理、更新前台傳來的訂單需求狀態。 | (5)</li>
+                                    <li>客戶管理：** 管理企業客戶資料。 | (5)</li>
+                                    <li>權限管理：** 系統登入登出、帳號管理。 | (5)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-teal-900">AI 輔助 - 文案生成〔小計:7/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>在商品管理介面中，開發觸發 AI 生成文案的功能 (e.g., 傳送產品圖片/規格)。 | (3)</li>
+                                    <li>串接 Gemini LLM (AI Agent) API 來生成文案。 | (3)</li>
+                                    <li>將 AI 回傳的文案草稿存入 MongoDB。 | (1)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-teal-900">AI 輔助 - 提案簡報生成〔小計:7/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>在訂單需求或客戶管理介面，開發觸發功能，並撈取MongoDB的訂單需求/產品資料。 | (3)</li>
+                                    <li>串接 Gemini LLM (AI Agent) API，傳送資料以生成簡報文字內容。 | (3)</li>
+                                    <li>接收 AI 回傳的簡報結構或內容。 | (1)</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="p-6 rounded-xl shadow-lg bg-orange-50 border-l-8 border-orange-700">
+                        <h2 class="text-2xl font-bold text-orange-800 mb-6 border-b border-orange-200 pb-2">C. AI
+                            核心與自動化排程 (AI Agent &amp; Automation)〔9/人天〕</h2>
+
+                        <ol class="module-list space-y-6">
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-orange-900">Gemini LLM 串接服務層〔小計:3/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>建立一個統一的 AI Agent 服務層 (作為後台服務)，集中管理所有對Gemini API的呼叫 (包含推薦、文案、貼標、媒合)。 | (3)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-orange-900">排程 G1 (商品貼標)〔小計:4/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>開發一個自動化排程工作 (e.g., Cron Job / Azure Function Timer)。 | (2)</li>
+                                    <li>流程：撈取MongoDB中未貼標的產品呼叫AI Agen將標籤結果回存至BigQuery。 | (2)</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-orange-900">排程 G2 (行銷受眾包媒合)〔小計:2/人天〕</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>開發另一個自動化排程工作。</li>
+                                    <li>流程：撈取MongoDB(產品) 與BigQuery(客戶資料/標籤)呼叫 AI Agent 進行媒合將生成的「受眾包」結果回存至BigQuery。 | (2)
+                                    </li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="p-6 rounded-xl shadow-lg bg-gray-200 border-l-8 border-gray-700">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-400 pb-2">D. 數據與基礎設施 (Data
+                            &amp; DevOps)</h2>
+
+                        <ol class="module-list space-y-6">
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-gray-900">資料庫設計 (Schema)</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>**MongoDB Schema:** 設計 Product, User, Order, AI_Draft 等的 Schema (資料結構)。</li>
+                                    <li>**BigQuery Schema:** 設計 Product\_Tags, Customer\_Segments, Audience\_Packages,
+                                        Usage\_Logs 等的 Schema。</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <p class="font-bold text-lg mb-1 text-gray-900">雲端建置 (DevOps)</p>
+                                <ul class="sub-bullet-list text-base text-gray-700">
+                                    <li>設定與配置兩台 Azure App Service (前台 Web App, 後台 Web App)。</li>
+                                    <li>設定 **MongoDB (e.g., Atlas)** 的連線與安全配置。</li>
+                                    <li>設定 Google BigQuery 的專案與權限。</li>
+                                    <li>(建議) 建立 CI/CD (持續整合/持續部署) 管線，自動化部署更新。</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </section>
+
+                    <section class="p-6 rounded-xl shadow-lg bg-teal-50 border-l-8 border-teal-700 mt-6">
+                        <h2 class="text-2xl text-gray-800 ">
+                            <small>總計約 105/人天</small>
+                            若配置2位後端1位前端工程師同時開發，預估約57日可完成Phase 1開發。
+                        </h2>
+
+                    </section>
+                </div>
+
+            </div>
         </main>
 
     </div>

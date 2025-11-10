@@ -144,7 +144,335 @@
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
         }
+
+        /* 設定動畫 */
+        @keyframes spin-cw {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin-ccw {
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        /* 流程圖通用樣式 */
+        .schedule-card {
+            background-color: #f9fafb;
+            /* bg-gray-50 */
+            padding: 1.5rem;
+            /* p-6 */
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            /* shadow-lg */
+            border: 1px solid #e5e7eb;
+            /* border border-gray-200 */
+            transition: all 0.3s ease-in-out;
+            min-height: 350px;
+        }
+
+        .schedule-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            /* space-x-3 */
+        }
+
+        @media (min-width: 768px) {
+
+            /* md:space-x-6 */
+            .flow-container {
+                gap: 1.5rem;
+            }
+        }
+
+        .flow-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0.75rem;
+            /* p-3 */
+            border-radius: 0.5rem;
+            /* rounded-lg */
+            background-color: white;
+            /* bg-white */
+            border: 1px solid #e5e7eb;
+            /* border border-gray-200 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            /* shadow-sm */
+            transition: all 0.3s ease-in-out;
+            max-width: 120px;
+            min-height: 120px;
+            justify-content: center;
+        }
+
+        .flow-step:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: #93c5fd;
+            /* hover:border-blue-300 */
+        }
+
+        .flow-arrow {
+            flex-shrink: 0;
+        }
+
+        .label {
+            font-size: 0.875rem;
+            /* text-sm */
+            font-weight: 700;
+            /* font-bold */
+            margin-top: 0.5rem;
+            /* mt-2 */
+            color: #374151;
+            /* text-gray-700 */
+        }
+
+        .detail {
+            font-size: 0.75rem;
+            /* text-xs */
+            color: #6b7280;
+            /* text-gray-500 */
+        }
+
+        /* ===================================================
+        1. 齒輪 (Gears)
+    =================================================== */
+        .gear-container {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .gear {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 排程 1 - 順時針旋轉 */
+        .gear-1 .gear {
+            animation: spin-cw 8s linear infinite;
+        }
+
+        /* 排程 2 - 逆時針旋轉 */
+        .gear-2 .gear {
+            animation: spin-ccw 10s linear infinite;
+        }
+
+        /* 使用偽元素創建齒輪的齒 */
+        .gear::before,
+        .gear::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: inherit;
+        }
+
+        .gear::before {
+            width: 120%;
+            /* 擴展寬度 */
+            height: 10%;
+        }
+
+        .gear::after {
+            width: 10%;
+            height: 120%;
+            /* 擴展高度 */
+        }
+
+        /* 旋轉複製以創建更多齒 */
+        .gear-container::before,
+        .gear-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            z-index: 10;
+            background-color: #6366f1;
+            /* indigo-500 */
+            border-radius: 50%;
+        }
+
+        .gear-container.gear-1::before,
+        .gear-container.gear-1::after {
+            animation: spin-cw 8s linear infinite;
+        }
+
+        .gear-container.gear-2::before,
+        .gear-container.gear-2::after {
+            animation: spin-ccw 10s linear infinite;
+        }
+
+        .gear-container::before {
+            width: 120%;
+            height: 10%;
+            box-shadow: 0 0 0 2px white;
+            /* 模擬齒輪的間隙 */
+        }
+
+        .gear-container::after {
+            width: 10%;
+            height: 120%;
+            box-shadow: 0 0 0 2px white;
+            /* 模擬齒輪的間隙 */
+        }
+
+        /* ===================================================
+        2. MongoDB 圖示 (Cylinder Stack)
+    =================================================== */
+        .mongodb-icon {
+            position: relative;
+            width: 48px;
+            /* w-12 */
+            height: 24px;
+            /* h-6 */
+            border: 2px solid #16a34a;
+            /* green-600 */
+            border-radius: 24px 24px 8px 8px;
+            /* rounded-t-full rounded-b-lg */
+            background: linear-gradient(to bottom, #f0fdf4 0%, white 100%);
+            /* green-50 gradient */
+            z-index: 20;
+        }
+
+        .mongodb-icon::before,
+        .mongodb-icon::after {
+            content: '';
+            position: absolute;
+            left: -1px;
+            right: -1px;
+            border: 2px solid #16a34a;
+            /* green-600 */
+            background-color: #22c55e;
+            /* green-500 */
+        }
+
+        .mongodb-icon::before {
+            /* 底部氣球 */
+            top: 100%;
+            height: 12px;
+            border-top: none;
+            border-radius: 0 0 100% 100% / 0 0 50% 50%;
+            /* 模擬橢圓底部 */
+        }
+
+        .mongodb-icon::after {
+            /* 頂部橢圓蓋 */
+            top: -6px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            /* green-500 */
+            z-index: 10;
+            box-shadow: 0 0 0 2px white;
+            /* 讓綠色蓋子更突出 */
+        }
+
+        .mongodb-icon.small {
+            transform: scale(0.8);
+        }
+
+        /* ===================================================
+        3. BigQuery 圖示 (Cube/Database with Q hint)
+    =================================================== */
+        .bigquery-icon {
+            position: relative;
+            width: 48px;
+            /* w-12 */
+            height: 32px;
+            /* h-8 */
+            background-color: white;
+            /* bg-white */
+            border: 2px solid #2563eb;
+            /* blue-600 */
+            border-radius: 4px;
+            box-shadow: inset 0 0 0 1px #dbeafe;
+            /* blue-100 */
+        }
+
+        .bigquery-icon::before {
+            content: 'Q';
+            /* 示意 BigQuery */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            /* text-2xl */
+            font-weight: 900;
+            /* font-black */
+            color: #2563eb;
+            /* text-blue-600 */
+            opacity: 0.8;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bigquery-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            /* h-2 */
+            background-color: #2563eb;
+            /* blue-600 */
+            opacity: 0.2;
+            border-radius: 4px 4px 0 0;
+            /* rounded-t-sm */
+        }
+
+        .bigquery-icon.small {
+            transform: scale(0.8);
+        }
+
+        /* ===================================================
+        4. AI Agent 圖示
+    =================================================== */
+        .ai-icon {
+            width: 48px;
+            /* w-12 */
+            height: 48px;
+            /* h-12 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            /* font-bold */
+            font-size: 0.75rem;
+            /* text-xs */
+            color: #7e22ce;
+            /* purple-700 */
+            background-color: #f3e8ff;
+            /* purple-100 */
+            border-radius: 50%;
+            border: 4px solid #d8b4fe;
+            /* border-purple-300 */
+            box-shadow: 0 4px 6px rgba(126, 34, 206, 0.2);
+            line-height: 1;
+        }
     </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>
@@ -154,7 +482,116 @@
 
     <div class="main-content-wrapper">
         <main id="slide-1" class="slide">
-            
+
+            <div id="pipeline-visualization" class="w-full h-full flex flex-col bg-white p-6 md:p-10 rounded-xl">
+
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">
+                    AI 數據排程自動化流程
+                </h1>
+
+                <div class="flex-grow grid grid-cols-1 gap-8 overflow-y-auto">
+
+                    <div class="schedule-card group">
+                        <h2 class="text-2xl font-extrabold text-indigo-700 mb-4 flex items-center">
+                            排程 1: 商品族群貼標排程
+                        </h2>
+                        <p class="mb-6 text-gray-500">
+                            目標: 自動分類產品與貼上標籤 (e.g., #環保, #高階)。
+                        </p>
+
+                        <div class="flow-container">
+                            <div class="flow-step data-source">
+                                <div class="mongodb-icon"></div>
+                                <span class="label">MongoDB</span>
+                                <span class="detail">未貼標產品</span>
+                            </div>
+
+                            <div class="flow-arrow">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </div>
+
+                            <div class="flow-step ai-agent">
+                                <div class="ai-icon">AI Agent</div>
+                                <span class="label">AI Agent</span>
+                                <span class="detail">貼標與分類</span>
+                            </div>
+
+                            <div class="flow-arrow">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </div>
+
+                            <div class="flow-step data-destination">
+                                <div class="bigquery-icon"></div>
+                                <span class="label">BigQuery</span>
+                                <span class="detail">貼標結果儲存</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-card group">
+                        <h2 class="text-2xl font-extrabold text-indigo-700 mb-4 flex items-center">
+                            排程 2: 行銷受眾包媒合排程
+                        </h2>
+                        <p class="mb-6 text-gray-500">
+                            目標: 建立產品與潛在客戶群的精準媒合包。
+                        </p>
+
+                        <div class="flow-container">
+                            <div class="flow-step split-source" style="max-width: 200px;">
+                                <div class="flex space-x-4 w-full">
+                                    <div class="flex-1 text-center flex flex-col items-center">
+                                        <div class="mongodb-icon small"></div>
+                                        <span class="label">MongoDB</span>
+                                        <span class="detail">產品資料</span>
+                                    </div>
+                                    <div class="flex-1 text-center flex flex-col items-center">
+                                        <div class="bigquery-icon small"></div>
+                                        <span class="label">BigQuery</span>
+                                        <span class="detail">客戶資料</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flow-arrow wide-arrow">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </div>
+
+                            <div class="flow-step ai-agent">
+                                <div class="ai-icon">AI Agent</div>
+                                <span class="label">AI Agent</span>
+                                <span class="detail">產品受眾媒合</span>
+                            </div>
+
+                            <div class="flow-arrow">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                            </div>
+
+                            <div class="flow-step data-destination">
+                                <div class="bigquery-icon"></div>
+                                <span class="label">BigQuery</span>
+                                <span class="detail">受眾包結果回存</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </main>
 
     </div>

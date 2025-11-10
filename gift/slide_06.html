@@ -144,6 +144,18 @@
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
         }
+
+        /* 核心服務卡片統一樣式 */
+        .feature-card {
+            @apply p-6 rounded-xl shadow-md transition duration-300 ease-in-out cursor-pointer;
+            border: 2px solid;
+        }
+        .feature-card:hover {
+            @apply shadow-xl transform scale-[1.02];
+        }
+        .icon-circle {
+            @apply w-14 h-14 rounded-full flex items-center justify-center mb-4;
+        }
     </style>
 </head>
 
@@ -154,7 +166,108 @@
 
     <div class="main-content-wrapper">
         <main id="slide-1" class="slide">
-            
+            <!--
+    投影片 6: 營運人員後台架構 (Operation-Facing)
+    使用簡潔的卡片和顏色區分核心服務與 AI 輔助功能。
+-->
+            <div id="operation-backend-architecture" class="w-full h-full flex flex-col">
+
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-extrabold text-indigo-700 mb-1">
+                        營運人員後台架構 
+                    </h1>
+                    <p class="text-lg text-gray-500 font-light">
+                        核心服務與 AI 輔助
+                    </p>
+                </div>
+
+                <!-- 核心服務區塊 -->
+                <div class="mb-10 p-6 bg-indigo-50 rounded-2xl shadow-lg border-b-4 border-indigo-500">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-8 h-8 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.32 1.02 1.25.13 1.548z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-indigo-700">
+                            核心服務：後台管理系統
+                        </h2>
+                    </div>
+                    <p class="text-md text-gray-700 ml-11">
+                        提供營運人員、客服等角色，進行訂單需求、提案簡報、產品等核心業務管理。
+                    </p>
+                </div>
+
+                <!-- AI 輔助功能區塊 -->
+                <h2 class="text-2xl font-bold text-gray-700 mb-6 border-b-2 border-gray-200 pb-2 flex items-center">
+                    <svg class="w-6 h-6 text-pink-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.21a4.804 4.804 0 00-6.957-6.957L2 10.51l6.84 6.84a4.804 4.804 0 006.957-6.957l1.353-1.353m1.074-.707l-1.354 1.353">
+                        </path>
+                    </svg>
+                    AI 輔助功能
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow">
+
+                    <!-- 提案簡報卡片 -->
+                    <div class="feature-card bg-white hover:bg-pink-50 border-pink-300">
+                        <div class="icon-circle bg-pink-100 text-pink-600">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 12l3-3 3 3 4-4M18 10h-4M7 4h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">提案簡報自動生成</h3>
+                        <p class="text-gray-600">
+                            根據客戶訂單需求內容，自動抓取產品圖文資訊，一鍵生成專業、客製化的提案簡報。
+                        </p>
+                    </div>
+
+                    <!-- 產品上架文案卡片 -->
+                    <div class="feature-card bg-white hover:bg-yellow-50 border-yellow-300">
+                        <div class="icon-circle bg-yellow-100 text-yellow-600">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">產品上架文案輔助</h3>
+                        <p class="text-gray-600">
+                            輔助產品上架時的內容生成，快速補齊詳細規格、描述、優勢等，大幅節省產品經理時間。
+                        </p>
+                    </div>
+
+                    <!-- 產品分類 / 媒合卡片 -->
+                    <div class="feature-card bg-white hover:bg-blue-50 border-blue-300">
+                        <div class="icon-circle bg-blue-100 text-blue-600">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">產品分類與媒合</h3>
+                        <p class="text-gray-600">
+                            自動化處理和分類供應商提供的各種產品數據，確保資料結構化，加速客戶與產品的精準媒合。
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- 投影片編號 -->
+                <div class="text-right text-gray-500 text-sm mt-8">投影片 6 / 13</div>
+
+            </div>
         </main>
 
     </div>
