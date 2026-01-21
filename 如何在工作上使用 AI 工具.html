@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>介紹 .NET 如何在工作上使用 AI 工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --slide-bg: #111111;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-color: #512bd4; /* .NET Purple */
+            --accent-highlight: #00e6c3; /* AI Teal */
+            --code-bg: #1e1e1e;
+            --border-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            margin: 0;
+            padding: 40px 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .slide-container {
+            background-color: var(--slide-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            height: 720px; /* Fixed height for consistency */
+            width: 1280px; /* Fixed width for standard 16:9 feel */
+            overflow: hidden;
+            padding: 50px;
+            position: relative;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        /* Slide Titles */
+        h2.slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin: 0 0 30px 0;
+            border-left: 6px solid var(--accent-color);
+            padding-left: 20px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* Content Areas */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto; /* Allow scrolling if content is too long */
+            padding-right: 10px;
+        }
+        
+        /* Custom Scrollbar */
+        .content-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        .content-area::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        .content-area::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        .content-area::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        /* Text Styling */
+        p, li {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Section Headers in Content */
+        h3.section-header {
+            font-size: 22px;
+            color: var(--accent-highlight);
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        /* Code/Prompt Blocks */
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #d4d4d4;
+            white-space: pre-wrap; /* Preserve original formatting */
+            overflow-x: auto;
+            margin-top: 10px;
+            height: 100%; 
+        }
+
+        /* Layouts */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            height: 100%;
+        }
+
+        /* Slide 1 Specifics */
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a103c 0%, #000 70%);
+            text-align: center;
+        }
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .cover-subtitle {
+            font-size: 28px;
+            color: var(--accent-highlight);
+        }
+
+        /* Numbered Lists style override */
+        ol {
+            padding-left: 25px;
+        }
+        ol li::marker {
+            color: var(--accent-highlight);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: 封面 -->
+    <div class="slide-container cover-slide">
+        <h1 class="cover-title">介紹 .NET 如何在工作上使用 AI 工具</h1>
+        <div class="cover-subtitle">工作流程與架構生成實戰</div>
+    </div>
+
+    <!-- Slide 2: 生成產專案用的規則 Prompt -->
+    <div class="slide-container">
+        <h2 class="slide-title">生成產專案用的規則 Prompt</h2>
+        <div class="content-area">
+            <div style="font-size: 20px; margin-bottom: 20px; font-weight: bold; color: #fff;">
+                標題：請幫我撰寫一份「.NET 專案架構生成器」的系統提示詞
+            </div>
+            
+            <div class="two-column">
+                <div>
+                    <h3 class="section-header">1. 角色設定</h3>
+                    <p>你是一位精通軟體工程與 AI 提示工程的專家。請幫我設計一份「系統提示詞 (System Prompt)」，這份提示詞的對象是另一位 AI（資深 .NET 架構師），目的是讓它能為我搭建一個專業的專案骨架。</p>
+
+                    <h3 class="section-header">2. 專案背景與需求</h3>
+                    <ul>
+                        <li><strong>專案名稱：</strong>HoGift。</li>
+                        <li><strong>技術核心：</strong>.NET 8/9 混合架構 (Web API + MVC)。</li>
+                        <li><strong>資料庫：</strong>使用 MongoDB。</li>
+                        <li><strong>AI 功能整合：</strong>需要整合 Google Gemini API (支援文字/圖片/思維鏈)、Voyage AI 向量計算以及 ONNX Runtime (u2net 影像處理)。</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="section-header">3. 架構設計與設計原則 (關鍵點)</h3>
+                    <p>請在提示詞中強調以下軟體設計原則，以確保程式碼品質：</p>
+                    <ul>
+                        <li><strong>SOLID 原則：</strong>特別是單一職責 (SRP) 與相依注入 (DI)。</li>
+                        <li><strong>設計模式：</strong>
+                            <ul>
+                                <li>使用 Repository Pattern (通用型 Generic BaseRepository) 處理資料存取。</li>
+                                <li>使用 Provider Pattern 封裝外部 AI 服務。</li>
+                                <li>針對多種 LLM 規格（如 Pro/Flash），必須使用 Factory Pattern (工廠模式) 進行動態註冊與切換，並實作相關的決策模式來選擇合適的 Provider。</li>
+                            </ul>
+                        </li>
+                        <li><strong>分層架構：</strong>將方案拆分為 Web、Service、Data、Common 四個層級。</li>
+                    </ul>
+
+                    <h3 class="section-header">4. 具體實作規範</h3>
+                    <p>生成的提示詞必須要求 AI 提供：</p>
+                    <ul>
+                        <li>完整的資料夾結構樹。</li>
+                        <li>Program.cs 的 DI 自動掃描註冊邏輯。</li>
+                        <li>GeminiProvider 的實作範例（支援 Base64 與 ThoughtSignature）。</li>
+                        <li>統一的 API 回傳格式 (Result&lt;T&gt;)。</li>
+                    </ul>
+
+                    <h3 class="section-header">5. 輸出格式</h3>
+                    <p>請將上述需求整理成一份結構清晰、帶有 Markdown 標籤的「產生程式的提示詞」，讓我可以點對點直接複製給其他 AI 使用。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: 初版 Prompt -->
+    <div class="slide-container">
+        <h2 class="slide-title">初版 Prompt 需要人工檢視邏輯後調整</h2>
+        <div class="content-area">
+            <div class="code-block"># Role: Senior .NET Architect & AI Integration Specialist
+你是一位資深的 .NET 軟體架構師，擅長設計高擴展性、易於維護的企業級系統。現在，請為專案「HoGift」建立一個專業的專案骨架。
+
+## 1. 專案技術棧 (Tech Stack)
+- **Framework**: .NET 8/9 (Web API 與 MVC 混合架構)
+- **Database**: MongoDB (使用 MongoDB.Driver)
+- **AI Integrations**: 
+  - Google Gemini API (Text/Image/CoT)
+  - Voyage AI (Embedding/Vectorization)
+  - ONNX Runtime (u2net 影像處理)
+
+## 2. 核心架構與設計原則
+請嚴格遵守以下設計規範進行程式碼生成：
+- **SOLID 原則**: 強調單一職責 (SRP) 與介面隔離。
+- **分層架構 (Layered Architecture)**: 
+  - `HoGift.Web`: 控制器、View 與 API 入口。
+  - `HoGift.Service`: 商業邏輯、AI Provider 具體實作。
+  - `HoGift.Data`: MongoDB 實體、Repository 實作。
+  - `HoGift.Common`: 共用 DTOs, Result Wrapper, Utils, Exceptions。
+- **設計模式**:
+  - **Generic Repository Pattern**: 實作 `IBaseRepository<T>`。
+  - **Provider Pattern**: 封裝 AI 外部通訊邏輯。
+  - **Factory Pattern**: 針對多種 LLM 規格（如 Gemini Pro/Flash）實作 `LLMProviderFactory`。需支援動態註冊，並根據輸入參數（如成本考量或模型功能）選擇合適的 Provider。
+
+## 3. 具體實作要求
+請輸出以下內容：
+
+### A. 方案資料夾結構 (Folder Structure)
+請以 Tree 格式展示專案結構，包含 .sln 與各層級主要資料夾。
+
+### B. 資料存取層 (Data Layer)
+- 提供 `BaseRepository<T>` 的 MongoDB 實作範例，包含基本 CRUD。
+
+### C. AI Provider 模式實作 (AI Service Layer)
+- **Interface**: 定義 `ILLMProvider` 包含 `GenerateContentAsync` 方法。
+- **GeminiProvider**: 實作應支援：
+  - Base64 圖片輸入。
+  - 思維鏈 (Chain of Thought/ThoughtSignature) 處理。
+- **Factory**: 實作 `LLMFactory` 與相關決策模式 (Decision Logic)，用於切換 Pro/Flash 版本。
+
+### D. 基礎設施與 DI 註冊
+- **Program.cs**: 實作 Reflection-based 或 Fluent 方式的 DI 自動掃描註冊邏輯。
+- **Result<T>**: 定義一個統一的 API 回傳包裝類別。
+
+## 4. 輸出限制
+- 程式碼必須符合 C# 12+ 語法特性 (例如 Primary Constructors, File-scoped namespaces)。
+- 必須包含適當的註解說明架構意圖。
+- 專注於架構骨架與核心組件，非必要邏輯可使用 // TODO 標記。
+
+請開始為「HoGift」專案生成架構說明與程式碼。</div>
+        </div>
+    </div>
+
+    <!-- Slide 4: 修改好的 Prompt -->
+    <div class="slide-container">
+        <h2 class="slide-title">修改好的 Prompt</h2>
+        <div class="content-area">
+            <div class="code-block"># Role
+你是一個資深的 .NET Core 架構師與全端開發者。
+
+# Task
+請依照以下的架構規範、技術堆疊與資料夾結構，為我建立一個的 .NET 10 Web API + MVC 混合架構專案。
+專案名稱為：**HoGift** (Solution Name)
+
+# Tech Stack & Requirements
+1. **Framework**: .NET 10 (or .NET 8)
+2. **Type**: Web API + MVC (Hybrid)
+3. **Database**: MongoDB (使用 MongoDB.Driver)
+4. **AI Integration**: Google Gemini API, Voyage AI (Embedding), ONNX Runtime (u2net)
+5. **DI Container**: Microsoft.Extensions.DependencyInjection
+6. **Generic Patterns**:
+   - **Repository Pattern**: 實作 Generic BaseRepository
+   - **Service Pattern**: 業務邏輯層封裝
+   - **Provider Pattern**: 外部服務 (如 LLM, AI) 封裝
+7. **Libraries**: AutoMapper, Swagger (Swashbuckle), Serilog (Optional)
+
+# Project Structure (Solution Break down)
+請建立以下 4 個專案 (Projects)：
+
+## 1. HoGift (Web/API Entry)
+- 類型：ASP.NET Core Web App (Model-View-Controller)
+- 職責：進入點，負責 Controller, DI 註冊, Configuration, UI Views
+- 資料夾結構：
+  - /Areas (功能模組化)
+  - /Controllers (API 與 View Controllers)
+  - /Filters (全域或特定過濾器)
+  - /Models (ViewModel)
+  - /Utils (工具類)
+  - /Views (Razor Views)
+  - /wwwroot (靜態資源)
+  - Program.cs (包含所有 DI 註冊、Swagger、Middleware 設定)
+  - appsettings.json (包含 MongoDB, LlmSettings, VoyageAi 等設定區段)
+
+## 2. HoGift.Service (Business Logic Layer)
+- 類型：Class Library
+- 職責：處理核心業務邏輯、整合外部 AI 服務
+- 資料夾結構：
+  - /AutoMapperProfile (AutoMapper 定義)
+  - /Dtos (資料傳輸物件)
+    - /Llm (AI 相關 DTO)
+    - /VisualDirector (視覺處理相關 DTO)
+  - /Foundations (基礎設施封裝)
+    - /Providers (外部服務提供者，例如 GeminiProvider)
+  - /Handlers (複雜邏輯處理器)
+  - /Interface (Service 介面定義)
+  - /Services (Service 實作，例如 ImageVibeService, SupplyService)
+
+## 3. HoGift.Data (Data Access Layer)
+- 類型：Class Library
+- 職責：資料庫存取、實體定義
+- 資料夾結構：
+  - /Entities (MongoDB 實體模型，繼承 MongoBase)
+  - /Infrastructure (基礎建設)
+    - /Repositories (Repository 實作)
+    - /Services (DB 相關服務)
+  - /Interfaces (Repository 與 DB 介面)
+    - IRepository<T>.cs
+    - IVectorEmbeddingService.cs (向量服務介面)
+
+## 4. HoGift.Common (Shared Layer)
+- 類型：Class Library
+- 職責：共用的 Enums, Helper, Constants, Configuration Models
+- 資料夾結構：
+  - /Configuration (設定檔對應類別，如 MongoDbSettings, LlmSettings)
+  - /Enums (列舉，如 LlmOption, EffectifyType)
+  - /Helpers (共用輔助方法)
+
+# Key Implementation Details (必須包含的實作細節)
+1. **Program.cs 設定**：
+   - 必須使用 `builder.Services.Configure<T>` 綁定 appsettings。
+   - 實作 `builder.Services.Scan` 自動註冊 Repositories。
+   - 註冊 `HttpClient` 用於 Gemini 與 Voyage AI。
+   - 註冊 Singleton `InferenceSession` (ONNX)。
+   - 使用 Factory Pattern 註冊多種 `ILlmProvider` (針對 Gemini Pro/Flash/Vision)。
+2. **GeminiProvider 實作**：
+   - 必須實作 `ILlmProvider` 介面。
+   - 支援文字與圖片輸入 (Base64)。
+   - 支援 `ThoughtSignature` (Gemini 思維鏈)。
+3. **MongoDB Repository**：
+   - 實作 Generic Repository 模式，支援基本的 CRUD。
+4. **API 規範**：
+   - Controller 回傳統一使用 `Result<T>` 包裝。
+   - 使用 `ReferenceHandler.IgnoreCycles` 避免 JSON 迴圈參考。
+
+請先生成完整的資料夾目錄結構樹
+，接著針對 Program.cs、
+GeminiProvider.cs 
+以及基礎的 `IRepository` 和 `BaseRepository` 提供程式碼範例。</div>
+        </div>
+    </div>
+
+</body>
+</html>
