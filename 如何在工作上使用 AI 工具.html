@@ -8,6 +8,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Mermaid JS for rendering the diagram -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+    </script>
+
     <style>
         :root {
             --bg-color: #050505;
@@ -99,6 +106,18 @@
             font-weight: 600;
         }
 
+        a {
+            color: var(--accent-highlight);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent-highlight);
+            transition: color 0.3s;
+        }
+        
+        a:hover {
+            color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+
         /* Section Headers in Content */
         h3.section-header {
             font-size: 22px;
@@ -153,6 +172,19 @@
             color: var(--accent-highlight);
         }
 
+        /* Mermaid container specifics */
+        .mermaid-wrapper {
+            background-color: #161616;
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            height: 100%;
+            overflow: hidden;
+        }
+        
         /* Numbered Lists style override */
         ol {
             padding-left: 25px;
@@ -376,6 +408,132 @@
 ，接著針對 Program.cs、
 GeminiProvider.cs 
 以及基礎的 `IRepository` 和 `BaseRepository` 提供程式碼範例。</div>
+        </div>
+    </div>
+
+    <!-- Slide 5: 資料流架構圖 -->
+    <div class="slide-container">
+        <h2 class="slide-title">資料流架構圖</h2>
+        <div class="content-area">
+            <p style="margin-bottom: 25px;">
+                透過 Mermaid 生成架構圖，將複雜的依賴關係與資料流向視覺化。<br>
+                工具推薦：<a href="https://www.processon.io/mermaid/" target="_blank">ProcessOn Mermaid Editor</a>
+            </p>
+
+            <div class="two-column" style="grid-template-columns: 1fr 1.6fr;">
+                <!-- Left: Mermaid Code Source -->
+                <div class="code-block" style="font-size: 13px;">graph LR
+    %% 節點定義
+    User([使用者/客戶端])
+    
+    subgraph HoGift_Web [HoGift.Web - 進入點]
+        Controller[Controllers / Areas]
+        DI_Container[DI Container / Program.cs]
+        Filter[Filters / Result Filter]
+    end
+
+    subgraph HoGift_Service [HoGift.Service]
+        Svc[Business Services]
+        Factory[LLM Provider Factory]
+        Gemini[Gemini Provider]
+        Voyage[Voyage AI Provider]
+        ONNX[ONNX / u2net Session]
+    end
+
+    subgraph HoGift_Data [HoGift.Data]
+        Repo[Generic BaseRepository]
+        Mongo[(MongoDB)]
+    end
+
+    %% 資料流向
+    User -->|HTTP Request| Controller
+    Controller -.->|Lookup| DI_Container
+    Controller --> Svc
+    
+    %% AI 與外部服務流向
+    Svc --> Factory
+    Factory -->|Select| Gemini
+    Factory -->|Select| Voyage
+    Svc -->|Load Model| ONNX
+    
+    Gemini <-->|JSON/Base64/CoT| Google_Gemini[[Google Gemini API]]
+    Voyage <-->|Embeddings| Voyage_API[[Voyage AI API]]
+    
+    %% 資料持久化流向
+    Svc --> Repo
+    Repo <--> Mongo
+    
+    %% 回傳流向
+    Svc -->|Data/Result| Controller
+    Controller -->|Result T| Filter
+    Filter -->|Unified JSON Response| User
+
+    %% 樣式美化
+    style HoGift_Web fill:#2d1b4e,stroke:#7c4dff,stroke-width:2px
+    style HoGift_Service fill:#1a3c34,stroke:#00e6c3,stroke-width:2px
+    style HoGift_Data fill:#0f2e1a,stroke:#2e7d32,stroke-width:2px
+    style Google_Gemini fill:#202124,stroke:#4285F4,stroke-width:2px
+    style Voyage_API fill:#202124,stroke:#aaa,stroke-width:2px</div>
+
+                <!-- Right: Rendered Diagram -->
+                <div class="mermaid-wrapper">
+                    <!-- The class "mermaid" triggers the JS rendering -->
+                    <div class="mermaid">
+                        graph LR
+                            %% 節點定義
+                            User([使用者/客戶端])
+                            
+                            subgraph HoGift_Web [HoGift.Web - 進入點]
+                                Controller[Controllers / Areas]
+                                DI_Container[DI Container / Program.cs]
+                                Filter[Filters / Result Filter]
+                            end
+
+                            subgraph HoGift_Service [HoGift.Service]
+                                Svc[Business Services]
+                                Factory[LLM Provider Factory]
+                                Gemini[Gemini Provider]
+                                Voyage[Voyage AI Provider]
+                                ONNX[ONNX / u2net Session]
+                            end
+
+                            subgraph HoGift_Data [HoGift.Data]
+                                Repo[Generic BaseRepository]
+                                Mongo[(MongoDB)]
+                            end
+
+                            %% 資料流向
+                            User -->|HTTP Request| Controller
+                            Controller -.->|Lookup| DI_Container
+                            Controller --> Svc
+                            
+                            %% AI 與外部服務流向
+                            Svc --> Factory
+                            Factory -->|Select| Gemini
+                            Factory -->|Select| Voyage
+                            Svc -->|Load Model| ONNX
+                            
+                            Gemini <-->|JSON/Base64/CoT| Google_Gemini[[Google Gemini API]]
+                            Voyage <-->|Embeddings| Voyage_API[[Voyage AI API]]
+                            
+                            %% 資料持久化流向
+                            Svc --> Repo
+                            Repo <--> Mongo
+                            
+                            %% 回傳流向
+                            Svc -->|Data/Result| Controller
+                            Controller -->|Result T| Filter
+                            Filter -->|Unified JSON Response| User
+
+                            %% 樣式美化
+                            style HoGift_Web fill:#2d1b4e,stroke:#7c4dff,stroke-width:2px
+                            style HoGift_Service fill:#1a3c34,stroke:#00e6c3,stroke-width:2px
+                            style HoGift_Data fill:#0f2e1a,stroke:#2e7d32,stroke-width:2px
+                            style Google_Gemini fill:#202124,stroke:#4285F4,stroke-width:2px
+                            style Voyage_API fill:#202124,stroke:#aaa,stroke-width:2px
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
