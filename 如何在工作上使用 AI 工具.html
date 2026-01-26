@@ -15,6 +15,16 @@
         mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
     </script>
 
+    <!-- Tailwind CSS for the specific table slide (configured to not reset existing styles) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: {
+                preflight: false, // Disable preflight to avoid conflict with existing slide styles
+            }
+        }
+    </script>
+
     <style>
         :root {
             --bg-color: #050505;
@@ -201,6 +211,25 @@
     <div class="slide-container cover-slide">
         <h1 class="cover-title">介紹 .NET 如何在工作上使用 AI 工具</h1>
         <div class="cover-subtitle">工作流程與架構生成實戰</div>
+    </div>
+
+    <!-- Slide 1.5: 引言 -->
+    <div class="slide-container cover-slide">
+        <div style="max-width: 960px; text-align: center;">
+            <i class="fa-solid fa-quote-left" style="font-size: 60px; color: var(--accent-highlight); margin-bottom: 40px; opacity: 0.8;"></i>
+            
+            <h2 style="font-size: 48px; font-weight: 700; line-height: 1.5; color: #fff; margin: 0 0 50px 0;">
+                "未來的開發者，將不再只是 <span style="color: var(--accent-highlight); border-bottom: 2px solid var(--accent-highlight);">Coding</span> 的人，<br>
+                而是懂得定義 <span style="color: var(--accent-color); border-bottom: 2px solid var(--accent-color);">背景脈絡</span> 與 <span style="color: var(--accent-color); border-bottom: 2px solid var(--accent-color);">精準制定規則</span> 的人。"
+            </h2>
+            
+            <div style="border-top: 1px solid #444; padding-top: 30px; display: inline-block; width: 80%;">
+                <p style="font-size: 24px; color: var(--text-secondary); margin: 0;">
+                    透過精準的 <strong style="color: #e0e0e0;">Prompt Engineering</strong>，<br>
+                    將抽象的架構思維，快速轉化為實作骨架。
+                </p>
+            </div>
+        </div>
     </div>
 
     <!-- Slide 2: 生成產專案用的規則 Prompt -->
@@ -534,6 +563,366 @@ GeminiProvider.cs
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: 前後比較 (效益分析) -->
+    <div class="slide-container cover-slide">
+        <h2 style="font-size: 42px; color: #fff; margin-bottom: 40px; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px;">
+            導入效益：AI 輔助前後比較
+        </h2>
+        
+        <div style="display: flex; gap: 60px; width: 100%; align-items: center; justify-content: center;">
+            
+            <!-- Left: Chart Area -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 30px; max-width: 600px;">
+                
+                <!-- Traditional Item -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 20px; color: var(--text-secondary);">
+                        <span>傳統開發流程</span>
+                        <span>約 18 天</span>
+                    </div>
+                    <div style="width: 100%; height: 40px; background: #333; border-radius: 20px; overflow: hidden;">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #555, #777);"></div>
+                    </div>
+                </div>
+
+                <!-- AI Assisted Item -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 20px; color: #fff; font-weight: bold;">
+                        <span>AI 輔助開發</span>
+                        <span style="color: var(--accent-highlight);">約 14 天</span>
+                    </div>
+                    <div style="width: 100%; height: 40px; background: #333; border-radius: 20px; overflow: hidden; position: relative;">
+                        <div style="width: 78%; height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--accent-highlight));"></div>
+                        <!-- Reduction Marker -->
+                        <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 22%; background: repeating-linear-gradient(45deg, transparent, transparent 10px, #444 10px, #444 20px); border-left: 2px dashed #fff;"></div>
+                    </div>
+                    <div style="text-align: right; margin-top: 5px; color: var(--accent-highlight); font-size: 14px;">
+                        <i class="fa-solid fa-arrow-trend-down"></i> 節省時間
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right: Big Stats -->
+            <div style="flex: 0.6; display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; border: 1px solid var(--border-color);">
+                <div style="font-size: 20px; color: var(--text-secondary); margin-bottom: 10px;">總工時減少</div>
+                <div style="font-size: 80px; font-weight: 800; color: var(--accent-highlight); line-height: 1;">
+                    4 <span style="font-size: 30px;">天</span>
+                </div>
+                <div style="font-size: 32px; color: #fff; margin-top: 10px; font-weight: bold; background: var(--accent-color); padding: 5px 20px; border-radius: 50px;">
+                    <i class="fa-solid fa-bolt"></i> 22% 效率提升
+                </div>
+                <div style="margin-top: 30px; text-align: center; color: var(--text-secondary); font-size: 16px;">
+                    將時間從「重複造輪子」<br>轉移至「核心邏輯設計」
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Slide 6.5: 詳細數據圖表 (Tailwind Table) -->
+    <div class="slide-container">
+        <h2 class="slide-title">詳細數據圖表</h2>
+        <div class="content-area">
+            
+            <!-- 
+               Wrapper for light-themed Tailwind content:
+               1. bg-gray-100: Create a light paper-like background
+               2. text-gray-900: Reset text color to dark for readability within this block
+               3. p-8: Inner padding
+            -->
+            <div class="bg-gray-100 p-8 rounded-lg text-gray-900 h-full overflow-y-auto">
+                <div class="mb-8 text-center sm:text-left">
+                    <h1 class="text-3xl font-bold text-gray-900">開發流程效率比較表</h1>
+                    <p class="mt-2 text-sm text-gray-600">傳統開發 vs AI 輔助開發流程對照與時間分析</p>
+                </div>
+
+                <!-- 表格容器 -->
+                <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+                    
+                    <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal table-fixed border-collapse">
+                    <thead>
+                        <tr class="bg-gray-800 text-white border-b-2 border-gray-600">
+                            <!-- 定義欄位寬度與標題 -->
+                            <th class="w-20 px-4 py-4 text-center text-sm font-bold uppercase tracking-wider border-r border-gray-600">
+                                所需時間
+                            </th>
+                            <th class="w-5/12 px-5 py-4 text-left text-sm font-bold uppercase tracking-wider border-r border-gray-600">
+                                未使用 AI
+                            </th>
+                            <th class="w-5/12 px-5 py-4 text-left text-sm font-bold uppercase tracking-wider border-r border-gray-600 bg-blue-900">
+                                使用 AI
+                            </th>
+                            <th class="w-20 px-4 py-4 text-center text-sm font-bold uppercase tracking-wider bg-blue-900">
+                                所需時間
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        
+                        <!-- Group 1: 需求與架構 -->
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側時間 (合併 3 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="3">
+                                1
+                            </td>
+                            <!-- 左側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                1. 理解需求後在腦中或筆記上打初步草稿
+                            </td>
+                            <!-- 右側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                理解需求後在腦中或筆記上打初步草稿
+                            </td>
+                            <!-- 右側時間 (合併 3 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20" rowspan="3">
+                                1
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b border-gray-100">
+                            <!-- 左側內容 2 (合併原本的架構圖兩格) -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top" rowspan="2">
+                                2. 畫架構圖<br>
+                                <span class="text-xs text-gray-500 font-mono mt-1 block pl-4 text-gray-400">User &gt; Web &gt; DB…</span>
+                            </td>
+                            <!-- 右側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                將需求生成系統提示詞，人工調整
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 右側內容 3 -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top">
+                                將系統提示詞透過 LLM 生成<br>
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mt-1">Cursor Rules (AI Readme)</span>
+                            </td>
+                        </tr>
+
+                        <!-- Group 2: 基礎架構開發 -->
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="2">
+                                2
+                            </td>
+                            <!-- 左側內容 -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top" rowspan="2">
+                                開啟 IDE，建立基礎架構 <span class="text-gray-400 text-xs">(專案結構或資料夾…等)</span><br>
+                                <ul class="list-disc list-inside text-gray-500 mt-2 space-y-1 pl-1">
+                                    <li>我的多層架構要拆哪幾層?</li>
+                                    <li>每一層底下還有沒有要拆?</li>
+                                </ul>
+                            </td>
+                            <!-- 右側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                反覆調整<br>
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mt-1">Cursor Rules (AI Readme)</span>
+                            </td>
+                            <!-- 右側時間 (單獨) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20 border-b border-blue-100">
+                                1
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 右側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top">
+                                AI 生成基礎架構 <span class="font-bold text-blue-700">(70%)</span>
+                            </td>
+                            <!-- 右側時間 (單獨) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20">
+                                3
+                            </td>
+                        </tr>
+
+                        <!-- Group 3: API 與介面規劃 -->
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="2">
+                                3
+                            </td>
+                            <!-- 左側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                API 與介面規劃：
+                                <ul class="list-disc list-inside text-gray-500 mt-1 pl-1">
+                                    <li>我有哪些 API 要開發?</li>
+                                    <li>我需要規劃多少介面?</li>
+                                    <li>實際撰寫介面</li>
+                                </ul>
+                            </td>
+                            <!-- 右側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                人工 Code Review，整理出要調整的部分
+                            </td>
+                            <!-- 右側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20" rowspan="2">
+                                2
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top">
+                                <span class="text-gray-500">過程中發現有遺漏的結構要補上</span>
+                            </td>
+                            <!-- 右側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top">
+                                逐項與 AI 反覆溝通進行調整 <span class="font-bold text-blue-700">(80%)</span>
+                            </td>
+                        </tr>
+
+                        <!-- Group 4: 實作與局部測試 -->
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側時間 (合併 3 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="3">
+                                7
+                            </td>
+                            <!-- 左側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                開始實作每個介面
+                            </td>
+                            <!-- 右側內容 1 (空白) -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top"></td>
+                            <!-- 右側時間 (合併 3 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20" rowspan="3">
+                                4
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b border-gray-100">
+                            <!-- 左側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                每完成一小部分進行局部測試
+                            </td>
+                            <!-- 右側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                人工介入調整 <span class="font-bold text-blue-700">(90%)</span>
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側內容 3 -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top text-gray-500">
+                                測試後發現異常或結構設計不良，修正或調整結構
+                            </td>
+                            <!-- 右側內容 3 (空白) -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top"></td>
+                        </tr>
+
+                        <!-- Group 5: 組裝測試 -->
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="2">
+                                3
+                            </td>
+                            <!-- 左側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                組裝 API 及組裝後測試
+                            </td>
+                            <!-- 右側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top">
+                                測試後調整 <span class="font-bold text-blue-700">(95%)</span>
+                            </td>
+                            <!-- 右側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20" rowspan="2">
+                                2
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top text-gray-500">
+                                測試後修正或微調
+                            </td>
+                            <!-- 右側內容 2 (空白) -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top"></td>
+                        </tr>
+
+                        <!-- Group 6: 前端串接 -->
+                        <tr class="bg-white">
+                            <!-- 左側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-gray-600 border-r border-gray-200 bg-gray-50" rowspan="2">
+                                2
+                            </td>
+                            <!-- 左側內容 1 -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-gray-100 align-top">
+                                提供給前端工程師串接
+                            </td>
+                            <!-- 右側內容 1 (空白) -->
+                            <td class="px-5 py-3 border-r border-gray-200 border-b border-blue-50 bg-blue-50/10 align-top"></td>
+                            <!-- 右側時間 (合併 2 列) -->
+                            <td class="px-2 py-4 text-center font-mono text-xl font-bold text-blue-600 bg-blue-50/20" rowspan="2">
+                                1
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b-2 border-gray-300">
+                            <!-- 左側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 align-top">
+                                串接使反饋微調
+                            </td>
+                            <!-- 右側內容 2 -->
+                            <td class="px-5 py-3 border-r border-gray-200 bg-blue-50/10 align-top">
+                                串接使反饋微調 <span class="font-bold text-blue-700">(100%)</span>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                    <!-- Footer / Total -->
+                    <tfoot>
+                        <tr class="bg-gray-900 text-white">
+                            <td class="px-2 py-4 text-center font-bold text-2xl border-r border-gray-700">18</td>
+                            <td class="px-5 py-4 font-bold text-right border-r border-gray-700">
+                                總計時間 (未導入 AI)
+                            </td>
+                            <td class="px-5 py-4 font-bold text-right border-r border-gray-700 bg-blue-900">
+                                總計時間 (導入 AI)
+                            </td>
+                            <td class="px-2 py-4 text-center font-bold text-2xl bg-blue-900 text-yellow-400">14</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- 底部備註 -->
+            <div class="px-5 py-4 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500">
+                <span>單位：工時 (天/小時)</span>
+                <span class="mt-2 sm:mt-0 font-medium text-gray-700">開發效率提升約 22%</span>
+            </div>
+        </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: 結論 -->
+    <div class="slide-container cover-slide" style="background: radial-gradient(circle at center, #1a103c 0%, #000 70%);">
+        <h2 style="font-size: 56px; margin-bottom: 50px; text-align: center; background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            結論：擁抱 AI，定義未來
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; width: 100%; max-width: 1100px;">
+            
+            <div style="background: #1e1e1e; padding: 30px; border-radius: 12px; border-top: 4px solid var(--accent-highlight); text-align: center;">
+                <i class="fa-solid fa-rocket" style="font-size: 40px; color: var(--accent-highlight); margin-bottom: 20px;"></i>
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 24px;">加速器，非替代品</h3>
+                <p style="font-size: 16px;">AI 處理繁瑣的「制式化程式碼」，讓開發者專注於架構決策與商業價值。</p>
+            </div>
+
+            <div style="background: #1e1e1e; padding: 30px; border-radius: 12px; border-top: 4px solid var(--accent-color); text-align: center;">
+                <i class="fa-solid fa-code" style="font-size: 40px; color: var(--accent-color); margin-bottom: 20px;"></i>
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 24px;">Prompt 即程式碼</h3>
+                <p style="font-size: 16px;">學會精準描述「背景脈絡」與 「精準制定規則」，是新世代開發者的核心競爭力。</p>
+            </div>
+
+            <div style="background: #1e1e1e; padding: 30px; border-radius: 12px; border-top: 4px solid #fff; text-align: center;">
+                <i class="fa-solid fa-user-check" style="font-size: 40px; color: #fff; margin-bottom: 20px;"></i>
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 24px;">人為審查至關重要</h3>
+                <p style="font-size: 16px;">AI 會犯錯。資深工程師的價值在於具備「判斷」與「修正」AI 產出的能力。</p>
+            </div>
+
+        </div>
+
+        <div style="margin-top: 60px; color: var(--text-secondary); font-size: 20px;">
+            Thank you!
         </div>
     </div>
 
