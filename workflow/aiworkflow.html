@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 驅動敏捷工作流簡報</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/dracula.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        .workflow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .card {
+            background: #282a36;
+            border: 2px solid #6272a4;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-align: left;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #8be9fd;
+        }
+        .card h4 {
+            font-size: 0.9em !important;
+            color: #ff79c6;
+            margin-bottom: 15px !important;
+            border-bottom: 1px solid #44475a;
+            padding-bottom: 5px;
+        }
+        .card p {
+            font-size: 0.6em !important;
+            color: #f8f8f2;
+            line-height: 1.4;
+            margin: 0;
+        }
+        /* Button style for expanding content */
+        .expand-btn {
+            background: #44475a;
+            color: #50fa7b;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.55em;
+            margin-top: 10px;
+            cursor: pointer;
+            border: 1px solid #6272a4;
+            transition: all 0.2s;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .expand-btn:hover {
+            background: #50fa7b;
+            color: #282a36;
+        }
+        .arrow {
+            font-size: 2em;
+            color: #bd93f9;
+            animation: pulse 2s infinite;
+        }
+        .role-badge {
+            background: #ffb86c;
+            color: #282a36;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .output-list {
+            font-size: 0.7em !important;
+            text-align: left;
+            margin-top: 20px;
+            color: #8be9fd;
+        }
+        .ref-link {
+            font-size: 0.5em !important;
+            color: #6272a4 !important;
+            text-decoration: underline;
+            word-break: break-all;
+            display: block;
+            margin-top: 10px;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #282a36;
+            border: 2px solid #bd93f9;
+            width: 80%;
+            max-width: 800px;
+            height: 80%;
+            padding: 30px;
+            border-radius: 10px;
+            overflow-y: auto;
+            position: relative;
+            color: #f8f8f2;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            font-size: 0.6em;
+            line-height: 1.5;
+            box-shadow: 0 0 20px rgba(189, 147, 249, 0.4);
+            text-align: left;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5em;
+            color: #ff5555;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .close-btn:hover {
+            color: #ffb86c;
+        }
+        .modal-title {
+            color: #8be9fd;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #6272a4;
+            padding-bottom: 10px;
+            display: block;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+        
+        /* Scrollbar for modal */
+        .modal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #282a36; 
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #44475a; 
+            border-radius: 5px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #6272a4; 
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Cover -->
+            <section>
+                <h1>AI 驅動敏捷工作流</h1>
+                <h3>從商業概念到程式碼實作的標準化路徑</h3>
+                <div style="margin-top: 50px; border-top: 1px solid #6272a4; padding-top: 20px;">
+                    <p style="font-size: 0.8em; color: #8be9fd;">流程架構規劃報告</p>
+                    <p style="font-size: 0.6em; color: #bd93f9;">角色：老闆 · PM · TPM · 工程師</p>
+                </div>
+            </section>
+
+            <!-- Slide 2: PM Workflow -->
+            <section>
+                <div class="role-badge">Phase 1: 概念具象化</div>
+                <h3>PM (產品經理)</h3>
+                <p style="font-size: 0.7em;">將老闆的模糊想法轉化為結構化 PRD</p>
+                
+                <div class="workflow-container">
+                    <!-- Input Card -->
+                    <div class="card">
+                        <h4>🎯 Input (輸入)</h4>
+                        <p>老闆的想法 / 會議雜記</p>
+                        <button class="expand-btn" onclick="openModal('file-pm-prompt')">
+                            📄 Step1N1_PM_Prompt.md
+                        </button>
+                    </div>
+
+                    <div class="arrow">➜</div>
+
+                    <!-- AI Process -->
+                    <div style="text-align: center; color: #ffb86c; font-size: 0.6em;">
+                        Gemini<br>Processing
+                    </div>
+
+                    <div class="arrow">➜</div>
+
+                    <!-- Output Card -->
+                    <div class="card" style="border-color: #50fa7b;">
+                        <h4 style="color: #50fa7b;">📄 Output (產出)</h4>
+                        <p>結構化產品需求初稿</p>
+                        <button class="expand-btn" onclick="openModal('file-pm-prd')">
+                            📊 Step1N2_PRD_初稿.pdf
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: TPM Workflow -->
+            <section>
+                <div class="role-badge" style="background: #bd93f9; color: white;">Phase 2: 需求轉譯與拆解</div>
+                <h3>TPM (技術專案經理)</h3>
+                <p style="font-size: 0.7em;">將 PRD 轉化為嚴謹的邏輯規格書</p>
+
+                <div class="workflow-container">
+                    <!-- Input Card -->
+                    <div class="card">
+                        <h4>📂 Input (輸入)</h4>
+                        <p>PM 產出的 PRD 文件</p>
+                        <button class="expand-btn" onclick="openModal('file-pm-prd')">
+                            📊 Step1N2_PRD_初稿.pdf
+                        </button>
+                        <div style="margin-top:5px;"></div>
+                        <button class="expand-btn" style="color: #ff79c6; border-color: #ff79c6;" onclick="openModal('file-tpm-prompt')">
+                            📄 Step2N1_TPM_Prompt.md
+                        </button>
+                    </div>
+
+                    <div class="arrow">➜</div>
+
+                    <div style="text-align: center; color: #ffb86c; font-size: 0.6em;">
+                        Gemini<br>Logic Check
+                    </div>
+
+                    <div class="arrow">➜</div>
+
+                    <!-- Output Card -->
+                    <div class="card" style="border-color: #50fa7b;">
+                        <h4 style="color: #50fa7b;">⚙️ Output (產出)</h4>
+                        <p>功能邏輯與驗收標準</p>
+                        <button class="expand-btn" onclick="openModal('file-tpm-spec')">
+                            📋 Step2N2_邏輯規格書.pdf
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 4: Engineer Workflow -->
+            <section>
+                <div class="role-badge" style="background: #ff5555; color: white;">Phase 3: 實作與生成</div>
+                <h3>工程師 (Engineer)</h3>
+                <p style="font-size: 0.7em;">根據邏輯規格，生成可執行的程式碼骨架</p>
+
+                <div class="workflow-container" style="align-items: flex-start;">
+                    <!-- Input Card -->
+                    <div class="card">
+                        <h4>🛠 Input & Reference</h4>
+                        <p>TPM 的邏輯規格書</p>
+                        <button class="expand-btn" onclick="openModal('file-tpm-spec')">
+                            📋 Step2N2_邏輯規格書.pdf
+                        </button>
+                        
+                        <p style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">參考工作流：</p>
+                        <a href="https://allenyjs.github.io/allenyjs/%E5%A6%82%E4%BD%95%E5%9C%A8%E5%B7%A5%E4%BD%9C%E4%B8%8A%E4%BD%BF%E7%94%A8%20AI%20%E5%B7%A5%E5%85%B7.html" target="_blank" class="ref-link">
+                            如何在工作上使用 AI 工具 (.NET/Cursor 實戰)
+                        </a>
+                    </div>
+
+                    <div class="arrow" style="margin-top: 50px;">➜</div>
+
+                    <!-- Output Card -->
+                    <div class="card" style="border-color: #8be9fd; width: 350px;">
+                        <h4 style="color: #8be9fd;">💻 Output (程式碼骨架)</h4>
+                        <ul class="output-list" style="margin-left: 20px;">
+                            <li><strong>MongoDB Schema</strong><br><span style="color:#6272a4">(Entities, Collections)</span></li>
+                            <li><strong>API Interface</strong><br><span style="color:#6272a4">(Controllers, DTOs, Routes)</span></li>
+                            <li><strong>Service Logic</strong><br><span style="color:#6272a4">(Business Rules Implementation)</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="fileModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal(event)">×</span>
+            <div id="modalTitle" class="modal-title">File Content</div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Hidden Data Storage for File Contents -->
+    <div id="file-pm-prompt" style="display:none;">
+# Role (角色設定)
+你是一位擁有戰略思維的資深產品經理 (Product Manager)。
+你擅長將模糊的商業點子或會議記錄，轉化為結構清晰、具備商業價值的「產品需求文件 (PRD)」。
+
+# Task (任務)
+請根據我提供的 **[老闆想法 /要解決的問題 / 會議雜記]**，幫我撰寫一份產品企劃初稿 (One-Pager PRD)。
+
+# Input Context (輸入資訊)
+**原始想法內容**：
+"""
+[在此貼上老闆的想法、語音轉文字、或會議記錄]
+"""
+
+# Output Requirements (輸出要求 - 請使用 Markdown)
+
+## 1. 產品摘要 (Product Summary)
+* **這是什麼產品**：用簡單的一句話描述這是什麼產品。
+* **解決什麼問題 (Pain Points)**：列出我們試圖解決的 3 個核心痛點。
+* **目標客群 (Target Audience)**：誰會買單？誰是主要使用者？
+
+## 2. 功能範圍與優先級 (Feature Scope - MoSCoW)
+請根據原始想法，建議功能的優先順序：
+* **Must have (本次 MVP 必做)**：核心功能，沒有這個產品就無法運作。
+* **Should have (應該要有)**：重要但若時程來不及可延後。
+* **Could have (有了會更好)**：加分項。
+* **Won't have (本次不做)**：明確排除在本次範圍外的功能，避免發散。
+
+## 3. 成功指標 (Success Metrics)
+我們如何定義這個產品成功了？(例如：註冊人數、交易量、用戶停留時間)
+    </div>
+
+    <div id="file-pm-prd" style="display:none;">
+產品企劃初稿: B2B AI 禮品選購平台 (Project Gift-Smart)
+產品經理
+2026年2月3日
+
+1 產品摘要(Product Summary)
+- 一句話願景: 打造「所見即所得」的B2B禮品採購平台,透過AI視覺化與智慧推薦,極大化採購效率。
+- 解決什麼問題(Pain Points):
+  - 溝通成本高昂: 傳統B2B禮品採購需透過業務反覆傳圖、修圖與確認樣品,流程冗長。
+  - 決策門檻高: 客戶因無法預見Logo印在產品上的真實外觀而猶豫,導致轉單率低。
+  - 人工作業繁瑣: 後台員工需手動撰寫大量商品文案,且難以針對不同企業屬性提供客觀建議。
+- 目標客群(Target Audience):
+  - 買方: 企業行政、HR、公關採購部門(需大量定製禮品者)。
+  - 賣方: 平台營運方(內部員工)與禮品供應商。
+
+2 功能範圍與優先級(Feature Scope - MoSCOW)
+為了確保 MVP(最小可行性產品)能快速上線驗證,功能優先級規劃如下:
+
+- Must have: AI 即時合成預覽
+  - 核心功能。用戶上傳企業 Logo後,系統自動將 Logo 渲染至禮品樣品圖,實現虛擬打樣。
+- Must have: AI 商品文案助手
+  - 內部工具。上架時透過AI自動生成具吸引力的標題與描述,減少人工撰寫時間。
+- Should have: AI 智慧選品建議
+  - 根據客戶填寫的「預算、場合、數量」,AI自動篩選並推薦最合適的禮品清單。
+- Should have: 供應商後台管理
+  - 基礎的上架、庫存管理與訂單追蹤功能。
+- Could have: 採購偏好分析
+  - 收集企業採購紀錄與點擊數據,優化未來推薦精準度,並提供早鳥優惠觸及。
+- Won't have: 線上金流串接
+  - 本階段排除金流,維持線下報價單/匯款流程以保持彈性。
+
+3 成功指標(Success Metrics)
+我們將透過以下指標評估產品是否達到預期商業目標:
+- 核心轉化率(Conversion Rate): 用戶「使用合成預覽」後,轉為「送出詢價單」的比例。
+- 溝通時效(Time-to-Quote): 從用戶進入平台到完成選品意向的時間。
+- 用戶留存與互動(Stickiness): 用戶平均停留時長(Time on Site)及回購頻次。
+- 內容產出效率: AI輔助文案生成後,單一商品上架所需的人工工時下降比例。
+
+4 產品疑問(Product Questions)
+1. AI合成的真實度要求: 目前的合成是要達到「示意圖」等級,還是要精準到「印刷比例」等級?
+2. AI建議的數據來源: AI推薦是根據目前庫存隨機推薦,還是需要串接產業趨勢數據? 初期是否接受人工標籤輔助?
+3. Logo 的複雜度處理: 系統是否需要具備自動去背或智慧變色功能,以確保合成圖在不同底色產品上的美觀?
+4. 詢價後的流程對接: 當客戶合成滿意後,是直接產出PDF報價單,還是由業務接手?
+    </div>
+
+    <div id="file-tpm-prompt" style="display:none;">
+# Role (角色設定)
+你是一位資深的技術專案經理 (TPM) 與系統分析師。你的專長是將產品經理的 PRD 文件，轉化為邏輯嚴謹、無歧義的「開發需求導引」。
+
+# Task (任務)
+請根據我提供的 **[PM 產品需求文件內容]**，整理出一份給工程師看的「功能邏輯規格書」。
+請注意：**不需要**你設計資料庫欄位或 API 網址，請專注於「使用者流程」、「驗收標準」與「商業規則」。
+
+# Input Context (輸入資訊)
+**PM 的需求文件內容**：
+"""
+[在此貼上 PM 產出的功能描述或 PRD 片段]
+"""
+
+# Output Requirements (輸出要求 - 請使用 Markdown)
+
+## 1. 使用者故事與驗收標準 (User Stories & AC)
+請將需求拆解為獨立的功能點，每個點需包含：
+* **User Story**: 作為 [角色]，我想要 [動作]，以便 [目的]。
+* **Acceptance Criteria (AC - 驗收標準)**：列出 3-5 點具體的驗收條件（工程師做完測這些就會過）。
+    * *範例：積分不足時，系統應跳出提示訊息，且不能讓交易繼續。*
+
+## 2. 關鍵商業邏輯 (Business Rules)
+請列出工程師開發時必須遵守的「硬性規則」：
+* **計算邏輯**：(例如：積分換算匯率是 1:10，小數點無條件捨去)
+* **限制條件**：(例如：同一使用者 1 分鐘內只能發送 1 次請求)
+* **狀態流轉**：(例如：訂單狀態只能從 Pending -> Paid -> Shipped，不可逆轉)
+
+## 3. 完整操作流程 (User Flow Path)
+請用文字描述使用者的操作步驟，需包含「正常流程」與「例外流程」：
+* **Happy Path (成功路徑)**：Step 1 -> Step 2 -> Step 3
+* **Edge Cases (失敗/例外路徑)**：如果使用者在 Step 2 斷線，或是輸入錯誤資料，系統該如何反應？
+
+## 4. 待確認問題 (Open Questions)
+請幫我以「實作邏輯」的角度檢查，PM 的需求是否有漏洞？(例如：PM 說要退款，但沒說退款後積分要不要扣回？)
+    </div>
+
+    <div id="file-tpm-spec" style="display:none;">
+B2B AI 禮品選購平台 - 功能邏輯規格書 (Functional Logic Specification)
+資深技術專案經理(TPM)
+2026年2月3日
+
+1. 使用者故事與驗收標準(User Stories & AC)
+
+F01: AI禮品媒合功能
+- User Story: 作為企業客戶,我想要輸入一段需求描述,以便讓AI幫我快速篩選出符合預算與場合的禮品。
+- Acceptance Criteria (AC):
+  - 系統必須支援自然語言描述輸入(如:預算500元、送給科技業客戶的伴手禮)。
+  - 媒合結果必須回傳至少一筆符合條件的商品清單,資訊需正確無誤。
+  - 失敗處理: 若AI無法識別或無匹配商品,應顯示「查無適合商品」之引導訊息,不可發生系統錯誤(Internal Server Error)。
+  - 搜尋反應時間應優化,若處理超過2秒需顯示Loading 載入狀態。
+
+F02: 樣品合成預覽
+- User Story: 作為企業客戶,我想要在上傳企業 Logo 後即時預覽合成效果,以便確認禮品視覺品質再決定下單。
+- Acceptance Criteria (AC):
+  - Logo 合成位置需精準,不得產生拉伸、扭曲或溢出邊界的情形。
+  - 合成圖片必須正常顯示,不得出現破圖或系統錯誤訊息。
+  - 系統應自動處理透明背景(PNG)之Logo,確保合成效果自然。
+
+F03: 後台訂單管理系統
+- User Story: 作為後台管理員,我想要在畫面上即時看到客戶的下單資訊,以便進行後續的業務開發與聯繫。
+- Acceptance Criteria (AC):
+  - 下單完成後,後台列表應即時更新顯示資料。
+  - 資訊必須完整包含: 客戶聯絡資訊、商品名稱、合成預覽圖連結。
+  - 確保資料傳輸正確性,後台顯示資訊需與前台客戶填寫完全一致。
+
+2. 關鍵商業邏輯 (Business Rules)
+- 限制條件:
+  - 合成上限: 同一使用者(以IP或User ID 識別)每日最多僅能進行100次合成操作。
+  - 檔案大小: 上傳之 Logo 檔案限制需小於5MB,僅支援JPG/PNG格式。
+- 狀態流轉 (State Machine):
+  - 訂單流程: 待確認→已接單→已完成。
+  - 狀態流轉具備「不可逆性」,一旦狀態推進則不可回溯。
+
+3. 完整操作流程 (User Flow Path)
+Happy Path (成功路徑)
+Step1: 客戶在前台首頁輸入需求描述。
+Step2: 系統顯示AI媒合後的推薦商品清單。
+Step3: 客戶挑選商品並點選「合成預覽」。
+Step4: 確認預覽效果滿意後,點選下單並填寫聯絡人資訊。
+Step5: 後台接收到包含商品、合成圖與客戶資料的訂單。
+Step6: 業務人員依據系統資訊主動聯繫客戶。
+
+Edge Cases (失敗/例外路徑)
+- 連線中斷或錯誤: 若使用者在上述任何步驟發生錯誤或斷線,系統應自動彈出引導對話框,請客戶留下聯絡資訊,由專人主動聯繫以避免商機流失。
+
+4. 待確認問題 (Open Questions)
+- AI媒合精準度: 當資料庫無完全匹配商品時,AI推薦的彈性範圍(Fuzzy Match)為何?
+- Logo 合成權限: 是否允許使用者在畫面上手動微調 Logo 位置或大小?
+- 驗證機制: 下單前是否需要手機簡訊(OTP) 驗證以過濾惡意下單?
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            center: true,
+            hash: true,
+            transition: 'slide'
+        });
+
+        // Modal Logic
+        function openModal(elementId) {
+            const content = document.getElementById(elementId).innerText;
+            const titleMap = {
+                'file-pm-prompt': 'Step1N1_PM_Gemini Prompt Template.md',
+                'file-pm-prd': 'Step1N2_PM_初稿B2B AI 禮品選購平台.pdf',
+                'file-tpm-prompt': 'Step2N1_TPM_Gemini Prompt Template.md',
+                'file-tpm-spec': 'Step2N2_TPM_功能邏輯規格書.pdf'
+            };
+            
+            document.getElementById('modalTitle').innerText = titleMap[elementId] || 'File Content';
+            document.getElementById('modalBody').innerText = content;
+            document.getElementById('fileModal').style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            // Close if clicking overlay or close button
+            if (event.target.id === 'fileModal' || event.target.className === 'close-btn') {
+                document.getElementById('fileModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
