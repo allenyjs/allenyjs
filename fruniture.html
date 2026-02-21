@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>細作家居 | 跨越空間的設計</title>
+    <!-- 使用 Tailwind CSS 快速重現極簡風格 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自訂字體與全域樣式，重現 Kristalia 的質感 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
+            color: #0a0a0a;
+            background-color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 標誌性黑色按鈕樣式 */
+        .btn-kristalia {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            padding: 14px 28px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 0;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        .btn-kristalia:hover {
+            background-color: #333333;
+        }
+
+        /* 圖片懸停效果 */
+        .img-hover-zoom {
+            overflow: hidden;
+        }
+        .img-hover-zoom img {
+            transition: transform 0.5s ease;
+        }
+        .img-hover-zoom:hover img {
+            transform: scale(1.03);
+        }
+
+        /* 導覽列連結動畫 */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #0a0a0a;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* 隱藏捲軸但保持可捲動 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- 頂部小導覽列 (語言 & 搜尋) -->
+    <div class="hidden lg:block w-full border-b border-gray-100">
+        <div class="max-w-[1920px] mx-auto px-6 py-2 flex justify-between items-center text-xs text-gray-500 uppercase tracking-widest">
+            <div class="flex space-x-4">
+                <a href="#" class="text-black font-medium">繁體中文</a>
+                <a href="#" class="hover:text-black transition-colors">EN</a>
+            </div>
+            <div class="flex space-x-6">
+                <a href="#" class="hover:text-black transition-colors">下載專區</a>
+                <a href="#" class="hover:text-black transition-colors">品牌日誌</a>
+                <a href="#" class="hover:text-black transition-colors">聯絡我們</a>
+                <a href="#" class="hover:text-black transition-colors flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    搜尋
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主導覽列 -->
+    <header class="w-full bg-white sticky top-0 z-50 shadow-sm">
+        <div class="max-w-[1920px] mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-bold tracking-widest text-black">
+                細作家居
+            </a>
+
+            <!-- 桌面版選單 -->
+            <nav class="hidden lg:flex space-x-8 text-sm uppercase tracking-widest font-medium">
+                <a href="#" class="nav-link text-gray-900">產品系列</a>
+                <a href="#" class="nav-link text-gray-900">設計師</a>
+                <a href="#" class="nav-link text-gray-900">空間專案</a>
+                <a href="#" class="nav-link text-gray-900">關於我們</a>
+            </nav>
+
+            <!-- 漢堡選單按鈕 (手機版) -->
+            <button id="mobile-menu-btn" class="lg:hidden p-2 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        <!-- 手機版選單展開 -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-white border-t border-gray-100 absolute w-full left-0 shadow-lg">
+            <div class="flex flex-col px-6 py-4 space-y-4 text-sm uppercase tracking-widest">
+                <a href="#" class="text-gray-900 border-b border-gray-50 pb-2">產品系列</a>
+                <a href="#" class="text-gray-900 border-b border-gray-50 pb-2">設計師</a>
+                <a href="#" class="text-gray-900 border-b border-gray-50 pb-2">空間專案</a>
+                <a href="#" class="text-gray-900 border-b border-gray-50 pb-2">關於我們</a>
+                <div class="flex space-x-4 pt-4 text-xs text-gray-500">
+                    <a href="#" class="text-black font-medium">繁體中文</a>
+                    <a href="#">EN</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="flex-grow">
+        
+        <!-- Hero Section (主視覺影片/圖片替代 - 已更新為輪播圖) -->
+        <section class="w-full h-[60vh] md:h-[80vh] bg-gray-100 relative overflow-hidden group" id="hero-slider">
+            <!-- 輪播容器 -->
+            <div class="flex w-full h-full transition-transform duration-500 ease-in-out" id="slider-container">
+                <!-- 第一張幻燈片 -->
+                <div class="w-full h-full flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=2000" alt="細作家居主視覺 1" class="w-full h-full object-cover">
+                </div>
+                <!-- 第二張幻燈片 -->
+                <div class="w-full h-full flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80&w=2000" alt="細作家居主視覺 2" class="w-full h-full object-cover">
+                </div>
+                <!-- 第三張幻燈片 -->
+                <div class="w-full h-full flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=2000" alt="細作家居主視覺 3" class="w-full h-full object-cover">
+                </div>
+            </div>
+
+            <!-- 左右控制按鈕 (桌機版滑鼠懸停顯示) -->
+            <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none hidden md:block">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none hidden md:block">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <!-- 圓點指示器 -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3" id="slider-dots">
+                <button class="w-2.5 h-2.5 rounded-full bg-white transition-colors dot"></button>
+                <button class="w-2.5 h-2.5 rounded-full bg-white/50 transition-colors dot"></button>
+                <button class="w-2.5 h-2.5 rounded-full bg-white/50 transition-colors dot"></button>
+            </div>
+        </section>
+
+        <!-- 文字區塊 1 -->
+        <section class="max-w-4xl mx-auto px-6 py-16 md:py-24 text-center md:text-left">
+            <p class="text-xl md:text-2xl font-light leading-relaxed mb-8 text-gray-800">
+                <em>跨越空間的設計 (Design Across Spaces)</em> 是細作家居所提出的全新宣言。我們相信當代設計的力量，從個人生活到共享空間，致力於打造經得起時間考驗、兼具美感與實用性的雋永家具。
+            </p>
+            <a href="#" class="btn-kristalia">探索全新宣言</a>
+        </section>
+
+        <hr class="border-gray-200 w-full max-w-[1920px] mx-auto">
+
+        <!-- 最新消息區塊 (News) -->
+        <section class="max-w-[1920px] mx-auto px-4 py-12">
+            <h2 class="text-xl md:text-2xl font-bold mb-8 px-2">最新消息</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-12 px-2">
+                <!-- Item 1 -->
+                <div class="group cursor-pointer">
+                    <div class="img-hover-zoom mb-4 bg-gray-50 aspect-[4/5]">
+                        <img src="https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&q=80&w=800" alt="Oops 圓桌" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-base text-gray-900">
+                        <strong class="font-bold">Oops 圓桌</strong><br>
+                        <span class="font-light text-gray-600">Monica Graffeo</span>
+                    </p>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="group cursor-pointer">
+                    <div class="img-hover-zoom mb-4 bg-gray-50 aspect-[4/5]">
+                        <img src="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=800" alt="Elephantino 輕巧單椅" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-base text-gray-900">
+                        <strong class="font-bold">Elephantino 輕巧單椅</strong><br>
+                        <span class="font-light text-gray-600">Neuland. Paster and Geldmacher</span>
+                    </p>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="group cursor-pointer">
+                    <div class="img-hover-zoom mb-4 bg-gray-50 aspect-[4/5]">
+                        <img src="https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?auto=format&fit=crop&q=80&w=800" alt="Pala 黏土塗飾" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-base text-gray-900">
+                        <strong class="font-bold">Pala 黏土塗飾系列</strong><br>
+                        <span class="font-light text-gray-600">Monica Graffeo</span>
+                    </p>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="group cursor-pointer">
+                    <div class="img-hover-zoom mb-4 bg-gray-50 aspect-[4/5]">
+                        <img src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&q=80&w=800" alt="Compas 可拆卸軟墊" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-base text-gray-900">
+                        <strong class="font-bold">Compas 可拆卸沙發軟墊</strong><br>
+                        <span class="font-light text-gray-600">Patrick Norguet</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-gray-200 w-full max-w-[1920px] mx-auto">
+
+        <!-- 滿版橫幅影像 -->
+        <section class="w-full h-[50vh] md:h-[70vh] relative overflow-hidden my-4">
+            <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=2000" alt="永續設計系統" class="w-full h-full object-cover">
+        </section>
+
+        <!-- 文字區塊 2 -->
+        <section class="max-w-4xl mx-auto px-6 py-16 md:py-24 text-center md:text-left">
+            <p class="text-xl md:text-2xl font-light leading-relaxed mb-8 text-gray-800">
+                在 <em>永續設計系統 (Sustainable Design Systems)</em> 活動中，我們將引導細作的核心原則置於首位：有意識的設計、訴說故事的材質，以及作為創新驅動力的跨界合作。我們致力於探索設計中的永續性，仔細審視再生材料的潛力，並思考它們如何轉化為優雅的形態與物件。
+            </p>
+            <a href="#" class="btn-kristalia">了解更多</a>
+        </section>
+
+        <hr class="border-gray-200 w-full max-w-[1920px] mx-auto">
+
+        <!-- 三欄式網格 -->
+        <section class="max-w-[1920px] mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 px-2">
+                <div class="img-hover-zoom aspect-[4/5] bg-gray-100">
+                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=600" alt="設計細節 1" class="w-full h-full object-cover">
+                </div>
+                <div class="img-hover-zoom aspect-[4/5] bg-gray-100">
+                    <img src="https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&q=80&w=600" alt="設計細節 2" class="w-full h-full object-cover">
+                </div>
+                <div class="img-hover-zoom aspect-[4/5] bg-gray-100">
+                    <img src="https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&q=80&w=600" alt="設計細節 3" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </section>
+
+        <!-- 文字區塊 3 -->
+        <section class="max-w-4xl mx-auto px-6 py-12 md:py-20 text-center md:text-left">
+            <p class="text-xl md:text-2xl font-light leading-relaxed mb-8 text-gray-800">
+                作為領先的產品配置與空間規劃平台，pCon 工具多年來一直是細作日常工作中的關鍵，也是我們為建築師與設計師提供的寶貴支援。它旨在讓設計與銷售專業人員的工作流程更快、更智慧且更直觀。
+            </p>
+            <a href="#" class="btn-kristalia">探索空間配置</a>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 (Footer) -->
+    <footer class="bg-white border-t border-gray-100 pt-16 pb-8 px-6 text-sm text-gray-800">
+        <div class="max-w-[1920px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            <!-- 區塊 1: 品牌資訊 -->
+            <div>
+                <h3 class="font-bold tracking-widest mb-4 uppercase">細作家居</h3>
+                <p class="font-light leading-loose text-gray-500">
+                    新北市板橋區<br>
+                    細作大道 28 號<br>
+                    T +886 2 1234 5678<br>
+                    info@xizuohome.tw
+                </p>
+            </div>
+
+            <!-- 區塊 2: 法律資訊 -->
+            <div>
+                <h3 class="font-bold tracking-widest mb-4 uppercase">法律資訊</h3>
+                <ul class="font-light space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black transition-colors">隱私權政策</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">Cookie 政策</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">相關文件</a></li>
+                </ul>
+            </div>
+
+            <!-- 區塊 3: 專業人士 -->
+            <div>
+                <h3 class="font-bold tracking-widest mb-4 uppercase">專業人士</h3>
+                <ul class="font-light space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black transition-colors">下載專區</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">專案合作空間</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">關於我們</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">B2B 專區</a></li>
+                </ul>
+            </div>
+
+            <!-- 區塊 4: 聯絡與社群 -->
+            <div class="col-span-2 md:col-span-1">
+                <h3 class="font-bold tracking-widest mb-4 uppercase">
+                    <a href="#" class="hover:underline">訂閱電子報</a>
+                </h3>
+                <ul class="font-light space-y-2 text-gray-500 mb-6">
+                    <li><a href="#" class="hover:text-black transition-colors">聯絡我們</a></li>
+                    <li><a href="#" class="hover:text-black transition-colors">招募資訊</a></li>
+                </ul>
+                <!-- 社群媒體圖示 (使用 SVG 佔位) -->
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-black transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-black transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-[1920px] mx-auto text-center md:text-left text-xs text-gray-400">
+            <p>Copyright © 2026 細作家居 Xizuo Home Srl. 保留所有權利。</p>
+        </div>
+    </footer>
+
+    <!-- 簡易的手機版選單切換腳本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 手機版選單邏輯
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            menuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // 輪播圖邏輯 (Slider Logic)
+            const sliderContainer = document.getElementById('slider-container');
+            const slides = sliderContainer.children;
+            const prevBtn = document.getElementById('prev-slide');
+            const nextBtn = document.getElementById('next-slide');
+            const dots = document.querySelectorAll('.dot');
+            let currentIndex = 0;
+            const totalSlides = slides.length;
+            let autoSlideInterval;
+
+            // 更新輪播位置與圓點狀態
+            function updateSlider() {
+                sliderContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, index) => {
+                    if (index === currentIndex) {
+                        dot.classList.remove('bg-white/50');
+                        dot.classList.add('bg-white');
+                    } else {
+                        dot.classList.remove('bg-white');
+                        dot.classList.add('bg-white/50');
+                    }
+                });
+            }
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % totalSlides;
+                updateSlider();
+            }
+
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+                updateSlider();
+            }
+
+            // 重設自動播放時間
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(nextSlide, 5000);
+            }
+
+            // 按鈕事件綁定
+            nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+            prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+
+            // 圓點事件綁定
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateSlider();
+                    resetAutoSlide();
+                });
+            });
+
+            // 觸控滑動支援 (Swipe functionality for Mobile)
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            sliderContainer.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                clearInterval(autoSlideInterval); // 觸控時暫停自動播放
+            }, {passive: true});
+
+            sliderContainer.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+                resetAutoSlide(); // 結束觸控後恢復自動播放
+            }, {passive: true});
+
+            function handleSwipe() {
+                const swipeThreshold = 50; // 觸控判定距離閾值
+                if (touchEndX < touchStartX - swipeThreshold) {
+                    nextSlide(); // 向左滑動，顯示下一張
+                }
+                if (touchEndX > touchStartX + swipeThreshold) {
+                    prevSlide(); // 向右滑動，顯示上一張
+                }
+            }
+
+            // 初始化設定
+            updateSlider();
+            resetAutoSlide();
+        });
+    </script>
+</body>
+</html>
