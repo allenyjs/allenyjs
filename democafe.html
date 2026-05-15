@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simdle Roastery | 沈默烘焙</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#1a1816',
+                            light: '#f5f0eb',
+                            accent: '#c08044', // 琥珀/焦糖色
+                            muted: '#8c7f76'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #1a1816;
+            color: #f5f0eb;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* 獨特的背景雜訊紋理 */
+        .texture-bg {
+            position: relative;
+        }
+        .texture-bg::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Hero 區塊的漸層覆蓋 */
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(26, 24, 22, 0.2) 0%, rgba(26, 24, 22, 1) 100%);
+        }
+
+        /* 滾動淡入動畫 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in.appear {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 隱藏捲軸但保留捲動功能 (給右下角對話框用) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="texture-bg font-sans selection:bg-brand-accent selection:text-white relative">
+
+    <!-- 導覽列 -->
+    <nav class="fixed w-full z-40 top-0 px-6 py-8 flex justify-between items-center transition-all duration-300" id="navbar">
+        <div class="text-2xl font-serif tracking-widest text-brand-light font-semibold">
+            SIMDLE<span class="text-brand-accent">.</span>
+        </div>
+        <div class="hidden md:flex space-x-8 text-sm tracking-widest text-brand-muted font-light">
+            <a href="#about" class="hover:text-brand-light transition-colors duration-300">品牌哲學</a>
+            <a href="#beans" class="hover:text-brand-light transition-colors duration-300">本期豆單</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex flex-col justify-center items-center text-center px-4">
+        <!-- 這裡使用抽象的 CSS 漸層模擬咖啡烘焙的意象，避免載入外部圖片破壞體驗 -->
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800 via-brand-dark to-brand-dark z-0 opacity-80"></div>
+        <div class="absolute inset-0 hero-overlay z-0"></div>
+        
+        <div class="relative z-10 fade-in">
+            <p class="font-sans text-brand-accent tracking-[0.3em] uppercase text-sm mb-6">Simdle Roastery</p>
+            <h1 class="font-serif text-5xl md:text-7xl font-bold leading-tight mb-8 tracking-wide">
+                尋找豆子裡<br>
+                最純粹的頻率
+            </h1>
+            <p class="font-serif text-brand-muted text-lg md:text-xl max-w-xl mx-auto font-light leading-relaxed">
+                我們不只是賣咖啡，我們是在時間與火候的交響中，<br class="hidden md:block">為你轉譯產地的獨特風味。
+            </p>
+            
+            <!-- 引導點擊右下角機器人的按鈕 -->
+            <button onclick="openChat()" class="mt-12 group relative inline-flex items-center justify-center px-8 py-3 text-sm tracking-widest text-brand-light bg-transparent border border-brand-accent/50 hover:border-brand-accent transition-all duration-300 rounded-full overflow-hidden">
+                <span class="absolute inset-0 bg-brand-accent translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></span>
+                <span class="relative z-10 flex items-center gap-2">
+                    詢問線上咖啡師 
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- 品牌哲學 Section -->
+    <section id="about" class="py-24 md:py-32 bg-brand-dark relative z-10">
+        <div class="max-w-4xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+            <div class="fade-in">
+                <div class="w-12 h-[1px] bg-brand-accent mb-6"></div>
+                <h2 class="font-serif text-3xl md:text-4xl mb-6">精準，<br>是為了釋放狂想。</h2>
+                <p class="text-brand-muted font-light leading-loose text-sm md:text-base">
+                    無論是衣索比亞耶加雪菲的純淨花香，或是大象漫步的茉莉甜感。我們堅持以嚴謹的數據化烘焙曲線，搭配對風土的深刻理解，只為在每一次沖煮中，重現原產地最迷人的風景。
+                </p>
+            </div>
+            <div class="fade-in flex justify-center">
+                <!-- 裝飾性元素 -->
+                <div class="w-64 h-80 border border-brand-muted/30 relative p-4 flex flex-col justify-between">
+                    <div class="w-full h-full border border-brand-accent/20 bg-stone-900/50 flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute w-32 h-32 rounded-full bg-brand-accent/10 blur-3xl"></div>
+                        <span class="font-serif text-brand-muted/50 tracking-widest rotate-90 whitespace-nowrap absolute">Boutique Coffee</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 本期豆單 Section (對應你的資料庫) -->
+    <section id="beans" class="py-24 bg-[#141211] relative z-10">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16 fade-in">
+                <span class="text-brand-accent tracking-[0.2em] text-xs uppercase">Menu</span>
+                <h2 class="font-serif text-3xl mt-2">本期精選豆單</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="border border-brand-muted/20 bg-brand-dark p-8 hover:border-brand-accent/50 transition-colors duration-500 fade-in group">
+                    <div class="text-xs text-brand-muted mb-4 tracking-widest">SIM-001 / 淺烘焙</div>
+                    <h3 class="font-serif text-xl mb-2 group-hover:text-brand-accent transition-colors">耶加雪菲</h3>
+                    <p class="text-xs text-brand-muted/80 mb-6 font-light">水洗處理法 | 衣索比亞</p>
+                    <p class="text-sm text-brand-light/70 font-light leading-relaxed mb-6">濃郁的茉莉花香與清新柑橘酸甜，中段展現優雅的白葡萄酒口感。</p>
+                    <div class="text-brand-accent text-sm tracking-wider">NT$ 450 <span class="text-xs text-brand-muted">/ 半磅</span></div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="border border-brand-muted/20 bg-brand-dark p-8 hover:border-brand-accent/50 transition-colors duration-500 fade-in group" style="transition-delay: 100ms;">
+                    <div class="text-xs text-brand-muted mb-4 tracking-widest">SIM-005 / 中烘焙</div>
+                    <h3 class="font-serif text-xl mb-2 group-hover:text-brand-accent transition-colors">美洲狂想曲</h3>
+                    <p class="text-xs text-brand-muted/80 mb-6 font-light">水洗處理 | 中南美洲</p>
+                    <p class="text-sm text-brand-light/70 font-light leading-relaxed mb-6">溫暖的堅果與杏仁香氣，伴隨濃郁的黑巧克力與焦糖甜感，酸度極低。</p>
+                    <div class="text-brand-accent text-sm tracking-wider">NT$ 400 <span class="text-xs text-brand-muted">/ 半磅</span></div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="border border-brand-muted/20 bg-brand-dark p-8 hover:border-brand-accent/50 transition-colors duration-500 fade-in group" style="transition-delay: 200ms;">
+                    <div class="text-xs text-brand-muted mb-4 tracking-widest">SIM-007 / 極淺焙</div>
+                    <h3 class="font-serif text-xl mb-2 group-hover:text-brand-accent transition-colors">盟大布蘭蔻 藝伎</h3>
+                    <p class="text-xs text-brand-muted/80 mb-6 font-light">精緻水洗 | 中南美洲</p>
+                    <p class="text-sm text-brand-light/70 font-light leading-relaxed mb-6">經典 Geisha 品種。爆發性的佛手柑香氣與無與倫比的極致花香。</p>
+                    <div class="text-brand-accent text-sm tracking-wider">NT$ 800 <span class="text-xs text-brand-muted">/ 100g</span></div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12 fade-in">
+                <p class="text-sm text-brand-muted font-light mb-4">想尋找其他風味？或需要專人為您推薦？</p>
+                <button onclick="openChat()" class="text-brand-accent hover:text-white border-b border-brand-accent hover:border-white transition-all text-sm tracking-widest pb-1">召喚線上咖啡師</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-brand-muted/20 bg-brand-dark py-12 relative z-10">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-xl font-serif tracking-widest text-brand-light font-semibold">
+                SIMDLE<span class="text-brand-accent">.</span>
+            </div>
+            <div class="text-xs text-brand-muted tracking-widest font-light">
+                &copy; 2024 SIMDLE ROASTERY. ALL RIGHTS RESERVED.
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         右下角 Dify Chatbot 懸浮視窗 (關鍵實作區)
+         ========================================== -->
+    <div id="chat-widget" class="fixed bottom-4 right-4 md:bottom-5 md:right-5 z-50 flex flex-col items-end">
+        
+        <!-- 聊天視窗容器 (預設隱藏，使用 opacity 和 transform 製作滑出動畫) -->
+        <div id="chat-window" class="mb-3 bg-white rounded-2xl shadow-2xl overflow-hidden w-[360px] sm:w-[400px] max-w-[calc(100vw-2rem)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0 translate-y-10 scale-95 origin-bottom-right pointer-events-none" style="height: 65vh; max-height: 600px; min-height: 450px;">
+            <!-- 視窗頂部裝飾條 -->
+            <div class="bg-brand-dark text-white px-4 py-3 flex justify-between items-center shadow-md relative z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="font-serif text-sm tracking-widest">Simdle 專屬咖啡師</span>
+                </div>
+                <button onclick="closeChat()" class="text-gray-400 hover:text-white transition-colors focus:outline-none p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Dify Iframe 嵌入區域 (高度設為 calc 扣除頂部裝飾條) -->
+            <!-- 已經移除強制 700px 的高度限制，讓它完全適應容器 -->
+            <div class="w-full h-[calc(100%-48px)] bg-gray-50 relative overflow-hidden">
+                <iframe
+                 src="https://udify.app/chatbot/97gyH4dnctH62ElS"
+                 style="width: 100%; height: 100%;"
+                 frameborder="0"
+                 allow="microphone">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- 懸浮呼叫按鈕 (Floating Action Button) -->
+        <button id="chat-toggle-btn" onclick="toggleChat()" class="bg-brand-accent hover:bg-[#a66a33] text-white rounded-full p-4 shadow-lg shadow-brand-accent/20 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:-translate-y-1 group relative">
+            <!-- 呼吸燈效果外圈 -->
+            <div class="absolute inset-0 rounded-full border-2 border-brand-accent animate-ping opacity-20"></div>
+            
+            <!-- 咖啡/對話 Icon -->
+            <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            <!-- 懸停時展開的文字 -->
+            <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs group-hover:ml-3 transition-all duration-300 ease-in-out font-sans text-sm tracking-widest opacity-0 group-hover:opacity-100 relative z-10">
+                點擊諮詢與訂購
+            </span>
+        </button>
+    </div>
+
+    <!-- JavaScript 互動邏輯 -->
+    <script>
+        // 滾動時改變導覽列背景
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-brand-dark/95', 'backdrop-blur-sm', 'shadow-lg');
+                nav.classList.remove('py-8');
+                nav.classList.add('py-4');
+            } else {
+                nav.classList.remove('bg-brand-dark/95', 'backdrop-blur-sm', 'shadow-lg');
+                nav.classList.add('py-8');
+                nav.classList.remove('py-4');
+            }
+        });
+
+        // 滾動視差與淡入動畫
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('appear');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 聊天視窗開關邏輯
+        const chatWindow = document.getElementById('chat-window');
+        const chatBtnIcon = document.querySelector('#chat-toggle-btn svg');
+        let isChatOpen = false;
+
+        function toggleChat() {
+            if (isChatOpen) {
+                closeChat();
+            } else {
+                openChat();
+            }
+        }
+
+        function openChat() {
+            isChatOpen = true;
+            // 顯示視窗並加入動畫 Class
+            chatWindow.classList.remove('opacity-0', 'translate-y-10', 'scale-95', 'pointer-events-none');
+            chatWindow.classList.add('opacity-100', 'translate-y-0', 'scale-100', 'pointer-events-auto');
+            
+            // 更改按鈕圖示為 X
+            chatBtnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+        }
+
+        function closeChat() {
+            isChatOpen = false;
+            // 隱藏視窗
+            chatWindow.classList.add('opacity-0', 'translate-y-10', 'scale-95', 'pointer-events-none');
+            chatWindow.classList.remove('opacity-100', 'translate-y-0', 'scale-100', 'pointer-events-auto');
+            
+            // 恢復按鈕圖示為對話框
+            chatBtnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>';
+        }
+    </script>
+</body>
+</html>
