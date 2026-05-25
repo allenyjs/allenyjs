@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>媒體數據自動化整合流程簡報</title>
+    <!-- 載入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 載入 Font Awesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #151d30;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --excel-peach: #fce4d6;
+            --excel-yellow: #fff2cc;
+            --excel-border: #d9d9d9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #020617;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 簡報外框 (固定 16:9 比例 1280x720) */
+        .presentation-wrapper {
+            width: 1280px;
+            height: 900px;
+            background-color: var(--bg-dark);
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 背景微光裝飾 */
+        .presentation-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 幻燈片容器 */
+        .slides-container {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 50px 60px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(50px);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+        }
+
+        /* 標題與版面架構 */
+        .slide-header {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .slide-step {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 242, 254, 0.1);
+            padding: 6px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .slide-title {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 8px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            gap: 30px;
+            align-items: stretch;
+            min-height: 0; /* 讓子元素能正確縮放不溢出 */
+        }
+
+        /* 左右分欄基本設定 */
+        .col-left {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .col-right {
+            flex: 1;
+            background: rgba(21, 29, 48, 0.6);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 導覽列 */
+        .nav-bar {
+            height: 70px;
+            background: rgba(11, 15, 25, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-indicators {
+            display: flex;
+            gap: 12px;
+        }
+
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .indicator.active {
+            background: var(--primary);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* 列表與說明文字 */
+        .bullet-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 32px;
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .bullet-list li strong {
+            color: var(--text-main);
+        }
+
+        .bullet-list li i.list-icon {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        /* ==========================================================================
+           Slide 1: 前端上傳門戶 (可操作區)
+           ========================================================================== */
+        .interactive-form {
+            background: rgba(21, 29, 48, 0.8);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-styled {
+            background: #090f19;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dropdown-styled:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(79, 172, 254, 0.4);
+            background: rgba(79, 172, 254, 0.03);
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 254, 0.06);
+        }
+
+        .drop-zone i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .drop-zone p {
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .drop-zone span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .uploaded-files-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .file-pill {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .file-pill .remove-file {
+            cursor: pointer;
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .action-trigger-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #020617;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2);
+        }
+
+        .action-trigger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(0, 242, 254, 0.4);
+        }
+
+        /* ==========================================================================
+           Slide 2: Gemini AI 解析引擎展示
+           ========================================================================== */
+        .field-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .field-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .field-box-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+        }
+
+        .field-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .field-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .field-tag.highlight-orange {
+            border-color: rgba(252, 228, 214, 0.4);
+            background: rgba(252, 228, 214, 0.05);
+            color: #ffb088;
+        }
+
+        .field-tag.highlight-yellow {
+            border-color: rgba(255, 242, 204, 0.4);
+            background: rgba(255, 242, 204, 0.05);
+            color: #ffe69c;
+        }
+
+        /* 仿終端機控制台 */
+        .terminal-panel {
+            background: #05070c;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .terminal-line {
+            color: #38bdf8;
+            line-height: 1.5;
+            min-height: 20px;
+        }
+
+        .terminal-line.success {
+            color: var(--accent);
+        }
+
+        /* ==========================================================================
+           Slide 3: BigQuery 資料庫對齊
+           ========================================================================== */
+        .schema-mapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            justify-content: center;
+        }
+
+        .mapper-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .mapper-node {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .mapper-arrow {
+            color: var(--secondary);
+            animation: pulse-arrow 2s infinite;
+        }
+
+        .code-snippet {
+            background: #05070c;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            color: #a7f3d0;
+            border: 1px solid rgba(255,255,255,0.05);
+            line-height: 1.6;
+            overflow: auto;
+            height: 100%;
+        }
+
+        /* ==========================================================================
+           Slide 4 & 5: BI 整合與 Excel 報表匯出 (主打)
+           ========================================================================== */
+        .bi-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .kpi-card span {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .kpi-card h4 {
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* 超炫 Excel 預覽區 (還原圖片.png) */
+        .excel-window-wrapper {
+            background: #f3f3f3;
+            border-radius: 12px;
+            border: 1px solid #c0c0c0;
+            display: flex;
+            flex-direction: column;
+            height: 330px;
+            color: #000;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .excel-window-wrapper.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Excel 視窗頂部工具列 */
+        .excel-title-bar {
+            background: #107c41;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .excel-menu-bar {
+            background: #f3f3f3;
+            border-bottom: 1px solid #d9d9d9;
+            padding: 6px 16px;
+            font-size: 11px;
+            display: flex;
+            gap: 15px;
+            color: #333;
+        }
+
+        .excel-formula-bar {
+            background: #fff;
+            border-bottom: 1px solid #d9d9d9;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            gap: 6px;
+            font-family: Arial, sans-serif;
+        }
+
+        .excel-formula-name {
+            font-weight: bold;
+            border-right: 1px solid #d9d9d9;
+            padding-right: 10px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* 試算表格本體 */
+        .excel-grid-viewport {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+
+        .excel-table {
+            border-collapse: collapse;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            width: max-content; /* 確保不折行 */
+        }
+
+        /* 共同格規 */
+        .excel-table th, .excel-table td {
+            border: 1px solid var(--excel-border);
+            height: 24px;
+            padding: 0 6px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* 灰底欄號與列號標頭 */
+        .excel-header-cell {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: normal;
+            text-align: center;
+            font-size: 10px;
+            border: 1px solid #c0c0c0 !important;
+            user-select: none;
+        }
+
+        .excel-col-letter {
+            min-width: 80px;
+        }
+
+        .excel-row-num {
+            width: 32px;
+            text-align: center;
+            font-weight: normal;
+            background-color: #f2f2f2;
+            color: #555;
+            border-right: 1px solid #c0c0c0 !important;
+        }
+
+        /* A-G 欄橘粉色標頭 */
+        .excel-th-peach {
+            background-color: var(--excel-peach);
+            color: #000;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* H-P 欄鵝黃色標頭 */
+        .excel-th-yellow {
+            background-color: var(--excel-yellow);
+            color: #000;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* 儲存格對齊 */
+        .excel-cell-text { text-align: left; }
+        .excel-cell-num { text-align: right; }
+        .excel-cell-center { text-align: center; }
+
+        /* 模擬報表數據列 */
+        .excel-row-data {
+            background: #fff;
+        }
+
+        .excel-row-data:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* 彈出視窗動畫 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ==========================================================================
+           共用與工具模態框 (防呆對話框)
+           ========================================================================== */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.85);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-dialog {
+            background: var(--bg-card);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            width: 480px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active .custom-dialog {
+            transform: translateY(0);
+        }
+
+        .dialog-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .dialog-body {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+        }
+
+        .dialog-btn-primary {
+            background: var(--primary);
+            color: #020617;
+        }
+
+        .dialog-btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 檔案處理載入條 */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.1s linear;
+        }
+
+        /* 炫酷首頁 */
+        .cover-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            gap: 24px;
+        }
+
+        .cover-badge {
+            background: linear-gradient(to right, rgba(0, 242, 254, 0.1), rgba(74, 172, 254, 0.1));
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .cover-title {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cover-description {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-wrapper">
+    <!-- 幻燈片容器 -->
+    <div class="slides-container">
+        
+        <!-- ==========================================
+             SLIDE 1: Cover 封面
+             ========================================== -->
+        <div class="slide active" id="slide-0">
+            <div class="cover-content">
+                <div class="cover-badge">企業級媒體數據自動化解法</div>
+                <h1 class="cover-title">媒體數據自動化整合流程</h1>
+                <p class="cover-description">運用次世代大語言模型 Gemini API，自動解構 CUE 表與報表，自動化對齊、寫入與可視化分析方案藍圖。</p>
+                <button class="action-trigger-btn" onclick="goToSlide(1)" style="margin-top: 20px; padding: 14px 40px;">
+                    開始簡報演示 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 2: 第一步 - 前端上傳門戶 (可操作)
+             ========================================== -->
+        <div class="slide" id="slide-1">
+            <div class="slide-header">
+                <div>
+                    <span class="slide-step">Step 1</span>
+                    <h2 class="slide-title">前端上傳門戶與檔案驗證</h2>
+                </div>
+                <i class="fa-solid fa-window-restore text-2xl text-cyan-400"></i>
+            </div>
+            <div class="slide-content">
+                <div class="col-left">
+                    <ul class="bullet-list">
+                        <li>
+                            <i class="fa-solid fa-circle-check list-icon"></i>
+                            <strong>指定媒體下拉選單：</strong>
+                            支援分類收集 [Yahoo]、[東森]、[TAMedia] 等媒體規格。
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check list-icon"></i>
+                            <strong>多類型檔案託管：</strong>
+                            上傳區支援 PDF、CSV 及 XLSX 多份「媒體CUE表」與「媒體報表」批次上傳。
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-triangle-exclamation list-icon" style="color: #f59e0b;"></i>
+                            <strong>XLSX 單 Sheet 防呆：</strong>
+                            限制檔案只能包含單一工作表，保護 Gemini 語義解析一致性。
+                        </li>
+                    </ul>
+                    
+                    <div class="progress-bar-container" id="uploadProgressBar">
+                        <div class="progress-bar-fill" id="uploadProgressBarFill"></div>
+                    </div>
+                </div>
+                
+                <div class="col-right">
+                    <div class="interactive-form">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-photo-film"></i> 媒體平台選擇</label>
+                            <select id="mediaSelect" class="dropdown-styled">
+                                <option value="" disabled selected>-- 請選擇投放媒體 --</option>
+                                <option value="Yahoo">Yahoo 媒體</option>
+                                <option value="東森">東森 (EBC) 廣告</option>
+                                <option value="TAMedia">TAMedia 行動媒體</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-folder-open"></i> 檔案上傳 (支援 PDF, CSV, XLSX)</label>
+                            <div class="drop-zone" id="dropZone">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <p>拖曳檔案至此或點擊選取</p>
+                                <span>通常包含：媒體 CUE 表、媒體實際報表</span>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.csv,.xlsx" style="display: none;">
+                            </div>
+                        </div>
+
+                        <div class="uploaded-files-container" id="uploadedFilesContainer">
+                            <!-- 動態注入已上傳檔案 -->
+                        </div>
+
+                        <button class="action-trigger-btn" id="startParseBtn">
+                            <i class="fa-solid fa-microchip"></i> 啟動 Gemini AI 解析
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 3: 第二步 - Gemini API 解析
+             ========================================== -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <div>
+                    <span class="slide-step">Step 2</span>
+                    <h2 class="slide-title">Gemini API 結構化特徵提取</h2>
+                </div>
+                <i class="fa-solid fa-brain text-2xl text-emerald-400"></i>
+            </div>
+            <div class="slide-content">
+                <div class="col-left">
+                    <ul class="bullet-list">
+                        <li>
+                            <i class="fa-solid fa-arrows-spin list-icon"></i>
+                            <strong>語意空間解析：</strong>
+                            針對非結構化 PDF 或複雜多變的 Excel CUE 表進行表格物理定位與行、列關聯映射。
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-database list-icon"></i>
+                            <strong>多維特徵抽取：</strong>
+                            從雜亂的報表中精準還原出 **核心資訊** 與 **數據預估/走期** 二大模塊、共 16 項資料屬性。
+                        </li>
+                    </ul>
+
+                    <div class="field-grid-layout">
+                        <div class="field-box">
+                            <div class="field-box-title">
+                                <i class="fa-solid fa-address-card" style="color: #ffb088;"></i> 核心資訊 (A~G 欄位)
+                            </div>
+                            <div class="field-tags-container">
+                                <span class="field-tag highlight-orange">Media (媒體)</span>
+                                <span class="field-tag highlight-orange">Placement (廣告名稱)</span>
+                                <span class="field-tag highlight-orange">TA (鎖定條件)</span>
+                                <span class="field-tag highlight-orange">Ad Size (尺寸)</span>
+                                <span class="field-tag highlight-orange">Format (支援格式)</span>
+                                <span class="field-tag highlight-orange">Buy Type (購買方式)</span>
+                                <span class="field-tag highlight-orange">R、F (輪替/固定)</span>
+                            </div>
+                        </div>
+                        <div class="field-box">
+                            <div class="field-box-title">
+                                <i class="fa-solid fa-calendar-days" style="color: #ffe69c;"></i> 預估與時程 (H~P 欄位)
+                            </div>
+                            <div class="field-tags-container">
+                                <span class="field-tag highlight-yellow">Est. Impressions</span>
+                                <span class="field-tag highlight-yellow">Est. CTR (%)</span>
+                                <span class="field-tag highlight-yellow">Est. Clicks</span>
+                                <span class="field-tag highlight-yellow">Est. Views</span>
+                                <span class="field-tag highlight-yellow">Period From / To</span>
+                                <span class="field-tag highlight-yellow">Days (天數)</span>
+                                <span class="field-tag highlight-yellow">Deadline</span>
+                                <span class="field-tag highlight-yellow">Remark (備註)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-right" style="padding: 0;">
+                    <div class="terminal-panel" id="terminalPanel">
+                        <div class="terminal-header">
+                            <div class="terminal-dot" style="background:#ef4444"></div>
+                            <div class="terminal-dot" style="background:#f59e0b"></div>
+                            <div class="terminal-dot" style="background:#10b981"></div>
+                        </div>
+                        <div class="terminal-line">> 系統就緒。請從 Slide 1 上傳檔案並啟動。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 4: 第三步 - BigQuery 雲端資料庫寫入
+             ========================================== -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <div>
+                    <span class="slide-step">Step 3</span>
+                    <h2 class="slide-title">BigQuery 高效儲存與對齊</h2>
+                </div>
+                <i class="fa-solid fa-server text-2xl text-blue-400"></i>
+            </div>
+            <div class="slide-content">
+                <div class="col-left">
+                    <ul class="bullet-list">
+                        <li>
+                            <i class="fa-solid fa-shuffle list-icon"></i>
+                            <strong>自動化對齊 (Schema Mapping)：</strong>
+                            將 Gemini API 抽出的標準 JSON 資料，與 BigQuery 資料表 Schema 建立直接映射與備份。
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-shield-halved list-icon"></i>
+                            <strong>安全稽核與定時分區：</strong>
+                            採用時序分區 (Partition by Ingestion Time)，保障每次匯入的廣告資料不重複，並能追蹤原始版本。
+                        </li>
+                    </ul>
+
+                    <div class="schema-mapper">
+                        <div class="mapper-row">
+                            <div class="mapper-node" style="color:var(--primary)"><i class="fa-solid fa-file-invoice"></i> CUE JSON</div>
+                            <div class="mapper-arrow"><i class="fa-solid fa-circle-arrow-right"></i></div>
+                            <div class="mapper-node" style="color:var(--accent)"><i class="fa-solid fa-database"></i> bq_raw_cue</div>
+                        </div>
+                        <div class="mapper-row">
+                            <div class="mapper-node" style="color:var(--primary)"><i class="fa-solid fa-file-excel"></i> 報表 JSON</div>
+                            <div class="mapper-arrow"><i class="fa-solid fa-circle-arrow-right"></i></div>
+                            <div class="mapper-node" style="color:var(--accent)"><i class="fa-solid fa-database"></i> bq_raw_report</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="code-snippet">
+<span style="color:#64748b">// Node.js - 串流寫入 BigQuery 核心代碼</span>
+const {BigQuery} = require('@google-cloud/bigquery');
+const bq = new BigQuery();
+
+async function insertToBQ(extractedData) {
+  const datasetId = 'media_automation';
+  const tableId = 'aggregated_campaign_table';
+
+  <span style="color:#64748b">// 建立高效寫入</span>
+  await bq
+    .dataset(datasetId)
+    .table(tableId)
+    .insert(extractedData);
+  
+  console.log(`寫入完成!`);
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 5: 第四步 - BI 工具與報表展示/匯出 (Excel 還原頁)
+             ========================================== -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header">
+                <div>
+                    <span class="slide-step">Step 4</span>
+                    <h2 class="slide-title">BI 可視化、智慧查詢與匯出</h2>
+                </div>
+                <i class="fa-solid fa-chart-line text-2xl text-purple-400"></i>
+            </div>
+            <div class="slide-content" style="gap: 20px;">
+                <div class="col-left" style="flex: 0.8;">
+                    <ul class="bullet-list" style="gap: 12px;">
+                        <li>
+                            <i class="fa-solid fa-circle-nodes list-icon"></i>
+                            <strong>Looker / Agent 智慧整合：</strong>
+                            隨時利用 BigQuery 連結 Looker 作實時監測，或呼叫 BQ Agent 查詢媒體成效。
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-file-excel list-icon" style="color: #107c41;"></i>
+                            <strong>一鍵導出標準 Excel：</strong>
+                            點擊下方按鈕可即時匯出與原稿一致的 campaign 明細，報表欄位對齊如右側所示。
+                        </li>
+                    </ul>
+
+                    <div class="bi-preview-container">
+                        <div class="dashboard-grid">
+                            <div class="kpi-card">
+                                <span>總曝光達成率</span>
+                                <h4>94.2%</h4>
+                            </div>
+                            <div class="kpi-card">
+                                <span>平均 CTR</span>
+                                <h4>3.85%</h4>
+                            </div>
+                            <div class="kpi-card">
+                                <span>匯出版本狀態</span>
+                                <h4 style="color: var(--accent);">V1.0 已對齊</h4>
+                            </div>
+                        </div>
+
+                        <button class="action-trigger-btn" id="simulateExportBtn" style="background: linear-gradient(135deg, #107c41, #1f9a55); color: #fff; box-shadow: 0 10px 20px rgba(16, 124, 65, 0.2);">
+                            <i class="fa-solid fa-file-export"></i> 匯出整合報表 (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 報表重現區 (對齊 圖片.png) -->
+                <div class="col-right" style="flex: 1.6; padding: 12px; background: rgba(15,23,42,0.6); display: flex; flex-direction: column; justify-content: flex-start; gap: 8px;">
+                    <div style="font-size: 13px; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+                        <span><i class="fa-solid fa-eye"></i> 匯出報表預覽 (還原 Campaign 欄位明細)</span>
+                        <span style="font-size:11px; background:rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">支援 A~P 共 16 欄</span>
+                    </div>
+
+                    <div class="excel-window-wrapper" id="excelWindow">
+                        <div class="excel-title-bar">
+                            <i class="fa-regular fa-file-excel"></i>
+                            <span>Campaign_Combined_Report_2026.xlsx</span>
+                        </div>
+                        <div class="excel-menu-bar">
+                            <span>檔案</span>
+                            <span>常用</span>
+                            <span>插入</span>
+                            <span>版面配置</span>
+                            <span>公式</span>
+                            <span>資料</span>
+                        </div>
+                        <div class="excel-formula-bar">
+                            <div class="excel-formula-name">fx</div>
+                            <div style="color: #666;">=SUM(H3:H5)</div>
+                        </div>
+
+                        <div class="excel-grid-viewport">
+                            <table class="excel-table">
+                                <thead>
+                                    <!-- 試算表欄英文字母 A~P -->
+                                    <tr>
+                                        <th class="excel-header-cell"></th>
+                                        <th class="excel-header-cell excel-col-letter">A</th>
+                                        <th class="excel-header-cell excel-col-letter">B</th>
+                                        <th class="excel-header-cell excel-col-letter">C</th>
+                                        <th class="excel-header-cell excel-col-letter">D</th>
+                                        <th class="excel-header-cell excel-col-letter">E</th>
+                                        <th class="excel-header-cell excel-col-letter">F</th>
+                                        <th class="excel-header-cell excel-col-letter">G</th>
+                                        <th class="excel-header-cell excel-col-letter">H</th>
+                                        <th class="excel-header-cell excel-col-letter">I</th>
+                                        <th class="excel-header-cell excel-col-letter">J</th>
+                                        <th class="excel-header-cell excel-col-letter">K</th>
+                                        <th class="excel-header-cell excel-col-letter">L</th>
+                                        <th class="excel-header-cell excel-col-letter">M</th>
+                                        <th class="excel-header-cell excel-col-letter">N</th>
+                                        <th class="excel-header-cell excel-col-letter">O</th>
+                                        <th class="excel-header-cell excel-col-letter">P</th>
+                                    </tr>
+                                    <!-- 列 1: 英文欄位標題 -->
+                                    <tr>
+                                        <th class="excel-header-cell">1</th>
+                                        <th class="excel-th-peach excel-col-letter">Media</th>
+                                        <th class="excel-th-peach excel-col-letter">Placement</th>
+                                        <th class="excel-th-peach excel-col-letter">TA</th>
+                                        <th class="excel-th-peach excel-col-letter">Ad Size</th>
+                                        <th class="excel-th-peach excel-col-letter">Format</th>
+                                        <th class="excel-th-peach excel-col-letter">Buy Type</th>
+                                        <th class="excel-th-peach excel-col-letter">R、F</th>
+                                        <th class="excel-th-yellow excel-col-letter">Est. Impressions</th>
+                                        <th class="excel-th-yellow excel-col-letter">Est. CTR (%)</th>
+                                        <th class="excel-th-yellow excel-col-letter">Est. Clicks</th>
+                                        <th class="excel-th-yellow excel-col-letter">Est. Views</th>
+                                        <th class="excel-th-yellow excel-col-letter">Period From</th>
+                                        <th class="excel-th-yellow excel-col-letter">Period To</th>
+                                        <th class="excel-th-yellow excel-col-letter">Days</th>
+                                        <th class="excel-th-yellow excel-col-letter">Deadline</th>
+                                        <th class="excel-th-yellow excel-col-letter">Remark</th>
+                                    </tr>
+                                    <!-- 列 2: 中文對譯欄位 -->
+                                    <tr>
+                                        <th class="excel-header-cell">2</th>
+                                        <th class="excel-th-peach">媒體</th>
+                                        <th class="excel-th-peach">廣告名稱</th>
+                                        <th class="excel-th-peach">鎖定條件</th>
+                                        <th class="excel-th-peach">尺寸</th>
+                                        <th class="excel-th-peach">支援格式</th>
+                                        <th class="excel-th-peach">購買方式</th>
+                                        <th class="excel-th-peach">輪替、固定</th>
+                                        <th class="excel-th-yellow">預估曝光數</th>
+                                        <th class="excel-th-yellow">預估點擊率</th>
+                                        <th class="excel-th-yellow">預估點擊數</th>
+                                        <th class="excel-th-yellow">預估觀看數</th>
+                                        <th class="excel-th-yellow">走期起</th>
+                                        <th class="excel-th-yellow">走期迄</th>
+                                        <th class="excel-th-yellow">天數</th>
+                                        <th class="excel-th-yellow">素材提供日</th>
+                                        <th class="excel-th-yellow">備註</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- 數據列 3 (Yahoo 範例) -->
+                                    <tr class="excel-row-data">
+                                        <td class="excel-row-num">3</td>
+                                        <td class="excel-cell-center">Yahoo</td>
+                                        <td class="excel-cell-text">首頁焦點看板</td>
+                                        <td class="excel-cell-text">25-44 歲汽車族群</td>
+                                        <td class="excel-cell-center">970x250</td>
+                                        <td class="excel-cell-center">PC/Mobile</td>
+                                        <td class="excel-cell-center">CPM</td>
+                                        <td class="excel-cell-center">R</td>
+                                        <td class="excel-cell-num">1,200,000</td>
+                                        <td class="excel-cell-num">1.50%</td>
+                                        <td class="excel-cell-num">18,000</td>
+                                        <td class="excel-cell-num">-</td>
+                                        <td class="excel-cell-center">2026-06-01</td>
+                                        <td class="excel-cell-center">2026-06-07</td>
+                                        <td class="excel-cell-num">7</td>
+                                        <td class="excel-cell-center">2026-05-25</td>
+                                        <td class="excel-cell-text">首波曝光主打</td>
+                                    </tr>
+                                    <!-- 數據列 4 (東森 範例) -->
+                                    <tr class="excel-row-data">
+                                        <td class="excel-row-num">4</td>
+                                        <td class="excel-cell-center">東森</td>
+                                        <td class="excel-cell-text">APP焦點新聞插頁</td>
+                                        <td class="excel-cell-text">全體受眾不限</td>
+                                        <td class="excel-cell-center">640x960</td>
+                                        <td class="excel-cell-center">Mobile</td>
+                                        <td class="excel-cell-center">CPC</td>
+                                        <td class="excel-cell-center">R</td>
+                                        <td class="excel-cell-num">500,000</td>
+                                        <td class="excel-cell-num">3.20%</td>
+                                        <td class="excel-cell-num">16,000</td>
+                                        <td class="excel-cell-num">-</td>
+                                        <td class="excel-cell-center">2026-06-05</td>
+                                        <td class="excel-cell-center">2026-06-12</td>
+                                        <td class="excel-cell-num">8</td>
+                                        <td class="excel-cell-center">2026-06-01</td>
+                                        <td class="excel-cell-text">行動端蓋板廣告</td>
+                                    </tr>
+                                    <!-- 數據列 5 (TAMedia 範例) -->
+                                    <tr class="excel-row-data">
+                                        <td class="excel-row-num">5</td>
+                                        <td class="excel-cell-center">TAMedia</td>
+                                        <td class="excel-cell-text">影音原生輪播欄</td>
+                                        <td class="excel-cell-text">數位愛好者</td>
+                                        <td class="excel-cell-center">300x250</td>
+                                        <td class="excel-cell-center">PC+Mobile</td>
+                                        <td class="excel-cell-center">CPW</td>
+                                        <td class="excel-cell-center">F</td>
+                                        <td class="excel-cell-num">2,400,000</td>
+                                        <td class="excel-cell-num">0.85%</td>
+                                        <td class="excel-cell-num">20,400</td>
+                                        <td class="excel-cell-num">120,000</td>
+                                        <td class="excel-cell-center">2026-06-10</td>
+                                        <td class="excel-cell-center">2026-06-24</td>
+                                        <td class="excel-cell-num">14</td>
+                                        <td class="excel-cell-center">2026-06-05</td>
+                                        <td class="excel-cell-text">包含導流影音</td>
+                                    </tr>
+                                    <!-- 空白網格列 6 ~ 23 (還原經典 Excel 樣式) -->
+                                    <script>
+                                        for (let i = 6; i <= 23; i++) {
+                                            document.write(`
+                                                <tr class="excel-row-data">
+                                                    <td class="excel-row-num">${i}</td>
+                                                    ${'<td></td>'.repeat(16)}
+                                                </tr>
+                                            `);
+                                        }
+                                    </script>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 底部控制導覽列 -->
+    <div class="nav-bar">
+        <button class="nav-btn" id="prevBtn" onclick="navigateSlide(-1)">
+            <i class="fa-solid fa-chevron-left"></i> 上一頁
+        </button>
+        <div class="nav-indicators" id="indicators">
+            <!-- 指示點會自動在 init 產生 -->
+        </div>
+        <button class="nav-btn" id="nextBtn" onclick="navigateSlide(1)">
+            下一頁 <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- ==========================================
+     CUSTOM MODALS & SYSTEM DIALOGS
+     ========================================== -->
+<div class="modal-overlay" id="dialogOverlay">
+    <div class="custom-dialog">
+        <div class="dialog-header" id="dialogTitle">
+            <i class="fa-solid fa-triangle-exclamation"></i> 提示
+        </div>
+        <div class="dialog-body" id="dialogBody">
+            系統提示訊息。
+        </div>
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-secondary" id="dialogCancel">取消</button>
+            <button class="dialog-btn dialog-btn-primary" id="dialogConfirm">確認</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 簡報管理狀態
+    let currentSlide = 0;
+    const totalSlides = 5; // 0 (封面) ~ 4
+    let uploadedFilesList = [];
+
+    // 初始化導覽指示燈
+    const indicatorsContainer = document.getElementById('indicators');
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = `indicator ${i === 0 ? 'active' : ''}`;
+        dot.onclick = () => goToSlide(i);
+        indicatorsContainer.appendChild(dot);
+    }
+
+    // 幻燈片跳轉
+    function goToSlide(slideIndex) {
+        document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+        currentSlide = slideIndex;
+        document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+        // 更新導向按鈕狀態
+        document.getElementById('prevBtn').disabled = (currentSlide === 0);
+        document.getElementById('nextBtn').disabled = (currentSlide === totalSlides - 1);
+
+        // 更新導向圓點
+        const dots = document.querySelectorAll('.indicator');
+        dots.forEach((dot, idx) => {
+            if (idx === currentSlide) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+
+        // 觸發特定頁面的自動特效
+        if (currentSlide === 4) {
+            // 第四步，自動展開 Excel 預覽視窗
+            setTimeout(() => {
+                document.getElementById('excelWindow').classList.add('show');
+            }, 300);
+        } else {
+            document.getElementById('excelWindow').classList.remove('show');
+        }
+    }
+
+    function navigateSlide(direction) {
+        let target = currentSlide + direction;
+        if (target >= 0 && target < totalSlides) {
+            goToSlide(target);
+        }
+    }
+
+    // 鍵盤控制簡報
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'Space') {
+            navigateSlide(1);
+        } else if (e.key === 'ArrowLeft') {
+            navigateSlide(-1);
+        }
+    });
+
+    // ==========================================================================
+    // 模態框防呆對話機制
+    // ==========================================================================
+    const overlay = document.getElementById('dialogOverlay');
+    const dTitle = document.getElementById('dialogTitle');
+    const dBody = document.getElementById('dialogBody');
+    const dConfirm = document.getElementById('dialogConfirm');
+    const dCancel = document.getElementById('dialogCancel');
+
+    function showCustomDialog(title, body, confirmText, showCancel, onConfirmCallback) {
+        dTitle.innerHTML = title;
+        dBody.innerHTML = body;
+        dConfirm.textContent = confirmText || '確定';
+        
+        if (showCancel) {
+            dCancel.style.display = 'block';
+        } else {
+            dCancel.style.display = 'none';
+        }
+
+        overlay.classList.add('active');
+
+        dConfirm.onclick = () => {
+            overlay.classList.remove('active');
+            if (onConfirmCallback) onConfirmCallback();
+        };
+
+        dCancel.onclick = () => {
+            overlay.classList.remove('active');
+        };
+    }
+
+    // ==========================================================================
+    // 第一步：互動操作 - 檔案拖曳與驗證邏輯
+    // ==========================================================================
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const mediaSelect = document.getElementById('mediaSelect');
+    const uploadedFilesContainer = document.getElementById('uploadedFilesContainer');
+    const uploadProgressBar = document.getElementById('uploadProgressBar');
+    const uploadProgressBarFill = document.getElementById('uploadProgressBarFill');
+    const startParseBtn = document.getElementById('startParseBtn');
+
+    dropZone.onclick = () => fileInput.click();
+
+    dropZone.ondragover = (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    };
+
+    dropZone.ondragleave = () => {
+        dropZone.classList.remove('dragover');
+    };
+
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleSelectedFiles(e.dataTransfer.files);
+    };
+
+    fileInput.onchange = (e) => {
+        handleSelectedFiles(e.target.files);
+    };
+
+    function handleSelectedFiles(files) {
+        if (!mediaSelect.value) {
+            showCustomDialog(
+                '<i class="fa-solid fa-circle-info" style="color:#00f2fe;"></i> 提示',
+                '請先在上方下拉選單選擇 <strong>媒體名稱 (Yahoo / 東森 / TAMedia)</strong> 再進行上傳！',
+                '知道了',
+                false
+            );
+            return;
+        }
+
+        for (let file of files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'csv', 'xlsx'].includes(ext)) {
+                showCustomDialog(
+                    '<i class="fa-solid fa-circle-exclamation" style="color:#ef4444;"></i> 格式錯誤',
+                    `系統目前僅支援匯入 <strong>PDF、CSV、XLSX</strong> 格式。檔案 "${file.name}" 不符規範。`,
+                    '關閉',
+                    false
+                );
+                continue;
+            }
+
+            // XLSX 單工作表檢測防呆機制
+            if (ext === 'xlsx') {
+                showCustomDialog(
+                    '<i class="fa-solid fa-file-excel" style="color:#f59e0b;"></i> 單一工作表檢查',
+                    `偵測到 Excel 檔案：<strong>${file.name}</strong>。<br>請確認該檔案<strong>僅包含單一個 Sheet 工作表</strong>。多 Sheet 將會造成 AI 欄位拆分失誤。`,
+                    '確認無誤',
+                    true,
+                    () => addFileToQueue(file)
+                );
+            } else {
+                addFileToQueue(file);
+            }
+        }
+    }
+
+    function addFileToQueue(file) {
+        // 防止重複加入同名檔案
+        if (uploadedFilesList.some(f => f.name === file.name)) return;
+
+        uploadedFilesList.push(file);
+        renderFiles();
+    }
+
+    function removeFileFromQueue(index) {
+        uploadedFilesList.splice(index, 1);
+        renderFiles();
+    }
+
+    function renderFiles() {
+        uploadedFilesContainer.innerHTML = '';
+        uploadedFilesList.forEach((file, index) => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            let iconClass = 'fa-file-lines';
+            if (ext === 'pdf') iconClass = 'fa-file-pdf';
+            if (ext === 'xlsx') iconClass = 'fa-file-excel';
+            if (ext === 'csv') iconClass = 'fa-file-csv';
+
+            const pill = document.createElement('div');
+            pill.className = 'file-pill';
+            pill.innerHTML = `
+                <i class="fa-solid ${iconClass}"></i>
+                <span>${file.name}</span>
+                <i class="fa-solid fa-circle-xmark remove-file" onclick="removeFileFromQueue(${index})"></i>
+            `;
+            uploadedFilesContainer.appendChild(pill);
+        });
+    }
+
+    // 啟動 Gemini 解析動態流程
+    startParseBtn.onclick = () => {
+        if (uploadedFilesList.length === 0) {
+            showCustomDialog(
+                '<i class="fa-solid fa-circle-info" style="color:#00f2fe;"></i> 無上傳檔案',
+                '請先拖曳上傳 [媒體CUE表] 或 [媒體報表] 檔案！',
+                '返回上傳',
+                false
+            );
+            return;
+        }
+
+        // 開始模擬進度條
+        uploadProgressBar.style.display = 'block';
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 5;
+            uploadProgressBarFill.style.width = `${progress}%`;
+            if (progress >= 100) {
+                clearInterval(interval);
+                showCustomDialog(
+                    '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> 載入成功',
+                    `成功解析 <strong>${uploadedFilesList.length}</strong> 個檔案。即將進入 [Step 2] 觀看 Gemini 欄位解構與特徵提取進度！`,
+                    '前往下一步',
+                    false,
+                    () => {
+                        // 重置進度條
+                        uploadProgressBar.style.display = 'none';
+                        uploadProgressBarFill.style.width = '0%';
+                        // 跳轉到第二頁
+                        goToSlide(2);
+                        // 開始 terminal 解析日誌播放
+                        runTerminalSimulation();
+                    }
+                );
+            }
+        }, 100);
+    };
+
+    // ==========================================================================
+    // 第二步：動態 Terminal 模擬
+    // ==========================================================================
+    function runTerminalSimulation() {
+        const term = document.getElementById('terminalPanel');
+        term.innerHTML = `
+            <div class="terminal-header">
+                <div class="terminal-dot" style="background:#ef4444"></div>
+                <div class="terminal-dot" style="background:#f59e0b"></div>
+                <div class="terminal-dot" style="background:#10b981"></div>
+            </div>
+        `;
+
+        const logs = [
+            { text: '> 初始化 Google Gemini API 連線環境...', delay: 500, type: 'info' },
+            { text: `> 偵測到活動媒體：${mediaSelect.value || 'Yahoo'}`, delay: 1000, type: 'info' },
+            { text: `> 解析檔案列表：[${uploadedFilesList.map(f => f.name).join(', ')}]`, delay: 1500, type: 'info' },
+            { text: '> 啟動 OCR & 語境分析，提取表格座標...', delay: 2300, type: 'info' },
+            { text: '> 正在與 標準媒體 CUE 字典進行語境對齊 (Schema alignment)...', delay: 3000, type: 'info' },
+            { text: '> 成功解析 [A~G 核心資訊欄位] 共 7 欄', delay: 3800, type: 'success' },
+            { text: '> 成功解析 [H~P 數據預估與走期欄位] 共 9 欄', delay: 4500, type: 'success' },
+            { text: '> [Gemini 引擎解析狀態]：OK (耗時: 1.42s). 回傳 16 欄結構化 JSON 檔案。', delay: 5200, type: 'success' }
+        ];
+
+        logs.forEach(log => {
+            setTimeout(() => {
+                const line = document.createElement('div');
+                line.className = `terminal-line ${log.type === 'success' ? 'success' : ''}`;
+                line.innerHTML = log.text;
+                term.appendChild(line);
+                term.scrollTop = term.scrollHeight;
+            }, log.delay);
+        });
+    }
+
+    // ==========================================================================
+    // 第四步：模擬匯出報表下載
+    // ==========================================================================
+    const simulateExportBtn = document.getElementById('simulateExportBtn');
+    simulateExportBtn.onclick = () => {
+        simulateExportBtn.disabled = true;
+        simulateExportBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在生成試算表...';
+        
+        setTimeout(() => {
+            simulateExportBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 整合報表導出完成！';
+            
+            showCustomDialog(
+                '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> 導出成功',
+                '報表已打包為 <strong>Campaign_Combined_Report_2026.xlsx</strong> 並下載至您的本地主機！<br>其欄位分佈與右側預覽的 16 欄完全一致。',
+                '完美',
+                false,
+                () => {
+                    simulateExportBtn.disabled = false;
+                    simulateExportBtn.innerHTML = '<i class="fa-solid fa-file-export"></i> 匯出整合報表 (.xlsx)';
+                }
+            );
+        }, 1500);
+    };
+
+    // 預設填入一個預設選單
+    window.onload = function() {
+        mediaSelect.value = "Yahoo";
+        // 預設塞入兩個模擬檔案
+        uploadedFilesList = [
+            { name: "Yahoo_CUE表_2026_Q2.xlsx", type: "xlsx" },
+            { name: "Yahoo_結案實際報表.pdf", type: "pdf" }
+        ];
+        renderFiles();
+    };
+
+</script>
+
+</body>
+</html>
