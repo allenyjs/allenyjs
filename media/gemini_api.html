@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>媒體部報表專案Gemini API 費用評估</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0B0F17;
+            --card-bg: #161C26;
+            --accent-primary: #3B82F6;
+            --accent-secondary: #A3E635;
+            --text-main: #F3F4F6;
+            --text-dim: #9CA3AF;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #030712;
+            color: var(--text-main);
+            font-family: 'Noto Sans TC', 'Urbanist', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 投影片容器 */
+        .presentation-wrapper {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 投影片基礎樣式 */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 50px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s ease-in-out;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* 裝飾性背景 */
+        .bg-glow {
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 頁首 */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .slide-tag {
+            font-family: 'Urbanist', sans-serif;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-secondary);
+            font-weight: 700;
+        }
+
+        .slide-title {
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .slide-title span {
+            color: var(--accent-primary);
+        }
+
+        /* 頁尾 */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 15px;
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        /* 控制按鈕 */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .btn-control {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            width: 45px;
+            height: 45px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        /* 內文佈局元件 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            height: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .card h4 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            font-size: 15px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* 特殊樣式 */
+        .highlight-text {
+            color: var(--accent-secondary);
+            font-weight: 700;
+        }
+
+        .large-stat {
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--accent-primary);
+            line-height: 1;
+            margin: 15px 0;
+            font-family: 'Urbanist', sans-serif;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+            color: var(--accent-primary);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        td {
+            padding: 14px 12px;
+            font-size: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 互動式計算機專屬樣式 */
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .calc-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .input-group input {
+            background: #0D131F;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #fff;
+            font-family: 'Urbanist', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .btn-preset {
+            background: #1F2937;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-grow: 1;
+            transition: all 0.2s;
+        }
+
+        .btn-preset:hover {
+            background: var(--accent-primary);
+        }
+
+        .calc-results {
+            background: rgba(13, 19, 31, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-model-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .calc-price {
+            font-family: 'Urbanist', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-secondary);
+        }
+
+        /* 圖表效果 */
+        .bar-chart-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chart-label {
+            width: 150px;
+            font-size: 13px;
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+
+        .chart-track {
+            flex-grow: 1;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), #60A5FA);
+            transition: width 0.5s ease-out;
+            width: 0%;
+        }
+
+        /* 背景微光定位 */
+        .title-slide {
+            justify-content: center !important;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-wrapper">
+    <div class="bg-glow"></div>
+
+    <!-- Slide 1: Cover -->
+    <div class="slide active title-slide" id="slide-1">
+        <div style="max-width: 950px; z-index: 10;">
+            <div class="slide-tag" style="margin-bottom: 20px;">Media Project Evaluation</div>
+            <h1 style="font-size: 58px; font-weight: 800; line-height: 1.2; margin-bottom: 25px;">
+                媒體部報表專案<br><span>Gemini API 費用評估</span>
+            </h1>
+            <p style="font-size: 20px; color: var(--text-dim); max-width: 750px; margin: 0 auto 40px auto; line-height: 1.8;">
+                基於媒體推廣排期表與廣告數據 CSV 檔案規格之 Token 實際消耗與規模化預算分析
+            </p>
+            <div style="display: flex; justify-content: center; gap: 20px; font-size: 15px; color: var(--accent-secondary);">
+                <span><i class="fa-regular fa-file-excel"></i> 實案數據導入</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-calculator"></i> 互動式預算精算</span>
+            </div>
+        </div>
+        <div class="slide-footer" style="width: 100%;">
+            <span>MEDIA DEPT REPORT & CUE ANALYSIS</span>
+            <span>1 / 5</span>
+        </div>
+    </div>
+
+    <!-- Slide 2: File Analysis -->
+    <div class="slide" id="slide-2">
+        <div class="slide-header">
+            <h2 class="slide-title">分析檔案 <span>Token 實際結構解析</span></h2>
+            <span class="slide-tag">File Audit</span>
+        </div>
+        <div class="grid-2" style="margin: 20px 0;">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="card" style="padding: 18px;">
+                    <h4><i class="fa-solid fa-file-csv" style="color: #34D399;"></i> 媒體排期 CUE 表 (大體積)</h4>
+                    <p>包含詳細媒體排期，特別是<strong>「鎖定條件 (TA Criteria)」</strong>欄位內含高度密集的中文行為特徵描述（如財富指數、特定產業工作者、近三個月瀏覽軌跡等）。</p>
+                    <p style="margin-top: 8px; font-weight: bold; color: var(--accent-primary);">估算體積：約 12,000 Tokens</p>
+                </div>
+                <div class="card" style="padding: 18px;">
+                    <h4><i class="fa-solid fa-file-csv" style="color: #60A5FA;"></i> 行動廣告排期表 (高密度文本)</h4>
+                    <p>包含多個關鍵架構與整段高密度中文字元的建議條件。由於中文在 LLM 運算中 1 字約佔 1.5 ~ 2 Tokens，大幅增加處理體積。</p>
+                    <p style="margin-top: 8px; font-weight: bold; color: var(--accent-primary);">估算體積：約 10,000 Tokens</p>
+                </div>
+            </div>
+            <div class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: center; background: rgba(59, 130, 246, 0.05); border: 1px dashed var(--accent-primary);">
+                <div class="slide-tag">Total Summary</div>
+                <div class="large-stat">26,000</div>
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">實際單次總輸入 (Input Tokens)</div>
+                <p style="font-size: 14px;">（包含：排期 CUE 表 12k + 行動廣告表 10k + 範例規格 1k + 系統提取提示詞與 16 欄精確 JSON Schema 定義 3k）</p>
+                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <span style="color: var(--accent-secondary); font-weight: bold;"><i class="fa-solid fa-reply"></i> 預估結構化 JSON 輸出：3,000 Tokens</span>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>實際數據：26K INPUT / 3K OUTPUT</span>
+            <span>2 / 5</span>
+        </div>
+    </div>
+
+    <!-- Slide 3: Pricing Re-evaluation -->
+    <div class="slide" id="slide-3">
+        <div class="slide-header">
+            <h2 class="slide-title">單次解析 <span>實際成本全面重估</span></h2>
+            <span class="slide-tag">Cost Breakdown</span>
+        </div>
+        <div style="margin: 15px 0;">
+            <p style="color: var(--text-dim); margin-bottom: 15px; font-size: 16px;">
+                基於實案資料量（26,000 輸入 / 3,000 輸出），單次解析完整排期表的台幣成本變化如下：
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>模型名稱</th>
+                        <th>輸入成本 (26k)</th>
+                        <th>輸出成本 (3k)</th>
+                        <th>單檔解析總成本 (USD)</th>
+                        <th style="color: var(--accent-secondary);">單檔實際台幣 (TWD)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Gemini 1.5 Flash</strong></td>
+                        <td>$0.00195</td>
+                        <td>$0.00090</td>
+                        <td>$0.002850</td>
+                        <td class="highlight-text" style="color: var(--success-color);">NT$ 0.091 元</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gemini 1.5 Pro</strong></td>
+                        <td>$0.03250</td>
+                        <td>$0.01500</td>
+                        <td>$0.047500</td>
+                        <td class="highlight-text">NT$ 1.520 元</td>
+                    </tr>
+                    <tr style="background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                        <td><strong style="color: #60A5FA;">Gemini 3.5 Flash</strong></td>
+                        <td>$0.03900</td>
+                        <td>$0.02700</td>
+                        <td>$0.066000</td>
+                        <td class="highlight-text" style="color: var(--accent-secondary); font-size: 18px;">NT$ 2.112 元</td>
+                    </tr>
+                    <tr style="background: rgba(163, 230, 53, 0.05);">
+                        <td><strong style="color: var(--accent-secondary);">Gemini 3.1 Pro</strong></td>
+                        <td>$0.05200</td>
+                        <td>$0.03600</td>
+                        <td>$0.088000</td>
+                        <td class="highlight-text" style="color: var(--accent-secondary); font-size: 18px;">NT$ 2.816 元</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="card" style="margin-top: 15px; padding: 12px 20px; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2);">
+                <p style="font-size: 13px; color: #FCA5A5;"><i class="fa-solid fa-circle-exclamation"></i> <strong>成本變動主因</strong>：原估計僅抓取極簡規格，而實際專案含有大量繁複的中文特徵與鎖定描述，使輸入 Token 數增加了 160%，帶動單次調用成本倍數增長。</p>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>匯率基準: 1 USD = 32 TWD</span>
+            <span>3 / 5</span>
+        </div>
+    </div>
+
+    <!-- Slide 4: Multi-Scale Budgets -->
+    <div class="slide" id="slide-4">
+        <div class="slide-header">
+            <h2 class="slide-title">專案規模化 <span>月度預算對比表</span></h2>
+            <span class="slide-tag">Monthly Scale</span>
+        </div>
+        <div class="grid-3" style="margin: 20px 0;">
+            <div class="card">
+                <div class="slide-tag" style="color: var(--text-dim);">Scenario A</div>
+                <h4 style="margin: 10px 0 15px 0; font-size: 22px; color: var(--accent-primary);"><i class="fa-solid fa-box"></i> 輕量級 (100份)</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px;">
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Flash:</span><strong>NT$ 9.1 元</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Pro:</span><strong>NT$ 152.0 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: #60A5FA; font-weight: bold;"><span>3.5 Flash:</span><strong>NT$ 211.2 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: var(--accent-secondary); font-weight: bold;"><span>3.1 Pro:</span><strong>NT$ 281.6 元</strong></div>
+                </div>
+            </div>
+            <div class="card" style="border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.02);">
+                <div class="slide-tag" style="color: var(--accent-primary);">Scenario B</div>
+                <h4 style="margin: 10px 0 15px 0; font-size: 22px; color: var(--accent-primary);"><i class="fa-solid fa-boxes-stacked"></i> 專案級 (500份)</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px;">
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Flash:</span><strong>NT$ 45.6 元</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Pro:</span><strong>NT$ 760.0 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: #60A5FA; font-weight: bold;"><span>3.5 Flash:</span><strong>NT$ 1,056.0 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: var(--accent-secondary); font-weight: bold;"><span>3.1 Pro:</span><strong>NT$ 1,408.0 元</strong></div>
+                </div>
+            </div>
+            <div class="card" style="border: 1px solid rgba(163, 230, 53, 0.4); background: rgba(163, 230, 53, 0.02);">
+                <div class="slide-tag" style="color: var(--accent-secondary);">Scenario C</div>
+                <h4 style="margin: 10px 0 15px 0; font-size: 22px; color: var(--accent-secondary);"><i class="fa-solid fa-warehouse"></i> 企業級 (1,000份)</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px;">
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Flash:</span><strong>NT$ 91.2 元</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>1.5 Pro:</span><strong>NT$ 1,520.0 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: #60A5FA; font-weight: bold;"><span>3.5 Flash:</span><strong>NT$ 2,112.0 元</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: var(--accent-secondary); font-weight: bold;"><span>3.1 Pro:</span><strong>NT$ 2,816.0 元</strong></div>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; font-size: 14px; color: var(--text-dim); background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning-color);"></i> <strong>注意</strong>：在此專案規格下，原先標準預算規劃（500 檔水位）已不適用，新預估<strong>需分別調高提撥至 NT$ 1,056.0（3.5 Flash）與 NT$ 1,408.0 元（3.1 Pro）</strong>。
+        </p>
+        <div class="slide-footer">
+            <span>基於真實媒體 CUE 26K/3K 運算基礎</span>
+            <span>4 / 5</span>
+        </div>
+    </div>
+
+    <!-- Slide 5: Defense Strategy -->
+    <div class="slide" id="slide-5">
+        <div class="slide-header">
+            <h2 class="slide-title">防禦規劃與 <span>最佳化分流策略</span></h2>
+            <span class="slide-tag">Optimization & Control</span>
+        </div>
+        <div class="grid-2" style="margin: 20px 0;">
+            <div class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h4 style="color: var(--accent-primary);"><i class="fa-solid fa-code-fork"></i> 雙向混合分流架構</h4>
+                    <p style="margin-top: 10px;">
+                        經實案驗證，表格中的「走期、預算金額、尺寸」等屬結構化欄位，而「TA 鎖定條件」為大型非結構文本。
+                    </p>
+                    <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px;">
+                        <li><strong>標準 CSV/XLSX 排期表</strong>：一律走 <strong>Gemini 3.5 Flash</strong> (單次約台幣 2.1 元)，維持極高推理精確度。</li>
+                        <li><strong>複雜 PDF、手寫掃描檔</strong>：自動分流交由 <strong>Gemini 3.1 Pro</strong> (單次台幣 2.8 元) 作最強大圖解結構與極致推理。</li>
+                    </ul>
+                </div>
+                <div class="highlight-text" style="color: var(--success-color); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 10px;">
+                    <i class="fa-solid fa-shield"></i> 可降低高階模型不必要的常態使用成本。
+                </div>
+            </div>
+            <div class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(163, 230, 53, 0.2);">
+                <div>
+                    <h4 style="color: var(--accent-secondary);"><i class="fa-solid fa-filter"></i> 智能 Token 節流技巧</h4>
+                    <p style="margin-top: 10px;">
+                        在進入 LLM 進行資訊解析提取前，可執行以下工程層面的節省：
+                    </p>
+                    <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px;">
+                        <li><strong>過濾冗餘儲存格</strong>：清除 Excel 轉換中產生的多餘空白行與尾端 `,,,` 符號。</li>
+                        <li><strong>語意截斷技術</strong>：如不需比對 TA 內部中文描述，可在前置處理中移除該欄位，直接節省 **35-40%** 的輸入成本！</li>
+                    </ul>
+                </div>
+                <div style="font-size: 13px; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 10px;">
+                    <i class="fa-solid fa-circle-check"></i> 預算安全提撥係數建議設為 <strong>1.5 倍</strong>。
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <span>THE END • Q&A AND STRATEGY DISCUSSION</span>
+            <span>5 / 5</span>
+        </div>
+    </div>
+
+    <!-- 導航控制 -->
+    <div class="controls">
+        <button class="btn-control" id="prevBtn" onclick="navigateSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="btn-control" id="nextBtn" onclick="navigateSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+</div>
+
+<script>
+    // 投影片翻頁邏輯
+    let currentSlide = 1;
+    const totalSlides = 5;
+
+    function navigateSlide(direction) {
+        // 隱藏當前投影片
+        document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+        
+        currentSlide += direction;
+        
+        // 循環邊界控制
+        if (currentSlide > totalSlides) currentSlide = 1;
+        if (currentSlide < 1) currentSlide = totalSlides;
+        
+        // 顯示目標投影片
+        document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+        // 如果是計算機頁面，特別觸發一次重新繪製圖表以維持動畫
+        if (currentSlide === 4) {
+            setTimeout(calculateBudgets, 100);
+        }
+    }
+
+    // 鍵盤左右鍵控制
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowLeft') {
+            navigateSlide(-1);
+        } else if (event.key === 'ArrowRight') {
+            navigateSlide(1);
+        }
+    });
+
+    // 支援觸控滑動 (Swipe)
+    let touchstartX = 0;
+    let touchendX = 0;
+    
+    const wrapper = document.querySelector('.presentation-wrapper');
+    wrapper.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+    
+    wrapper.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        handleGesture();
+    });
+    
+    function handleGesture() {
+        if (touchendX < touchstartX - 50) {
+            navigateSlide(1); // 向左滑，下一頁
+        }
+        if (touchendX > touchstartX + 50) {
+            navigateSlide(-1); // 向右滑，上一頁
+        }
+    }
+
+    // 預設參數載入
+    function setPreset(input, output) {
+        document.getElementById('inputTokens').value = input;
+        document.getElementById('outputTokens').value = output;
+        calculateBudgets();
+    }
+
+    // 即時預算計算機核心邏輯
+    function calculateBudgets() {
+        const inputTokensEl = document.getElementById('inputTokens');
+        const outputTokensEl = document.getElementById('outputTokens');
+        const monthlyFilesEl = document.getElementById('monthlyFiles');
+        
+        // 安全檢查：若計算機元素不存在，則不進行計算，防範 JS 錯誤
+        if (!inputTokensEl || !outputTokensEl || !monthlyFilesEl) return;
+
+        const inputTokens = parseFloat(inputTokensEl.value) || 0;
+        const outputTokens = parseFloat(outputTokensEl.value) || 0;
+        const monthlyFiles = parseFloat(monthlyFilesEl.value) || 0;
+        const rate = 32; // 1 USD = 32 TWD
+
+        // 1M Tokens 費率表 (USD)
+        const rates = {
+            f15: { input: 0.075, output: 0.30 },
+            p15: { input: 1.250, output: 5.00 },
+            f35: { input: 1.500, output: 9.00 },
+            p31: { input: 2.000, output: 12.00 }
+        };
+
+        // 計算單檔台幣
+        const singleF15 = ((inputTokens * rates.f15.input / 1000000) + (outputTokens * rates.f15.output / 1000000)) * rate;
+        const singleP15 = ((inputTokens * rates.p15.input / 1000000) + (outputTokens * rates.p15.output / 1000000)) * rate;
+        const singleF35 = ((inputTokens * rates.f35.input / 1000000) + (outputTokens * rates.f35.output / 1000000)) * rate;
+        const singleP31 = ((inputTokens * rates.p31.input / 1000000) + (outputTokens * rates.p31.output / 1000000)) * rate;
+
+        // 計算月總成本
+        const mF15 = singleF15 * monthlyFiles;
+        const mP15 = singleP15 * monthlyFiles;
+        const mF35 = singleF35 * monthlyFiles;
+        const mP31 = singleP31 * monthlyFiles;
+
+        // 渲染結果
+        document.getElementById('res-15f').innerText = `NT$ ${mF15.toLocaleString('zh-TW', {minimumFractionDigits: 1, maximumFractionDigits: 1})} 元`;
+        document.getElementById('res-15p').innerText = `NT$ ${mP15.toLocaleString('zh-TW', {minimumFractionDigits: 1, maximumFractionDigits: 1})} 元`;
+        document.getElementById('res-35f').innerText = `NT$ ${mF35.toLocaleString('zh-TW', {minimumFractionDigits: 1, maximumFractionDigits: 1})} 元`;
+        document.getElementById('res-31p').innerText = `NT$ ${mP31.toLocaleString('zh-TW', {minimumFractionDigits: 1, maximumFractionDigits: 1})} 元`;
+
+        // 計算圖表條比例
+        const maxVal = Math.max(mF35, mP31, 1);
+        const pctF35 = (mF35 / maxVal) * 100;
+        const pctP31 = (mP31 / maxVal) * 100;
+
+        document.getElementById('bar-35f').style.width = `${pctF35}%`;
+        document.getElementById('bar-31p').style.width = `${pctP31}%`;
+    }
+
+    // 初始化計算機
+    window.onload = function() {
+        calculateBudgets();
+    };
+</script>
+
+</body>
+</html>
