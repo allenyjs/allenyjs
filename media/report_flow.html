@@ -39,22 +39,29 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
+            position: relative;
         }
 
-        /* 簡報外框 (固定 16:9 比例 1280x720) */
+        /* 簡報外框 (設計比例 1280x900) */
         .presentation-wrapper {
             width: 1280px;
             height: 900px;
             background-color: var(--bg-dark);
             border-radius: 20px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transform-origin: center center;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.1s ease-out;
         }
 
         /* 背景微光裝飾 */
@@ -1602,6 +1609,34 @@ async function insertToBQ(extractedData) {
         }, 1500);
     };
 
+    // 等比例縮放簡報外框，確保在任何視窗寬高下都不會破版
+    function resizePresentation() {
+        const wrapper = document.querySelector('.presentation-wrapper');
+        if (!wrapper) return;
+        
+        const targetWidth = 1280;
+        const targetHeight = 900;
+        
+        // 取得當前視窗的可視區域寬高
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // 計算寬與高的縮放比例
+        const scaleX = windowWidth / targetWidth;
+        const scaleY = windowHeight / targetHeight;
+        
+        // 取其最小值作為縮放比例，確保內容完全裝在畫面內且不溢出
+        // 允許放大與縮小，最高可縮放至滿畫面
+        const scale = Math.min(scaleX, scaleY);
+        
+        // 套用 scale，並保持 translate(-50%, -50%) 置中
+        wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    }
+
+    // 綁定事件監聽器
+    window.addEventListener('resize', resizePresentation);
+    window.addEventListener('DOMContentLoaded', resizePresentation);
+
     // 預設填入一個預設選單
     window.onload = function() {
         mediaSelect.value = "Yahoo";
@@ -1611,6 +1646,7 @@ async function insertToBQ(extractedData) {
             { name: "Yahoo_結案實際報表.pdf", type: "pdf" }
         ];
         renderFiles();
+        resizePresentation(); // 載入完成時立即進行縮放
     };
 
 </script>
