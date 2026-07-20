@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="zh-Hant"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT vs. Claude 商業方案合規對比</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 引入高品質中英文字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+    <style>
+/* 1. 全域初始化設定 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0b0f19;
+  display: grid;
+  gap: 40px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  min-height: 100vh;
+  padding: 40px 0;
+  place-items: center;
+  font-family: 'Inter', 'Noto Sans TC', sans-serif;
+}
+
+/* 投影片基礎容器規格：1280px * 720px */
+.slide-container {
+  background-color: #0d1220;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  height: 720px;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding: 60px 80px;
+  position: relative;
+  width: 1280px;
+}
+
+/* 一致的標題系統 */
+.slide-title {
+  color: #f8fafc;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.slide-subtitle {
+  color: #64748b;
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 40px;
+  font-weight: 500;
+}
+
+/* 內容區域 */
+.content-area {
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* 簡約表格排版 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  color: #cbd5e1;
+}
+
+th, td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 20px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #111827;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+td {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* 醒目的標記與狀態 */
+.badge-yes {
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  border-radius: 4px;
+  color: #34d399;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.badge-no {
+  background-color: rgba(244, 63, 94, 0.15);
+  border: 1px solid #f43f5e;
+  border-radius: 4px;
+  color: #fb7185;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.badge-neutral {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #94a3b8;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;
+}
+
+/* 強調文字 */
+strong {
+  color: #f8fafc;
+}
+
+.accent-chatgpt {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.accent-claude {
+  color: #c084fc;
+  font-weight: 600;
+}
+
+/* 頁碼 */
+.slide-footer {
+  color: #475569;
+  display: flex;
+  font-size: 13px;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 20px;
+  width: 100%;
+}
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: 功能與應用場景對照表 -->
+<div class="slide-container" id="slide1">
+    <h2 class="slide-title">功能與應用場景對照表</h2>
+    <p class="slide-subtitle">針對 2026 最新規格（含 ChatGPT 3.1 世代與 Claude 3.1 世代之開發與創意工具對照）</p>
+    
+    <div class="content-area">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">應用領域</th>
+                    <th style="width: 40%;" class="accent-chatgpt">ChatGPT 相關工具與定位</th>
+                    <th style="width: 40%;" class="accent-claude">Claude 相關工具與定位</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>系統開發與 AI 代理</strong></td>
+                    <td><strong>ChatGPT / Codex (GPT-4o 3.1)</strong><br>定位為通用多模態 AI 程式與邏輯助理。</td>
+                    <td><strong>Claude Code (Claude 3.1)</strong><br>專注於終端機原生部署的全自動 AI 代理開發。</td>
+                </tr>
+                <tr>
+                    <td><strong>視覺創意與製圖</strong></td>
+                    <td><strong>GPT-4o 3.1 / images 2.0</strong><br>具備極強的視覺感知、多模態分析與圖像創作能力。</td>
+                    <td><span class="badge-neutral">未提供原生製圖工具</span><br>不支援原生 AI 繪圖與圖像創作功能。</td>
+                </tr>
+                <tr>
+                    <td><strong>自動化測試與修復</strong></td>
+                    <td>提供基礎腳本編寫與大模型除錯支援。(被動等待、依賴餵養情境與脈絡)</td>
+                    <td><strong>Claude Code (Claude 3.1)</strong><br>讀取 PRD 自動產出測試案例、根據 Error Log 自主修復腳本。(全自動理解脈絡自動自動產測試案例並自動測試)</td>
+                </tr>
+                <tr>
+                    <td><strong>自動化 UI 測試</strong></td>
+                    <td><strong>ChatGPT Computer Use</strong><br><span class="badge-neutral">背景開啟沙盒與獨立滑鼠指標</span><br>透過電腦視覺模擬點擊及UI 測試。</td>
+                    <td><strong>Claude Computer Use</strong><br><span class="badge-neutral">直接接管你的滑鼠</span><br>直接接管滑鼠進行 UI 點擊測試與控制。</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="slide-footer">
+        <span>2026 Enterprise AI Comparison</span>
+        <span>Slide 1 / 3</span>
+    </div>
+</div>
+
+<!-- Slide 2: ChatGPT 商業方案對比 -->
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title">ChatGPT 商業方案對比</h2>
+    <p class="slide-subtitle">評估 Team 團隊方案與 Enterprise 企業方案在系統管理與資安合規上的差異</p>
+    
+    <div class="content-area">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">評估維度</th>
+                    <th style="width: 40%;" class="accent-chatgpt">ChatGPT Team (輕量團隊版)</th>
+                    <th style="width: 40%;" class="accent-chatgpt">ChatGPT Enterprise (標準企業版)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>系統管理與權限</strong></td>
+                    <td>管理員可配置成員帳單與共享 GPTs 權限。</td>
+                    <td><span class="badge-yes">✔️ RBAC 身分存取控制</span><br>支援類似 IAM 的角色管控（管理員、開發者、訪客等）。</td>
+                </tr>
+                <tr>
+                    <td><strong>行為審計與日誌</strong></td>
+                    <td><span class="badge-no">❌ 存在合規盲區</span><br>員工手動刪除歷史對話後，<strong>管理端將完全無紀錄與稽核能力。</strong></td>
+                    <td><span class="badge-yes">✔️ 完整三層日誌</span><br>提供完整的 <strong>Admin Logs、Auth Logs 與 Usage Logs</strong>（含對話與檔案）。</td>
+                </tr>
+                <tr>
+                    <td><strong>資料備份機制</strong></td>
+                    <td>企業無法取得自己的備份資料。</td>
+                    <td><span class="badge-yes">✔️ 支援指定區域備份</span><br>可限定單一區域多機房或跨區複寫，<strong>開放 Compliance API 備份</strong>。</td>
+                </tr>
+                <tr>
+                    <td><strong>起購門檻與費用</strong></td>
+                    <td>• 最少 **2 人**起購<br>• 每人每月約 $20~25 USD<br>• 額度：每 3 小時 200 ~ 300 則訊息(依公告動態調整)</td>
+                    <td>• 最少 **120 人**起購（7月更新門檻）<br>• 每人每月 **$60 USD** 基礎價（實際需個別議價）<br>• 額度：0 (需另外加購Token)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="slide-footer">
+        <span>2026 Enterprise AI Comparison</span>
+        <span>Slide 2 / 3</span>
+    </div>
+</div>
+
+<!-- Slide 3: Claude 商業方案對比 -->
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">Claude 商業方案對比</h2>
+    <p class="slide-subtitle">評估 Team 專案協作方案與 Enterprise 高階用量方案在管理與資安上的差異</p>
+    
+    <div class="content-area">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">評估維度</th>
+                    <th style="width: 40%;" class="accent-claude">Claude Team (專案協作團隊版)</th>
+                    <th style="width: 40%;" class="accent-claude">Claude Enterprise (企業版)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>系統管理與權限</strong></td>
+                    <td>管理員可分配成員與「Projects（專案）」空間，但無法檢視對話。</td>
+                    <td><span class="badge-yes">✔️ RBAC 身分存取控制</span><br>支援類似 IAM 的角色管控（管理員、開發者、訪客等）。</td>
+                </tr>
+                <tr>
+                    <td><strong>行為審計與日誌</strong></td>
+                    <td><span class="badge-no">❌ 無法審計對話</span><br>管理員<strong>完全無法檢視、匯出或審計任何員工的個人 Chat 對話</strong>。</td>
+                    <td><span class="badge-yes">✔️ RBAC 身分存取控制</span><br>支援類似 IAM 的角色管控（管理員、開發者、訪客等）。</td>
+                </tr>
+                <tr>
+                    <td><strong>資料備份機制</strong></td>
+                    <td>企業無法取得自己的備份資料。</td>
+                    <td><span class="badge-yes">✔️ 支援指定區域備份</span><br>可限定單一區域多機房或跨區複寫，<strong>開放 Compliance API 備份</strong>。</td>
+                </tr>
+                <tr>
+                    <td><strong>起購門檻與費用</strong></td>
+                    <td>• 最少 5 人起購<br>• 每人每月約 $20~25 USD<br>• 約每 5 小時 45 則訊息(滾動式調整)</td>
+                    <td>• 最少 20 人起購<br>• 每人每月約 $20 USD<br>• 額度：0 (Token另外計費) https://platform.claude.com/docs/en/about-claude/pricing</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="slide-footer">
+        <span>2026 Enterprise AI Comparison</span>
+        <span>Slide 3 / 3</span>
+    </div>
+</div>
+
+</body></html>
