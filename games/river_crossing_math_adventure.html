@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>搶救公主大作戰：九宮格魔法河流算術探險</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti for victory celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts: Fredoka & Noto Sans TC for game typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Flowing water animations */
+    @keyframes waterWave {
+      0% { background-position: 0 0; }
+      100% { background-position: 60px 30px; }
+    }
+
+    @keyframes waterRipple {
+      0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.8; }
+      100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+    }
+
+    @keyframes heroBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-7px) scale(1.02); }
+    }
+
+    @keyframes princessWave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+
+    @keyframes stonePulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(250, 204, 21, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.6); transform: scale(1); }
+      50% { box-shadow: 0 0 28px rgba(250, 204, 21, 0.9), inset 0 2px 6px rgba(255, 255, 255, 0.9); transform: scale(1.04); }
+    }
+
+    @keyframes floatBubble {
+      0% { transform: translateY(0px) scale(0.9); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+    }
+
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px) rotate(-3deg); }
+      40% { transform: translateX(8px) rotate(3deg); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    .river-background {
+      background: linear-gradient(180deg, #1e6091 0%, #184e77 25%, #168aad 50%, #1a759f 75%, #184e77 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .river-waves {
+      background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.22) 1.5px, transparent 2px),
+                        radial-gradient(circle at 20% 70%, rgba(255, 255, 255, 0.15) 2px, transparent 3px);
+      background-size: 32px 32px, 48px 48px;
+      animation: waterWave 4s linear infinite;
+    }
+
+    .hero-idle {
+      animation: heroBounce 1.8s ease-in-out infinite;
+    }
+
+    .princess-idle {
+      animation: princessWave 2.2s ease-in-out infinite;
+    }
+
+    .active-row-stone {
+      animation: stonePulse 1.8s ease-in-out infinite;
+    }
+
+    .shake-stone {
+      animation: shakeError 0.5s ease-in-out;
+    }
+
+    /* Hero right-path waypoints (Strictly styled according to reference) */
+    .waypoint-circle {
+      border: 4px solid #ffffff;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.45), inset 0 0 12px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .waypoint-active {
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.95), inset 0 0 12px rgba(251, 191, 36, 0.4);
+      transform: scale(1.06);
+    }
+    .waypoint-cleared {
+      border-color: #34d399;
+      box-shadow: 0 0 16px rgba(52, 211, 153, 0.7);
+      background-color: rgba(6, 78, 59, 0.75);
+    }
+
+    /* Stone texture styling */
+    .stone-3d {
+      box-shadow: 0 10px 0 #1b382b, 0 16px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .stone-3d:active {
+      box-shadow: 0 4px 0 #1b382b, 0 8px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(6px);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-400 selection:text-slate-900">
+  <!-- Top Navigation & Quest Objective HUD -->
+  <header class="w-full max-w-4xl mx-auto px-4 pt-3 pb-2">
+    <div class="bg-slate-800/90 border border-slate-700/80 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Target Number Display -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/30 border-2 border-yellow-200">
+          <span class="text-2xl">🎯</span>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider text-amber-300 font-bold">目前過河密碼</div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-sm font-semibold text-slate-300">目標數字：</span>
+            <span id="target-number-badge" class="text-3xl font-extrabold text-yellow-400 tracking-tight drop-shadow-[0_2px_10px_rgba(250,204,21,0.5)]">3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage & Steps Progress Badge -->
+      <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700">
+        <div class="text-xs text-slate-400 font-medium">過河進度:</div>
+        <div class="flex items-center gap-1.5" id="progress-dots">
+          <!-- Step 1 dot -->
+          <div id="dot-0" class="w-7 h-7 rounded-lg bg-slate-700 text-slate-400 text-xs font-bold flex items-center justify-center transition-all">1</div>
+          <span class="text-slate-600 text-xs">➔</span>
+          <!-- Step 2 dot -->
+          <div id="dot-1" class="w-7 h-7 rounded-lg bg-slate-700 text-slate-400 text-xs font-bold flex items-center justify-center transition-all">2</div>
+          <span class="text-slate-600 text-xs">➔</span>
+          <!-- Step 3 dot -->
+          <div id="dot-2" class="w-7 h-7 rounded-lg bg-slate-700 text-slate-400 text-xs font-bold flex items-center justify-center transition-all">3</div>
+        </div>
+      </div>
+
+      <!-- Difficulty Mode Switcher -->
+      <div class="flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700">
+        <button id="diff-easy-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-md" title="初階：僅限10以內加法">
+          🌱 初階(10以內加法)
+        </button>
+        <button id="diff-normal-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white" title="進階：加減法混合">
+          ⚔️ 進階(加減法)
+        </button>
+      </div>
+
+      <!-- Action Buttons (Sound, Reset, Rules) -->
+      <div class="flex items-center gap-2">
+        <button id="sound-btn" class="p-2.5 rounded-xl bg-slate-700/80 hover:bg-slate-600 active:scale-95 text-slate-200 transition-all border border-slate-600" title="音效切換">
+          <span id="sound-icon" class="text-lg">🔊</span>
+        </button>
+        <button id="info-btn" class="p-2.5 rounded-xl bg-slate-700/80 hover:bg-slate-600 active:scale-95 text-slate-200 transition-all border border-slate-600" title="遊戲玩法說明">
+          <span class="text-lg">📜</span>
+        </button>
+        <button id="restart-btn" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-white font-bold text-sm transition-all shadow-md shadow-emerald-900/30 flex items-center gap-1.5 border border-emerald-300/40">
+          <span>🔄</span> 重新出題
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="w-full max-w-4xl mx-auto px-3 sm:px-4 py-2 flex-1 flex flex-col justify-center">
+    <div class="relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-950/60 bg-emerald-900/40">
+
+      <!-- ================= TOP BANK (Princess Castle) ================= -->
+      <div class="relative h-28 sm:h-32 bg-gradient-to-b from-emerald-700 via-emerald-800 to-emerald-900 px-6 py-2 flex items-center justify-between border-b-4 border-emerald-950 shadow-inner">
+        <!-- Castle Decoration -->
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <!-- Cute Castle Tower SVG -->
+            <svg class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg" viewBox="0 0 100 100" fill="none">
+              <rect x="25" y="45" width="50" height="45" rx="4" fill="#94A3B8" />
+              <rect x="20" y="38" width="60" height="8" rx="2" fill="#64748B" />
+              <!-- Turrets -->
+              <rect x="20" y="28" width="12" height="12" rx="1" fill="#475569" />
+              <rect x="44" y="28" width="12" height="12" rx="1" fill="#475569" />
+              <rect x="68" y="28" width="12" height="12" rx="1" fill="#475569" />
+              <!-- Gate -->
+              <path d="M42 90V65C42 60.5817 45.5817 57 50 57C54.4183 57 58 60.5817 58 65V90" fill="#334155" stroke="#FDE047" stroke-width="2"/>
+              <!-- Flag on top -->
+              <line x1="50" y1="28" x2="50" y2="10" stroke="#E2E8F0" stroke-width="2.5" />
+              <polygon points="50,12 68,18 50,24" fill="#F43F5E" />
+            </svg>
+          </div>
+          <div>
+            <div class="bg-amber-400 text-amber-950 font-black text-xs px-2.5 py-0.5 rounded-full inline-block shadow-sm mb-1">
+              目的地：對岸古堡
+            </div>
+            <h2 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-1 drop-shadow">
+              受困的露娜公主
+            </h2>
+          </div>
+        </div>
+
+        <!-- Princess Avatar & Speech Bubble -->
+        <div class="relative flex items-center">
+          <div id="princess-bubble" class="absolute right-16 sm:right-20 -top-2 bg-white/95 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg border-2 border-rose-300 whitespace-nowrap princess-speech flex items-center gap-1">
+            <span>救救我！選算式等於</span>
+            <span id="bubble-target" class="text-rose-600 font-extrabold text-sm">3</span>
+            <span>的石頭過河！</span>
+          </div>
+          <div id="princess-character" class="princess-idle cursor-pointer" title="被困在對岸的公主">
+            <!-- Princess SVG -->
+            <svg class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-xl" viewBox="0 0 100 100">
+              <!-- Golden Hair -->
+              <ellipse cx="50" cy="45" rx="20" ry="24" fill="#F59E0B" />
+              <circle cx="34" cy="50" r="10" fill="#FBBF24" />
+              <circle cx="66" cy="50" r="10" fill="#FBBF24" />
+              <!-- Princess Dress -->
+              <path d="M35 85 Q50 65 65 85 L72 96 Q50 99 28 96 Z" fill="#EC4899" />
+              <path d="M42 62 L58 62 L63 80 L37 80 Z" fill="#F472B6" />
+              <!-- Arms -->
+              <path d="M36 65 Q25 55 30 45" stroke="#FDBA74" stroke-width="4" stroke-linecap="round" fill="none" />
+              <path d="M64 65 Q75 55 70 45" stroke="#FDBA74" stroke-width="4" stroke-linecap="round" fill="none" />
+              <!-- Face -->
+              <ellipse cx="50" cy="45" rx="14" ry="14" fill="#FED7AA" />
+              <!-- Tiara -->
+              <polygon points="40,34 45,26 50,32 55,26 60,34" fill="#FDE047" stroke="#CA8A04" stroke-width="1.5" />
+              <circle cx="50" cy="24" r="2.5" fill="#EF4444" />
+              <!-- Eyes & Smile -->
+              <circle cx="45" cy="44" r="2" fill="#1E293B" />
+              <circle cx="55" cy="44" r="2" fill="#1E293B" />
+              <ellipse cx="43.5" cy="47.5" rx="2" ry="1.2" fill="#FB7185" />
+              <ellipse cx="56.5" cy="47.5" rx="2" ry="1.2" fill="#FB7185" />
+              <path d="M47 51 Q50 54 53 51" stroke="#E11D48" stroke-width="1.5" stroke-linecap="round" fill="none" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- River Shore Grass Edge -->
+        <div class="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-t from-emerald-950 to-transparent"></div>
+      </div>
+      <!-- ================= THE RIVER (3x3 Stones Grid) ================= -->
+      <div id="river-stage" class="relative river-background river-waves py-8 px-4 sm:px-12 flex flex-col justify-around min-h-[360px] sm:min-h-[420px] select-none">
+        
+        <!-- Animated floating water lilies & bubbles -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+          <div class="absolute top-10 left-8 text-emerald-400/40 text-2xl animate-pulse">🌿</div>
+          <div class="absolute top-36 right-10 text-emerald-300/30 text-xl animate-pulse" style="animation-delay: 1s;">🌸</div>
+          <div class="absolute bottom-16 left-1/4 text-emerald-400/30 text-2xl animate-pulse" style="animation-delay: 2s;">🌿</div>
+          <!-- Water ripple effect element (will be placed dynamically upon jumping) -->
+          <div id="water-ripple" class="absolute hidden w-16 h-16 rounded-full border-4 border-cyan-200/80 pointer-events-none"></div>
+        </div>
+
+        <!-- River Grid Container: 3x3 Stones on the left, Hero Stepping Path on the right -->
+        <div class="relative z-10 w-full max-w-2xl mx-auto flex items-stretch gap-4 sm:gap-8">
+          
+          <!-- Left: 3x3 Grid of Stepping Stones -->
+          <div class="flex-1 flex flex-col gap-5 sm:gap-6 justify-between">
+            <!-- ROW 2 (Step 3 - Final Step to Princess) -->
+            <div class="stone-row flex items-center justify-between gap-2 sm:gap-4" data-row="2">
+              <div class="hidden sm:block text-xs font-bold text-cyan-200/70 w-12 text-right">第 3 步</div>
+              <div class="flex-1 grid grid-cols-3 gap-2.5 sm:gap-4">
+                <button id="stone-2-0" data-row="2" data-col="0" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">0,2</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-2-1" data-row="2" data-col="1" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">1,2</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-2-2" data-row="2" data-col="2" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">2,2</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROW 1 (Step 2 - Middle Step) -->
+            <div class="stone-row flex items-center justify-between gap-2 sm:gap-4" data-row="1">
+              <div class="hidden sm:block text-xs font-bold text-cyan-200/70 w-12 text-right">第 2 步</div>
+              <div class="flex-1 grid grid-cols-3 gap-2.5 sm:gap-4">
+                <button id="stone-1-0" data-row="1" data-col="0" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">0,1</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-1-1" data-row="1" data-col="1" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">1,1</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-1-2" data-row="1" data-col="2" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">2,1</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROW 0 (Step 1 - First Step from Hero Bank) -->
+            <div class="stone-row flex items-center justify-between gap-2 sm:gap-4" data-row="0">
+              <div class="hidden sm:block text-xs font-bold text-cyan-200/70 w-12 text-right">第 1 步</div>
+              <div class="flex-1 grid grid-cols-3 gap-2.5 sm:gap-4">
+                <button id="stone-0-0" data-row="0" data-col="0" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">0,0</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-0-1" data-row="0" data-col="1" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">1,0</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+                <button id="stone-0-2" data-row="0" data-col="2" class="stone-btn relative aspect-square sm:aspect-[4/3] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-stone-600 via-stone-700 to-stone-800 border-2 border-stone-400/60 stone-3d flex flex-col items-center justify-center p-2 text-white font-black group transition-transform">
+                  <span class="text-stone-400 text-[10px] sm:text-xs absolute top-1.5 left-2 font-mono">2,0</span>
+                  <span class="stone-formula text-base sm:text-2xl tracking-wide text-amber-200 drop-shadow">?+?</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Dedicated Hero Stepping Path (①, ②, ③ perfectly level with rows 0, 1, 2) -->
+          <div class="w-16 sm:w-24 flex flex-col gap-5 sm:gap-6 justify-between items-center relative select-none">
+            
+            <!-- Row 2 Slot -> Waypoint 3 (Circle 3) -->
+            <div class="flex-1 flex items-center justify-center relative w-full">
+              <div id="waypoint-2" class="waypoint-circle w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950/75 flex items-center justify-center relative">
+                <span class="wp-num text-white text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none">3</span>
+              </div>
+            </div>
+
+            <!-- Row 1 Slot -> Waypoint 2 (Circle 2) -->
+            <div class="flex-1 flex items-center justify-center relative w-full">
+              <div id="waypoint-1" class="waypoint-circle w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950/75 flex items-center justify-center relative">
+                <span class="wp-num text-white text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none">2</span>
+              </div>
+            </div>
+
+            <!-- Row 0 Slot -> Waypoint 1 (Circle 1) -->
+            <div class="flex-1 flex items-center justify-center relative w-full">
+              <div id="waypoint-0" class="waypoint-circle waypoint-active w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-950/75 flex items-center justify-center relative">
+                <span class="wp-num text-white text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none">1</span>
+              </div>
+              
+              <!-- Hero Start Waiting Slot (placed right below circle 1 without taking vertical row height) -->
+              <div id="waypoint-start" class="absolute top-[110%] w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-amber-300/70 bg-slate-950/80 flex flex-col items-center justify-center text-amber-300 font-bold text-xs shadow-lg">
+                <span class="text-sm">🚩</span>
+                <span class="text-[10px]">起點</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Dynamic Hero Sprite jumping strictly into the center of right-hand circles -->
+        <div id="dynamic-hero-token" style="position: absolute; top: 0; left: 0; will-change: transform;" class="z-30 pointer-events-none flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.8)] hero-jumping-avatar flex items-center justify-center">
+            <!-- Hero Jumping Mini SVG -->
+            <svg viewBox="0 0 100 100" class="w-full h-full">
+              <!-- Shield -->
+              <ellipse cx="74" cy="56" rx="8" ry="12" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2"/>
+              <!-- Body -->
+              <rect x="36" y="44" width="28" height="28" rx="6" fill="#2563EB" />
+              <!-- Cape -->
+              <path d="M36 50 L20 74 L40 70 Z" fill="#EF4444" />
+              <!-- Knight Helmet -->
+              <circle cx="50" cy="34" r="16" fill="#CBD5E1" stroke="#64748B" stroke-width="2"/>
+              <rect x="42" y="32" width="16" height="5" rx="2" fill="#1E293B" />
+              <!-- Feather -->
+              <path d="M50 20 Q56 8 46 6 Q42 16 50 20" fill="#EF4444" />
+              <!-- Legs -->
+              <rect x="40" y="70" width="7" height="12" rx="3" fill="#1E3A8A" />
+              <rect x="53" y="70" width="7" height="12" rx="3" fill="#1E3A8A" />
+            </svg>
+          </div>
+          <span class="bg-amber-400 text-amber-950 font-black text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded shadow -mt-2 z-10">勇者</span>
+        </div>
+      </div>
+      <!-- ================= BOTTOM BANK (Hero Shore) ================= -->
+      <div class="relative h-28 sm:h-32 bg-gradient-to-t from-emerald-700 via-emerald-800 to-emerald-900 px-6 py-2 flex items-center justify-between border-t-4 border-emerald-950 shadow-inner">
+        <!-- River Shore Grass Edge -->
+        <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-b from-emerald-950 to-transparent"></div>
+
+        <!-- Starting Hero Character -->
+        <div class="relative flex items-center gap-3">
+          <div id="start-hero-container" class="hero-idle transition-transform duration-300">
+            <!-- Full Hero Knight SVG -->
+            <svg class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-xl" viewBox="0 0 100 100">
+              <!-- Red Cape -->
+              <path d="M35 50 Q20 70 24 92 L45 88 Z" fill="#DC2626" />
+              <!-- Knight Armor Torso -->
+              <rect x="36" y="44" width="28" height="32" rx="6" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2" />
+              <line x1="50" y1="44" x2="50" y2="74" stroke="#60A5FA" stroke-width="2" />
+              <!-- Belt -->
+              <rect x="36" y="68" width="28" height="6" fill="#78350F" />
+              <rect x="47" y="67" width="6" height="8" rx="1" fill="#FBBF24" />
+              <!-- Legs & Boots -->
+              <rect x="38" y="76" width="9" height="15" rx="3" fill="#475569" />
+              <rect x="53" y="76" width="9" height="15" rx="3" fill="#475569" />
+              <!-- Shield Left Hand -->
+              <ellipse cx="28" cy="62" rx="10" ry="14" fill="#EAB308" stroke="#CA8A04" stroke-width="2"/>
+              <polygon points="28,54 32,62 28,70 24,62" fill="#FEF08A" />
+              <!-- Sword Right Hand -->
+              <line x1="72" y1="42" x2="72" y2="75" stroke="#E2E8F0" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="66" y1="65" x2="78" y2="65" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="72" cy="76" r="3" fill="#D97706" />
+              <!-- Knight Helmet & Face Guard -->
+              <circle cx="50" cy="30" r="18" fill="#CBD5E1" stroke="#64748B" stroke-width="2.5"/>
+              <path d="M36 30 Q50 24 64 30 L62 42 Q50 48 38 42 Z" fill="#94A3B8" />
+              <rect x="41" y="32" width="18" height="4" rx="2" fill="#0F172A" />
+              <!-- Plume Feather -->
+              <path d="M50 14 Q65 0 52 -2 Q40 6 50 14" fill="#EF4444" />
+            </svg>
+          </div>
+          <div>
+            <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-0.5 rounded-full inline-block shadow-sm mb-1">
+              出發起點：下游河岸
+            </div>
+            <h3 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-1 drop-shadow">
+              勇敢的亞瑟騎士
+            </h3>
+            <p class="text-xs text-emerald-200 hidden sm:block">踏上正確的石頭，護送騎士過河救公主！</p>
+          </div>
+        </div>
+
+        <!-- Hint Guidance Box -->
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-2xl px-4 py-2 text-right">
+          <div class="text-[11px] text-amber-300 font-bold">當前任務</div>
+          <div id="step-hint" class="text-xs sm:text-sm font-extrabold text-white flex items-center justify-end gap-1">
+            <span>請在</span>
+            <span class="text-yellow-400 bg-slate-800 px-1.5 py-0.5 rounded border border-yellow-500/40">第 1 排</span>
+            <span>找出算式等於</span>
+            <span class="text-yellow-400 font-black target-inline-num">3</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer / Status Message Bar -->
+  <footer class="w-full max-w-4xl mx-auto px-4 py-3">
+    <div id="status-bar" class="w-full bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl py-2 px-4 text-center text-xs sm:text-sm text-slate-300 flex items-center justify-center gap-2 transition-all">
+      <span>💡 點擊第一排算式結果為 <strong class="text-amber-400 target-inline-num">3</strong> 的石頭，開始渡河！</span>
+    </div>
+  </footer>
+  <!-- Help / Instructions Modal -->
+  <div id="info-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-800 border-2 border-amber-500/60 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button id="close-info-btn" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-200 flex items-center justify-center font-bold">✕</button>
+      
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-3xl">🏰</span>
+        <h3 class="text-xl font-extrabold text-amber-400">魔法河流闖關指南</h3>
+      </div>
+      
+      <div class="space-y-3 text-slate-200 text-sm leading-relaxed">
+        <div class="flex items-start gap-2.5 bg-slate-900/60 p-3 rounded-xl border border-slate-700/80">
+          <span class="text-xl">🎯</span>
+          <div>
+            <strong class="text-amber-300 block mb-0.5">目標數字：</strong>
+            畫面頂端會隨機顯現一個魔法數字（初階為 10 以內）。
+          </div>
+        </div>
+        <div class="flex items-start gap-2.5 bg-slate-900/60 p-3 rounded-xl border border-slate-700/80">
+          <span class="text-xl">🌊</span>
+          <div>
+            <strong class="text-cyan-300 block mb-0.5">右側前進軌道：</strong>
+            勇者固定在河流右側（如圖標示 ①、②、③）。答對第 1 排跳到 ①，答對第 2 排跳到 ②，答對第 3 排跳到 ③ 並成功救出公主！
+          </div>
+        </div>
+        <div class="flex items-start gap-2.5 bg-slate-900/60 p-3 rounded-xl border border-slate-700/80">
+          <span class="text-xl">🌱</span>
+          <div>
+            <strong class="text-emerald-300 block mb-0.5">難度模式：</strong>
+            初階模式「只有加法」，且所有數字及運算結果皆不超過 10。可隨時在上方切換為進階加減法模式！
+          </div>
+        </div>
+      </div>
+
+      <button id="modal-start-btn" class="mt-6 w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-base shadow-lg shadow-amber-500/30 hover:opacity-95 active:scale-98 transition-all">
+        我準備好了，出發！
+      </button>
+    </div>
+  </div>
+
+  <!-- Victory Dialog Modal -->
+  <div id="victory-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-4 border-amber-400 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl relative animate-bounce-short">
+      
+      <!-- Crown Icon -->
+      <div class="w-20 h-20 mx-auto -mt-14 mb-3 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 flex items-center justify-center text-4xl shadow-xl border-4 border-slate-900">
+        👑
+      </div>
+
+      <h2 class="text-2xl sm:text-3xl font-black text-amber-300 mb-1">英雄拯救了公主！</h2>
+      <p class="text-slate-300 text-sm mb-5">恭喜你連續答對三道魔法算式，順利橫渡湍急的魔法河！</p>
+
+      <!-- Stats Box -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 mb-6 grid grid-cols-2 gap-3 text-left">
+        <div class="bg-slate-900/80 p-3 rounded-xl">
+          <div class="text-[11px] text-slate-400 font-semibold">本次目標數字</div>
+          <div id="victory-target-val" class="text-xl font-black text-amber-400">3</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl">
+          <div class="text-[11px] text-slate-400 font-semibold">過河耗時</div>
+          <div id="victory-time-val" class="text-xl font-black text-emerald-400">12 秒</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="next-stage-btn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-black text-lg shadow-xl shadow-amber-500/30 hover:brightness-105 active:scale-98 transition-all">
+          🎉 挑戰下一題（隨機新數字）
+        </button>
+        <button id="replay-btn" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm transition-all border border-slate-700">
+          重玩本關
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    /* Game State Object */
+    const gameState = {
+      targetNumber: null, // Initialized randomly in initializeRound() (3~10)
+      currentStep: 0, // 0: at start pad, 1: at waypoint ①, 2: at waypoint ②, 3: at waypoint ③, 4: at princess
+      difficulty: 'easy', // 'easy' (<=10 addition only) or 'normal' (mixed add/sub)
+      gridData: [],
+      soundEnabled: true,
+      timerSeconds: 0,
+      timerInterval: null,
+      isMoving: false,
+      historyMistakes: 0
+    };
+
+    /* Web Audio API Synthesizer (No external asset dependencies) */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+      }
+
+      initContext() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playJump() {
+        if (!gameState.soundEnabled) return;
+        this.initContext();
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(587, now + 0.25);
+
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.26);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      playSplash() {
+        if (!gameState.soundEnabled) return;
+        this.initContext();
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.35);
+
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.36);
+        } catch (e) {}
+      }
+
+      playCorrect() {
+        if (!gameState.soundEnabled) return;
+        this.initContext();
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+          notes.forEach((freq, index) => {
+            const start = this.ctx.currentTime + index * 0.07;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, start);
+
+            gain.gain.setValueAtTime(0.2, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + 0.32);
+          });
+        } catch (e) {}
+      }
+
+      playWrong() {
+        if (!gameState.soundEnabled) return;
+        this.initContext();
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.linearRampToValueAtTime(90, now + 0.3);
+
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.32);
+        } catch (e) {}
+      }
+
+      playVictory() {
+        if (!gameState.soundEnabled) return;
+        this.initContext();
+        try {
+          const fanfare = [
+            { f: 523.25, d: 0.15 }, // C5
+            { f: 659.25, d: 0.15 }, // E5
+            { f: 783.99, d: 0.15 }, // G5
+            { f: 1046.5, d: 0.4 }  // C6
+          ];
+          let time = this.ctx.currentTime;
+          fanfare.forEach(item => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(item.f, time);
+
+            gain.gain.setValueAtTime(0.3, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + item.d);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(time);
+            osc.stop(time + item.d + 0.05);
+
+            time += item.d;
+          });
+        } catch (e) {}
+      }
+    }
+
+    const sound = new SoundEngine();
+    /* Math Formula Generator for the 3x3 Grid */
+    function generateMathProblem(target, isCorrect) {
+      if (gameState.difficulty === 'easy') {
+        // ================= EASY MODE =================
+        // Rule 1: ONLY Addition (+). Strictly no subtraction.
+        // Rule 2: Numbers cannot exceed 10 (operands and sum <= 10).
+        if (isCorrect) {
+          // Generate a + b = target (target is between 2 and 10)
+          const a = Math.floor(Math.random() * (target - 1)) + 1; // 1 to target-1
+          const b = target - a;
+          return { formula: `${a} + ${b}`, result: target };
+        } else {
+          // Generate wrong formula: a + b != target, and a + b <= 10
+          let wrongResult = target;
+          let attempts = 0;
+          while (wrongResult === target && attempts < 25) {
+            // Possible sums: from 2 to 10 except target
+            const candidates = [2, 3, 4, 5, 6, 7, 8, 9, 10].filter(n => n !== target);
+            wrongResult = candidates[Math.floor(Math.random() * candidates.length)];
+            attempts++;
+          }
+          if (wrongResult === target) wrongResult = target > 2 ? target - 1 : target + 1;
+
+          const a = Math.floor(Math.random() * (wrongResult - 1)) + 1;
+          const b = wrongResult - a;
+          return { formula: `${a} + ${b}`, result: wrongResult };
+        }
+      } else {
+        // ================= NORMAL / ADVANCED MODE =================
+        // Mixed addition and subtraction
+        if (isCorrect) {
+          const mode = Math.random() > 0.4 ? 'add' : 'sub';
+          if (mode === 'add' && target > 1) {
+            const a = Math.floor(Math.random() * (target - 1)) + 1;
+            const b = target - a;
+            return { formula: `${a} + ${b}`, result: target };
+          } else {
+            const b = Math.floor(Math.random() * 4) + 1;
+            const a = target + b;
+            return { formula: `${a} - ${b}`, result: target };
+          }
+        } else {
+          let wrongResult = target;
+          let attempts = 0;
+          while (wrongResult === target && attempts < 15) {
+            const delta = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1);
+            wrongResult = target + delta;
+            if (wrongResult < 1) wrongResult = target + Math.abs(delta) + 1;
+            attempts++;
+          }
+          if (wrongResult === target) wrongResult = target + 1;
+
+          if (Math.random() > 0.4 && wrongResult > 1) {
+            const a = Math.floor(Math.random() * (wrongResult - 1)) + 1;
+            const b = wrongResult - a;
+            return { formula: `${a} + ${b}`, result: wrongResult };
+          } else {
+            const b = Math.floor(Math.random() * 3) + 1;
+            const a = wrongResult + b;
+            return { formula: `${a} - ${b}`, result: wrongResult };
+          }
+        }
+      }
+    }
+
+    /* Helper to pick a random target number between 3 and 10, avoiding immediate repetition */
+    function getRandomTargetNumber(currentTarget = null) {
+      const candidates = [3, 4, 5, 6, 7, 8, 9, 10];
+      const available = (currentTarget !== null && candidates.includes(currentTarget))
+        ? candidates.filter(n => n !== currentTarget)
+        : candidates;
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    /* Setup 3x3 Grid Data with guaranteed one correct stone per row */
+    function initializeRound(target = null) {
+      if (target === null) {
+        // Random target number between 3 and 10 (inclusive)
+        gameState.targetNumber = getRandomTargetNumber(gameState.targetNumber);
+      } else {
+        gameState.targetNumber = target;
+      }
+
+      gameState.currentStep = 0;
+      gameState.isMoving = false;
+      gameState.timerSeconds = 0;
+
+      // Clear any existing timer
+      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+      gameState.timerInterval = setInterval(() => {
+        gameState.timerSeconds++;
+      }, 1000);
+
+      // Construct 3x3 Grid: row 0 (step 1), row 1 (step 2), row 2 (step 3)
+      gameState.gridData = [];
+
+      for (let r = 0; r < 3; r++) {
+        const correctCol = Math.floor(Math.random() * 3);
+        const rowItems = [];
+        const usedFormulas = new Set();
+
+        for (let c = 0; c < 3; c++) {
+          const isCorrect = (c === correctCol);
+          let problem;
+          let tries = 0;
+          do {
+            problem = generateMathProblem(gameState.targetNumber, isCorrect);
+            tries++;
+          } while (usedFormulas.has(problem.formula) && tries < 30);
+
+          usedFormulas.add(problem.formula);
+
+          rowItems.push({
+            row: r,
+            col: c,
+            formula: problem.formula,
+            result: problem.result,
+            isCorrect: isCorrect
+          });
+        }
+        gameState.gridData.push(rowItems);
+      }
+
+      // Position Hero at the start pad immediately
+      updateHeroPosition(false);
+      updateUI();
+    }
+    /* Update UI Display and Row States */
+    function updateUI() {
+      // Update Target display
+      document.getElementById('target-number-badge').textContent = gameState.targetNumber;
+      document.getElementById('bubble-target').textContent = gameState.targetNumber;
+      document.querySelectorAll('.target-inline-num').forEach(el => el.textContent = gameState.targetNumber);
+
+      // Update Step Hint
+      const stepText = ['第 1 排', '第 2 排', '第 3 排', '已成功拯救！'];
+      const hintElem = document.getElementById('step-hint');
+      if (gameState.currentStep < 3) {
+        hintElem.innerHTML = `
+          <span>請在</span>
+          <span class="text-yellow-400 bg-slate-800 px-1.5 py-0.5 rounded border border-yellow-500/40">${stepText[gameState.currentStep]}</span>
+          <span>找出算式等於</span>
+          <span class="text-yellow-400 font-black">${gameState.targetNumber}</span>
+        `;
+      } else {
+        hintElem.innerHTML = `<span class="text-emerald-400 font-black">🎉 順利抵達對岸！</span>`;
+      }
+
+      // Update progress dots
+      for (let i = 0; i < 3; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i < gameState.currentStep) {
+          dot.className = 'w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg shadow-emerald-500/40 border border-emerald-300';
+          dot.textContent = '✓';
+        } else if (i === gameState.currentStep) {
+          dot.className = 'w-7 h-7 rounded-lg bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center ring-2 ring-amber-300 shadow-md animate-pulse';
+          dot.textContent = (i + 1).toString();
+        } else {
+          dot.className = 'w-7 h-7 rounded-lg bg-slate-800 text-slate-500 text-xs font-bold flex items-center justify-center border border-slate-700';
+          dot.textContent = (i + 1).toString();
+        }
+      }
+
+      // Update Right-Hand Waypoints (①, ②, ③)
+      for (let s = 0; s < 3; s++) {
+        const wp = document.getElementById(`waypoint-${s}`);
+        const numSpan = wp.querySelector('.wp-num');
+        wp.classList.remove('waypoint-active', 'waypoint-cleared', 'animate-pulse');
+
+        if (s < gameState.currentStep - 1) {
+          // Cleared stones behind the hero
+          wp.classList.add('waypoint-cleared');
+          if (numSpan) {
+            numSpan.className = 'wp-num text-emerald-300 text-2xl sm:text-3xl font-black pointer-events-none';
+          }
+        } else if (s === gameState.currentStep - 1) {
+          // The EXACT circle where the hero is CURRENTLY STANDING!
+          wp.classList.add('waypoint-active');
+          if (numSpan) {
+            numSpan.className = 'wp-num text-amber-300/30 text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none';
+          }
+        } else if (s === gameState.currentStep) {
+          // Next target stone waiting to be stepped on
+          wp.classList.add('animate-pulse');
+          if (numSpan) {
+            numSpan.className = 'wp-num text-white text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none';
+          }
+        } else {
+          // Upcoming stones
+          if (numSpan) {
+            numSpan.className = 'wp-num text-white/80 text-2xl sm:text-3xl font-black underline decoration-4 underline-offset-4 pointer-events-none';
+          }
+        }
+      }
+
+      // Render 3x3 stone buttons
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const cell = gameState.gridData[r][c];
+          const stoneBtn = document.getElementById(`stone-${r}-${c}`);
+          const formulaSpan = stoneBtn.querySelector('.stone-formula');
+
+          formulaSpan.textContent = cell.formula;
+
+          stoneBtn.classList.remove('active-row-stone', 'opacity-40', 'pointer-events-none', 'ring-4', 'ring-amber-400', 'bg-emerald-700', 'border-emerald-400');
+
+          if (r === gameState.currentStep) {
+            stoneBtn.classList.add('active-row-stone', 'ring-2', 'ring-amber-400/80', 'cursor-pointer');
+            stoneBtn.disabled = false;
+            stoneBtn.style.opacity = '1';
+          } else if (r < gameState.currentStep) {
+            stoneBtn.disabled = true;
+            if (cell.isCorrect) {
+              stoneBtn.classList.add('bg-emerald-800', 'border-emerald-400', 'text-emerald-100');
+              stoneBtn.style.opacity = '1';
+            } else {
+              stoneBtn.style.opacity = '0.35';
+            }
+          } else {
+            stoneBtn.disabled = true;
+            stoneBtn.style.opacity = '0.45';
+          }
+        }
+      }
+
+      // Status bar message
+      const statusBar = document.getElementById('status-bar');
+      if (gameState.currentStep === 0) {
+        statusBar.innerHTML = `<span>🌊 勇者在右側起點準備就緒！請點選第一排結果為 <strong class="text-amber-400">${gameState.targetNumber}</strong> 的石頭，跳至 ①！</span>`;
+      } else if (gameState.currentStep === 1) {
+        statusBar.innerHTML = `<span>⚡ 勇者已跳到 ①！接下來請在第二排找出等於 <strong class="text-amber-400">${gameState.targetNumber}</strong> 的石頭，跳至 ②！</span>`;
+      } else if (gameState.currentStep === 2) {
+        statusBar.innerHTML = `<span>🔥 勇者已跳到 ②！找出第三排等於 <strong class="text-amber-400">${gameState.targetNumber}</strong> 的石頭，跳至 ③ 拯救公主！</span>`;
+      } else {
+        statusBar.innerHTML = `<span>🎉 勇者已跳上對岸古堡，成功救出公主！</span>`;
+      }
+    }
+    /* Position Hero Token onto specific right-side waypoint */
+    function updateHeroPosition(animate = true, callback = null) {
+      const heroToken = document.getElementById('dynamic-hero-token');
+      const riverStage = document.getElementById('river-stage');
+      
+      let targetElement;
+      if (gameState.currentStep === 0) {
+        targetElement = document.getElementById('waypoint-start');
+      } else if (gameState.currentStep === 1) {
+        targetElement = document.getElementById('waypoint-0'); // ①
+      } else if (gameState.currentStep === 2) {
+        targetElement = document.getElementById('waypoint-1'); // ②
+      } else if (gameState.currentStep >= 3) {
+        targetElement = document.getElementById('waypoint-2'); // ③
+      }
+
+      if (!targetElement || !riverStage || !heroToken) return;
+
+      const riverRect = riverStage.getBoundingClientRect();
+      const targetRect = targetElement.getBoundingClientRect();
+
+      // Calculate exact center coordinates of the target circle inside riverStage
+      const targetCenterX = (targetRect.left + targetRect.width / 2) - riverRect.left;
+      const targetCenterY = (targetRect.top + targetRect.height / 2) - riverRect.top;
+
+      const tokenWidth = heroToken.offsetWidth || 64;
+      const tokenHeight = heroToken.offsetHeight || 64;
+
+      // Mathematically center the hero token right inside the circle
+      const targetX = targetCenterX - (tokenWidth / 2);
+      const targetY = targetCenterY - (tokenHeight / 2);
+
+      if (!animate) {
+        heroToken.style.transition = 'none';
+        heroToken.style.transform = `translate(${targetX}px, ${targetY}px)`;
+        setTimeout(() => {
+          heroToken.style.transition = 'all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }, 50);
+        return;
+      }
+
+      sound.playJump();
+      createWaterRipple(targetCenterX, targetCenterY);
+
+      // Parabolic jump animation
+      heroToken.style.transform = `translate(${targetX}px, ${targetY - 24}px) scale(1.18)`;
+
+      setTimeout(() => {
+        heroToken.style.transform = `translate(${targetX}px, ${targetY}px) scale(1)`;
+        if (callback) callback();
+      }, 550);
+    }
+
+    /* Jump Hero to Top Bank (Princess) upon victory */
+    function jumpHeroToPrincess(callback) {
+      const riverStage = document.getElementById('river-stage');
+      const heroToken = document.getElementById('dynamic-hero-token');
+      const princess = document.getElementById('princess-character');
+
+      const riverRect = riverStage.getBoundingClientRect();
+      const princessRect = princess.getBoundingClientRect();
+
+      const princessCenterX = (princessRect.left + princessRect.width / 2) - riverRect.left;
+      const princessCenterY = (princessRect.top + princessRect.height / 2) - riverRect.top;
+
+      const tokenWidth = heroToken.offsetWidth || 64;
+      const tokenHeight = heroToken.offsetHeight || 64;
+
+      const targetX = princessCenterX - tokenWidth - 10;
+      const targetY = princessCenterY - (tokenHeight / 2);
+
+      sound.playJump();
+
+      heroToken.style.transform = `translate(${targetX}px, ${targetY - 24}px) scale(1.2)`;
+
+      setTimeout(() => {
+        heroToken.style.transform = `translate(${targetX}px, ${targetY}px) scale(1.05)`;
+        if (callback) callback();
+      }, 600);
+    }
+
+    /* Water Ripple Effect Generator */
+    function createWaterRipple(x, y) {
+      const stage = document.getElementById('river-stage');
+      const ripple = document.createElement('div');
+      ripple.className = 'absolute rounded-full border-2 border-cyan-200 pointer-events-none z-20';
+      ripple.style.width = '30px';
+      ripple.style.height = '30px';
+      ripple.style.left = `${x - 15}px`;
+      ripple.style.top = `${y - 15}px`;
+      ripple.style.animation = 'waterRipple 0.8s ease-out forwards';
+      stage.appendChild(ripple);
+
+      setTimeout(() => {
+        if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+      }, 800);
+    }
+
+    /* Stone Click Event Handler */
+    function handleStoneClick(e) {
+      if (gameState.isMoving) return;
+
+      const btn = e.currentTarget;
+      const row = parseInt(btn.getAttribute('data-row'), 10);
+      const col = parseInt(btn.getAttribute('data-col'), 10);
+
+      if (row !== gameState.currentStep) {
+        return;
+      }
+
+      const cell = gameState.gridData[row][col];
+
+      if (cell.isCorrect) {
+        // ============= CORRECT SELECTION =============
+        gameState.isMoving = true;
+        sound.playCorrect();
+
+        btn.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-600');
+        const formulaSpan = btn.querySelector('.stone-formula');
+        formulaSpan.innerHTML = `${cell.formula} = <span class="text-white">${cell.result}</span> ✨`;
+
+        // Advance to next step (0->1: jumps to ①; 1->2: jumps to ②; 2->3: jumps to ③)
+        gameState.currentStep++;
+
+        updateHeroPosition(true, () => {
+          gameState.isMoving = false;
+
+          if (gameState.currentStep >= 3) {
+            // Victory sequence! Hero leaps from ③ to princess!
+            triggerVictorySequence();
+          } else {
+            updateUI();
+          }
+        });
+
+      } else {
+        // ============= WRONG SELECTION =============
+        gameState.historyMistakes++;
+        sound.playWrong();
+        sound.playSplash();
+
+        btn.classList.add('shake-stone', 'ring-4', 'ring-rose-500');
+        const statusBar = document.getElementById('status-bar');
+        statusBar.innerHTML = `<span class="text-rose-400 font-bold">❌ 哎呀！${cell.formula} = ${cell.result}，不是 ${gameState.targetNumber} 喔！再算算看！</span>`;
+
+        setTimeout(() => {
+          btn.classList.remove('shake-stone', 'ring-4', 'ring-rose-500');
+        }, 800);
+      }
+    }
+    /* Trigger Victory Celebration */
+    function triggerVictorySequence() {
+      gameState.isMoving = true;
+      if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+
+      // Hero leaps from ③ to the Princess
+      setTimeout(() => {
+        jumpHeroToPrincess(() => {
+          sound.playVictory();
+
+          const bubble = document.getElementById('princess-bubble');
+          bubble.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 太棒了！勇者來到對岸拯救了我！💖</span>`;
+
+          confetti({
+            particleCount: 80,
+            spread: 70,
+            origin: { y: 0.3 }
+          });
+          setTimeout(() => {
+            confetti({
+              particleCount: 120,
+              angle: 60,
+              spread: 80,
+              origin: { x: 0.1, y: 0.4 }
+            });
+            confetti({
+              particleCount: 120,
+              angle: 120,
+              spread: 80,
+              origin: { x: 0.9, y: 0.4 }
+            });
+          }, 300);
+
+          setTimeout(() => {
+            document.getElementById('victory-target-val').textContent = gameState.targetNumber;
+            document.getElementById('victory-time-val').textContent = `${gameState.timerSeconds} 秒`;
+            document.getElementById('victory-modal').classList.remove('hidden');
+            gameState.isMoving = false;
+          }, 900);
+        });
+      }, 500);
+    }
+
+    /* Reset / Next Stage Handler */
+    function startNextRound(newTarget = null) {
+      document.getElementById('victory-modal').classList.add('hidden');
+      initializeRound(newTarget);
+
+      const bubble = document.getElementById('princess-bubble');
+      bubble.innerHTML = `
+        <span>救救我！選算式等於</span>
+        <span id="bubble-target" class="text-rose-600 font-extrabold text-sm">${gameState.targetNumber}</span>
+        <span>的石頭過河！</span>
+      `;
+    }
+
+    /* Set Difficulty Level */
+    function setDifficulty(diff) {
+      gameState.difficulty = diff;
+      const easyBtn = document.getElementById('diff-easy-btn');
+      const normalBtn = document.getElementById('diff-normal-btn');
+
+      if (diff === 'easy') {
+        easyBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+        normalBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white';
+      } else {
+        normalBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+        easyBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white';
+      }
+
+      startNextRound();
+    }
+
+    /* Bind Button and Interactive Listeners */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Bind stone buttons
+      document.querySelectorAll('.stone-btn').forEach(btn => {
+        btn.addEventListener('click', handleStoneClick);
+      });
+
+      // Difficulty buttons
+      document.getElementById('diff-easy-btn').addEventListener('click', () => {
+        sound.initContext();
+        setDifficulty('easy');
+      });
+      document.getElementById('diff-normal-btn').addEventListener('click', () => {
+        sound.initContext();
+        setDifficulty('normal');
+      });
+
+      // Sound toggle button
+      const soundBtn = document.getElementById('sound-btn');
+      const soundIcon = document.getElementById('sound-icon');
+      soundBtn.addEventListener('click', () => {
+        sound.initContext();
+        gameState.soundEnabled = !gameState.soundEnabled;
+        soundIcon.textContent = gameState.soundEnabled ? '🔊' : '🔇';
+        soundBtn.classList.toggle('text-slate-500', !gameState.soundEnabled);
+      });
+
+      // Restart button
+      document.getElementById('restart-btn').addEventListener('click', () => {
+        sound.initContext();
+        startNextRound();
+      });
+
+      // Info modal buttons
+      const infoModal = document.getElementById('info-modal');
+      document.getElementById('info-btn').addEventListener('click', () => {
+        infoModal.classList.remove('hidden');
+      });
+      document.getElementById('close-info-btn').addEventListener('click', () => {
+        infoModal.classList.add('hidden');
+      });
+      document.getElementById('modal-start-btn').addEventListener('click', () => {
+        infoModal.classList.add('hidden');
+      });
+
+      // Victory buttons
+      document.getElementById('next-stage-btn').addEventListener('click', () => {
+        startNextRound();
+      });
+
+      document.getElementById('replay-btn').addEventListener('click', () => {
+        startNextRound(gameState.targetNumber);
+      });
+
+      // Close modal by clicking outside
+      infoModal.addEventListener('click', (e) => {
+        if (e.target === infoModal) infoModal.classList.add('hidden');
+      });
+
+      // Handle window resize to keep hero aligned on waypoint
+      window.addEventListener('resize', () => {
+        updateHeroPosition(false);
+      });
+
+      window.addEventListener('load', () => {
+        updateHeroPosition(false);
+      });
+
+      // Initialize default round (Easy mode: 10以內加法，隨機數字 3~10)
+      initializeRound();
+    });
+  </script>
+</body>
+</html>
