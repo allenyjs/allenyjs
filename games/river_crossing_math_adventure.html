@@ -813,27 +813,45 @@
     /* Update UI Display and Row States */
     function updateUI() {
       // Update Target display
-      document.getElementById('target-number-badge').textContent = gameState.targetNumber;
-      document.getElementById('bubble-target').textContent = gameState.targetNumber;
+      const badge = document.getElementById('target-number-badge');
+      if (badge) badge.textContent = gameState.targetNumber;
+
+      // Update Princess Bubble safely
+      const bubble = document.getElementById('princess-bubble');
+      if (bubble) {
+        if (gameState.currentStep < 3) {
+          bubble.innerHTML = `
+            <span>救救我！選算式等於</span>
+            <span id="bubble-target" class="text-rose-600 font-extrabold text-sm">${gameState.targetNumber}</span>
+            <span>的石頭過河！</span>
+          `;
+        } else {
+          bubble.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 太棒了！勇者來到對岸拯救了我！💖</span>`;
+        }
+      }
+
       document.querySelectorAll('.target-inline-num').forEach(el => el.textContent = gameState.targetNumber);
 
       // Update Step Hint
       const stepText = ['第 1 排', '第 2 排', '第 3 排', '已成功拯救！'];
       const hintElem = document.getElementById('step-hint');
-      if (gameState.currentStep < 3) {
-        hintElem.innerHTML = `
-          <span>請在</span>
-          <span class="text-yellow-400 bg-slate-800 px-1.5 py-0.5 rounded border border-yellow-500/40">${stepText[gameState.currentStep]}</span>
-          <span>找出算式等於</span>
-          <span class="text-yellow-400 font-black" style="font-size: 36px;">${gameState.targetNumber}</span>
-        `;
-      } else {
-        hintElem.innerHTML = `<span class="text-emerald-400 font-black">🎉 順利抵達對岸！</span>`;
+      if (hintElem) {
+        if (gameState.currentStep < 3) {
+          hintElem.innerHTML = `
+            <span>請在</span>
+            <span class="text-yellow-400 bg-slate-800 px-1.5 py-0.5 rounded border border-yellow-500/40">${stepText[gameState.currentStep]}</span>
+            <span>找出算式等於</span>
+            <span class="text-yellow-400 font-black">${gameState.targetNumber}</span>
+          `;
+        } else {
+          hintElem.innerHTML = `<span class="text-emerald-400 font-black">🎉 順利抵達對岸！</span>`;
+        }
       }
 
       // Update progress dots
       for (let i = 0; i < 3; i++) {
         const dot = document.getElementById(`dot-${i}`);
+        if (!dot) continue;
         if (i < gameState.currentStep) {
           dot.className = 'w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg shadow-emerald-500/40 border border-emerald-300';
           dot.textContent = '✓';
@@ -849,6 +867,7 @@
       // Update Right-Hand Waypoints (①, ②, ③)
       for (let s = 0; s < 3; s++) {
         const wp = document.getElementById(`waypoint-${s}`);
+        if (!wp) continue;
         const numSpan = wp.querySelector('.wp-num');
         wp.classList.remove('waypoint-active', 'waypoint-cleared', 'animate-pulse');
 
@@ -881,13 +900,22 @@
       // Render 3x3 stone buttons
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < 3; c++) {
-          const cell = gameState.gridData[r][c];
+          const cell = gameState.gridData[r]?.[c];
+          if (!cell) continue;
           const stoneBtn = document.getElementById(`stone-${r}-${c}`);
+          if (!stoneBtn) continue;
           const formulaSpan = stoneBtn.querySelector('.stone-formula');
 
-          formulaSpan.textContent = cell.formula;
+          if (formulaSpan) formulaSpan.textContent = cell.formula;
 
-          stoneBtn.classList.remove('active-row-stone', 'opacity-40', 'pointer-events-none', 'ring-4', 'ring-amber-400', 'bg-emerald-700', 'border-emerald-400');
+          stoneBtn.classList.remove(
+            'active-row-stone', 'shake-stone',
+            'opacity-40', 'pointer-events-none', 'cursor-pointer',
+            'ring-4', 'ring-2', 'ring-amber-400', 'ring-amber-400/80',
+            'ring-emerald-400', 'ring-rose-500',
+            'bg-emerald-600', 'bg-emerald-700', 'bg-emerald-800',
+            'border-emerald-400', 'text-emerald-100'
+          );
 
           if (r === gameState.currentStep) {
             stoneBtn.classList.add('active-row-stone', 'ring-2', 'ring-amber-400/80', 'cursor-pointer');
@@ -1115,15 +1143,9 @@
 
     /* Reset / Next Stage Handler */
     function startNextRound(newTarget = null) {
-      document.getElementById('victory-modal').classList.add('hidden');
+      const modal = document.getElementById('victory-modal');
+      if (modal) modal.classList.add('hidden');
       initializeRound(newTarget);
-
-      const bubble = document.getElementById('princess-bubble');
-      bubble.innerHTML = `
-        <span>救救我！選算式等於</span>
-        <span id="bubble-target" class="text-rose-600 font-extrabold text-sm">${gameState.targetNumber}</span>
-        <span>的石頭過河！</span>
-      `;
     }
 
     /* Set Difficulty Level */
