@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>點陣連線模仿益智遊戲</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for game sound effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <!-- Canvas Confetti for victory celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    /* Prevent accidental pull-to-refresh & pinch zoom on touch screens */
+    body {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .board-grid {
+      touch-action: none; /* Crucial for custom touch dragging on SVG */
+    }
+    .dot-pulse {
+      animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.25); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .line-enter {
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: drawLine 0.25s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-3 sm:p-5 font-sans selection:bg-indigo-500">
+
+  <header class="w-full max-w-md flex items-center justify-between pb-2 border-b border-slate-800">
+    <div>
+      <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-2">
+        <i class="fa-solid fa-shapes text-indigo-400"></i> 圖形模仿大師
+      </h1>
+      <p class="text-xs text-slate-400">在下方重現上方示範的圖形</p>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <!-- Level Indicator & Selector -->
+      <select id="levelSelect" class="bg-slate-800 border border-slate-700 text-cyan-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        <!-- Injected via JavaScript -->
+      </select>
+      <button id="soundToggle" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition-colors" title="切換音效">
+        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center gap-3 my-2">
+    
+    <!-- Top Area: Target Demonstration (示範圖) -->
+    <div class="w-full bg-slate-800/80 backdrop-blur rounded-2xl p-3 border border-slate-700/60 shadow-lg relative flex flex-col items-center">
+      <div class="w-full flex justify-between items-center mb-1.5 px-2">
+        <span class="text-xs font-semibold tracking-wider text-amber-400 flex items-center gap-1.5 uppercase">
+          <i class="fa-regular fa-eye"></i> 上方：示範圖形 (請觀察)
+        </span>
+        <span id="targetEdgeCount" class="text-[11px] text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-full">
+          7 條連線
+        </span>
+      </div>
+      
+      <!-- Target SVG Canvas (3x3 grid) -->
+      <div class="w-full aspect-square max-w-[240px] bg-slate-950/60 rounded-xl p-2 border border-slate-800/80 shadow-inner relative flex items-center justify-center">
+        <svg id="targetSvg" viewBox="0 0 300 300" class="w-full h-full select-none">
+          <!-- Static target lines and dots will be drawn here -->
+        </svg>
+      </div>
+    </div>
+
+    <!-- Divider Bar with status indicator -->
+    <div class="w-full flex items-center justify-center gap-3">
+      <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+      <div id="statusBadge" class="text-xs font-medium px-3 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+        用手指或滑鼠在下方連接點
+      </div>
+      <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+    </div>
+
+    <!-- Bottom Area: Player Interactive Board (玩家作畫區) -->
+    <div class="w-full bg-slate-850 bg-slate-800/90 backdrop-blur rounded-2xl p-3 border-2 border-indigo-500/40 shadow-xl shadow-indigo-950/30 relative flex flex-col items-center">
+      <div class="w-full flex justify-between items-center mb-1.5 px-2">
+        <span class="text-xs font-semibold tracking-wider text-cyan-400 flex items-center gap-1.5 uppercase">
+          <i class="fa-solid fa-pen-nib"></i> 下方：你的作畫區 (拖曳連線)
+        </span>
+        <span id="playerEdgeCount" class="text-[11px] text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-full">
+          已繪製: 0
+        </span>
+      </div>
+
+      <!-- Player Interactive SVG Canvas -->
+      <div class="w-full aspect-square max-w-[240px] bg-slate-950/80 rounded-xl p-2 border border-indigo-500/20 shadow-inner relative flex items-center justify-center cursor-crosshair">
+        <svg id="playerSvg" viewBox="0 0 300 300" class="w-full h-full board-grid select-none">
+          <!-- Background guide grid lines -->
+          <g id="playerGridGuides" stroke="#334155" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"></g>
+          <!-- Confirmed player drawn lines -->
+          <g id="playerLinesGroup"></g>
+          <!-- Active drag line (rubberband) -->
+          <line id="dragLine" x1="0" y1="0" x2="0" y2="0" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" stroke-dasharray="4,4" class="hidden opacity-80" />
+          <!-- Interactive dots -->
+          <g id="playerDotsGroup"></g>
+        </svg>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="w-full max-w-md flex items-center justify-between gap-2 pt-2">
+    <button id="undoBtn" class="flex-1 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl font-medium text-xs sm:text-sm border border-slate-700 shadow flex items-center justify-center gap-1.5 transition-all">
+      <i class="fa-solid fa-rotate-left"></i> 上一步
+    </button>
+    <button id="clearBtn" class="flex-1 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:scale-95 text-rose-300 rounded-xl font-medium text-xs sm:text-sm border border-slate-700 shadow flex items-center justify-center gap-1.5 transition-all">
+      <i class="fa-solid fa-trash-can"></i> 清除
+    </button>
+    <button id="prevBtn" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 rounded-xl font-medium text-xs sm:text-sm border border-slate-700 shadow transition-all" title="上一關">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button id="nextBtn" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all" title="下一關">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </footer>
+
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-slate-850 bg-slate-900 border-2 border-emerald-500/60 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl transform scale-90 transition-transform duration-300" id="modalCard">
+      <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner border border-emerald-500/30">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 class="text-xl font-bold text-white mb-1">太厲害了！完全吻合</h3>
+      <p class="text-xs text-slate-400 mb-5">你成功模仿了示範圖形！</p>
+      <div class="flex gap-2">
+        <button id="replayLevelBtn" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors">
+          再次重玩
+        </button>
+        <button id="nextLevelModalBtn" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition-all">
+          下一關卡 <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Game Audio Synthesizers using Tone.js
+    let audioReady = false;
+    let soundEnabled = true;
+    let synth, chimeSynth, errorSynth;
+
+    function initAudio() {
+      if (audioReady) return;
+      try {
+        synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "triangle" },
+          envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }
+        }).toDestination();
+        synth.volume.value = -6;
+
+        chimeSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.6 }
+        }).toDestination();
+        chimeSynth.volume.value = -2;
+
+        errorSynth = new Tone.MembraneSynth().toDestination();
+        errorSynth.volume.value = -12;
+
+        audioReady = true;
+      } catch (e) {
+        console.warn("Audio initialization postponed:", e);
+      }
+    }
+
+    function playTone(note = "C5") {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        if (Tone.context.state !== "running") Tone.start();
+        synth.triggerAttackRelease(note, "16n");
+      } catch (err) {}
+    }
+
+    function playWinFanfare() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        if (Tone.context.state !== "running") Tone.start();
+        const now = Tone.now();
+        chimeSynth.triggerAttackRelease("C5", "8n", now);
+        chimeSynth.triggerAttackRelease("E5", "8n", now + 0.1);
+        chimeSynth.triggerAttackRelease("G5", "8n", now + 0.2);
+        chimeSynth.triggerAttackRelease("C6", "4n", now + 0.32);
+      } catch (err) {}
+    }
+
+    // Grid Coordinates (3x3 layout)
+    // Points 0 to 8:
+    // 0: (0,0)   1: (1,0)   2: (2,0)
+    // 3: (0,1)   4: (1,1)   5: (2,1)
+    // 6: (0,2)   7: (1,2)   8: (2,2)
+    const GRID_SIZE = 3;
+    const PADDING = 50;
+    const SPACING = 100; // Total 50 + 2*100 + 50 = 300 viewBox
+    const SNAP_RADIUS = 32;
+
+    const DOT_COORDS = [];
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        DOT_COORDS.push({
+          id: r * GRID_SIZE + c,
+          row: r,
+          col: c,
+          x: PADDING + c * SPACING,
+          y: PADDING + r * SPACING
+        });
+      }
+    }
+
+    /* 
+     Helper to normalize edge keys so undirected edges match consistently.
+     Always stores [min(a,b), max(a,b)]
+    */
+    function makeEdgeKey(p1, p2) {
+      return p1 < p2 ? `${p1}-${p2}` : `${p2}-${p1}`;
+    }
+
+    const LEVELS = [
+      {
+        id: 1,
+        title: "經典範例 (照片原題)",
+        description: "上方方框向下延伸",
+        // Top loop 0-1-2-5-4-3-0 with tail 5-8
+        edges: [
+          [0, 1], [1, 2],       // top horizontal: 0-1, 1-2
+          [0, 3],               // left vertical: 0-3
+          [3, 4], [4, 5],       // middle horizontal: 3-4, 4-5
+          [2, 5],               // right upper vertical: 2-5
+          [5, 8]                // right lower vertical: 5-8
+        ]
+      },
+      {
+        id: 2,
+        title: "三角小屋",
+        description: "屋頂與正方形底座",
+        edges: [
+          [0, 1], [1, 2],
+          [3, 4], [4, 5],
+          [3, 6], [5, 8],
+          [6, 7], [7, 8],
+          [1, 3], [1, 5]
+        ]
+      },
+      {
+        id: 3,
+        title: "幸運沙漏",
+        description: "上下對稱的交叉沙漏",
+        edges: [
+          [0, 1], [1, 2],
+          [6, 7], [7, 8],
+          [0, 4], [4, 8],
+          [2, 4], [4, 6]
+        ]
+      },
+      {
+        id: 4,
+        title: "英文字母 E",
+        description: "工整的方塊字母 E",
+        edges: [
+          [0, 1], [1, 2],
+          [0, 3], [3, 6],
+          [3, 4],
+          [6, 7], [7, 8]
+        ]
+      },
+      {
+        id: 5,
+        title: "閃電箭頭",
+        description: "連續的鋸齒折線",
+        edges: [
+          [0, 1], [1, 5], [4, 5], [4, 8], [7, 8]
+        ]
+      },
+      {
+        id: 6,
+        title: "對角鑽石",
+        description: "菱形與十字中心連線",
+        // Standardized to 8 atomic segments matching drawing interaction
+        edges: [
+          [1, 3], [1, 5], [3, 7], [5, 7],
+          [1, 4], [4, 7], [3, 4], [4, 5]
+        ]
+      }
+    ];
+
+    // Collinear midpoints table for 3x3 grid
+    const MIDPOINTS = {
+      "0-2": 1,
+      "3-5": 4,
+      "6-8": 7,
+      "0-6": 3,
+      "1-7": 4,
+      "2-8": 5,
+      "0-8": 4,
+      "2-6": 4
+    };
+
+    let currentLevelIndex = 0;
+    let playerEdges = new Set(); // Set of strings "min-max"
+    let actionHistory = []; // Stack for undo feature
+    let activeStartDot = null; // Dot currently being dragged from
+    let isDrawing = false;
+    let hasWon = false;
+
+    // DOM References
+    const targetSvg = document.getElementById("targetSvg");
+    const playerSvg = document.getElementById("playerSvg");
+    const playerGridGuides = document.getElementById("playerGridGuides");
+    const playerLinesGroup = document.getElementById("playerLinesGroup");
+    const playerDotsGroup = document.getElementById("playerDotsGroup");
+    const dragLine = document.getElementById("dragLine");
+    const levelSelect = document.getElementById("levelSelect");
+    const soundToggle = document.getElementById("soundToggle");
+    const soundIcon = document.getElementById("soundIcon");
+    const undoBtn = document.getElementById("undoBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const targetEdgeCountEl = document.getElementById("targetEdgeCount");
+    const playerEdgeCountEl = document.getElementById("playerEdgeCount");
+    const statusBadge = document.getElementById("statusBadge");
+    const victoryModal = document.getElementById("victoryModal");
+    const modalCard = document.getElementById("modalCard");
+    const replayLevelBtn = document.getElementById("replayLevelBtn");
+    const nextLevelModalBtn = document.getElementById("nextLevelModalBtn");
+
+    // Populate Level Dropdown
+    LEVELS.forEach((lvl, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = `第 ${lvl.id} 關: ${lvl.title}`;
+      levelSelect.appendChild(opt);
+    });
+
+    function renderTargetBoard() {
+      const level = LEVELS[currentLevelIndex];
+      targetSvg.innerHTML = "";
+
+      // Background grid lines (faint)
+      for (let i = 0; i < 3; i++) {
+        // Horizontal guide
+        const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        hLine.setAttribute("x1", PADDING);
+        hLine.setAttribute("y1", PADDING + i * SPACING);
+        hLine.setAttribute("x2", PADDING + 2 * SPACING);
+        hLine.setAttribute("y2", PADDING + i * SPACING);
+        hLine.setAttribute("stroke", "#334155");
+        hLine.setAttribute("stroke-width", "1");
+        hLine.setAttribute("stroke-dasharray", "3,3");
+        hLine.setAttribute("opacity", "0.4");
+        targetSvg.appendChild(hLine);
+
+        // Vertical guide
+        const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        vLine.setAttribute("x1", PADDING + i * SPACING);
+        vLine.setAttribute("y1", PADDING);
+        vLine.setAttribute("x2", PADDING + i * SPACING);
+        vLine.setAttribute("y2", PADDING + 2 * SPACING);
+        vLine.setAttribute("stroke", "#334155");
+        vLine.setAttribute("stroke-width", "1");
+        vLine.setAttribute("stroke-dasharray", "3,3");
+        vLine.setAttribute("opacity", "0.4");
+        targetSvg.appendChild(vLine);
+      }
+
+      // Draw Target Connected Lines
+      level.edges.forEach(([p1, p2]) => {
+        const d1 = DOT_COORDS[p1];
+        const d2 = DOT_COORDS[p2];
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", d1.x);
+        line.setAttribute("y1", d1.y);
+        line.setAttribute("x2", d2.x);
+        line.setAttribute("y2", d2.y);
+        line.setAttribute("stroke", "#38bdf8"); // Cyan bright target line
+        line.setAttribute("stroke-width", "7");
+        line.setAttribute("stroke-linecap", "round");
+        targetSvg.appendChild(line);
+      });
+
+      // Draw Target Dots
+      DOT_COORDS.forEach(dot => {
+        const isConnected = level.edges.some(([p1, p2]) => p1 === dot.id || p2 === dot.id);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", dot.x);
+        circle.setAttribute("cy", dot.y);
+        circle.setAttribute("r", isConnected ? "7" : "5.5");
+        circle.setAttribute("fill", isConnected ? "#f8fafc" : "#64748b");
+        if (isConnected) {
+          circle.setAttribute("stroke", "#0284c7");
+          circle.setAttribute("stroke-width", "2.5");
+        }
+        targetSvg.appendChild(circle);
+      });
+
+      targetEdgeCountEl.textContent = `${level.edges.length} 條連線`;
+    }
+
+    function setupPlayerBoardStaticGuides() {
+      playerGridGuides.innerHTML = "";
+      for (let i = 0; i < 3; i++) {
+        // Horizontal
+        const h = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        h.setAttribute("x1", PADDING);
+        h.setAttribute("y1", PADDING + i * SPACING);
+        h.setAttribute("x2", PADDING + 2 * SPACING);
+        h.setAttribute("y2", PADDING + i * SPACING);
+        playerGridGuides.appendChild(h);
+
+        // Vertical
+        const v = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        v.setAttribute("x1", PADDING + i * SPACING);
+        v.setAttribute("y1", PADDING);
+        v.setAttribute("x2", PADDING + i * SPACING);
+        v.setAttribute("y2", PADDING + 2 * SPACING);
+        playerGridGuides.appendChild(v);
+      }
+    }
+
+    function renderPlayerBoard() {
+      // 1. Draw Player Connected Lines
+      playerLinesGroup.innerHTML = "";
+      const targetEdgesSet = new Set(LEVELS[currentLevelIndex].edges.map(e => makeEdgeKey(e[0], e[1])));
+
+      playerEdges.forEach(edgeKey => {
+        const [p1, p2] = edgeKey.split("-").map(Number);
+        const d1 = DOT_COORDS[p1];
+        const d2 = DOT_COORDS[p2];
+        const isCorrect = targetEdgesSet.has(edgeKey);
+
+        // Glow filter line
+        const glowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        glowLine.setAttribute("x1", d1.x);
+        glowLine.setAttribute("y1", d1.y);
+        glowLine.setAttribute("x2", d2.x);
+        glowLine.setAttribute("y2", d2.y);
+        glowLine.setAttribute("stroke", isCorrect ? "#6366f1" : "#f43f5e");
+        glowLine.setAttribute("stroke-width", "12");
+        glowLine.setAttribute("stroke-linecap", "round");
+        glowLine.setAttribute("opacity", "0.35");
+        playerLinesGroup.appendChild(glowLine);
+
+        // Main line
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", d1.x);
+        line.setAttribute("y1", d1.y);
+        line.setAttribute("x2", d2.x);
+        line.setAttribute("y2", d2.y);
+        line.setAttribute("stroke", isCorrect ? "#818cf8" : "#fb7185"); // Highlights incorrect lines in soft red
+        line.setAttribute("stroke-width", "6.5");
+        line.setAttribute("stroke-linecap", "round");
+        line.setAttribute("class", "line-enter cursor-pointer");
+        
+        // Clicking directly on an existing line removes it
+        line.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeEdge(edgeKey);
+        });
+
+        playerLinesGroup.appendChild(line);
+      });
+
+      // 2. Draw Interactive Dots
+      playerDotsGroup.innerHTML = "";
+      DOT_COORDS.forEach(dot => {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "cursor-pointer");
+        g.setAttribute("data-dot-id", dot.id);
+
+        const isConnected = Array.from(playerEdges).some(k => {
+          const [a, b] = k.split("-").map(Number);
+          return a === dot.id || b === dot.id;
+        });
+        const isCurrentActive = activeStartDot === dot.id;
+
+        // Big transparent touch target (44px min for high usability)
+        const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hitArea.setAttribute("cx", dot.x);
+        hitArea.setAttribute("cy", dot.y);
+        hitArea.setAttribute("r", "24");
+        hitArea.setAttribute("fill", "transparent");
+        g.appendChild(hitArea);
+
+        // Active selection ring
+        if (isCurrentActive) {
+          const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          ring.setAttribute("cx", dot.x);
+          ring.setAttribute("cy", dot.y);
+          ring.setAttribute("r", "16");
+          ring.setAttribute("fill", "none");
+          ring.setAttribute("stroke", "#38bdf8");
+          ring.setAttribute("stroke-width", "2");
+          ring.setAttribute("class", "dot-pulse");
+          g.appendChild(ring);
+        }
+
+        // Visible dot
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", dot.x);
+        circle.setAttribute("cy", dot.y);
+        circle.setAttribute("r", isCurrentActive ? "9" : (isConnected ? "7.5" : "6"));
+        circle.setAttribute("fill", isCurrentActive ? "#38bdf8" : (isConnected ? "#f1f5f9" : "#475569"));
+        circle.setAttribute("stroke", isCurrentActive ? "#0284c7" : (isConnected ? "#6366f1" : "#1e293b"));
+        circle.setAttribute("stroke-width", "2.5");
+        circle.style.transition = "all 0.15s ease";
+        g.appendChild(circle);
+
+        playerDotsGroup.appendChild(g);
+      });
+
+      playerEdgeCountEl.textContent = `已繪製: ${playerEdges.size}`;
+    }
+
+    function getSvgCoordinates(evt) {
+      const pt = playerSvg.createSVGPoint();
+      if (evt.touches && evt.touches.length > 0) {
+        pt.x = evt.touches[0].clientX;
+        pt.y = evt.touches[0].clientY;
+      } else {
+        pt.x = evt.clientX;
+        pt.y = evt.clientY;
+      }
+      return pt.matrixTransform(playerSvg.getScreenCTM().inverse());
+    }
+
+    function findClosestDot(svgX, svgY, threshold = SNAP_RADIUS) {
+      let closest = null;
+      let minDistance = Infinity;
+
+      DOT_COORDS.forEach(dot => {
+        const dx = dot.x - svgX;
+        const dy = dot.y - svgY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= threshold && dist < minDistance) {
+          minDistance = dist;
+          closest = dot;
+        }
+      });
+      return closest;
+    }
+
+    function startDrawing(dot) {
+      if (hasWon) return;
+      activeStartDot = dot.id;
+      isDrawing = true;
+
+      dragLine.setAttribute("x1", dot.x);
+      dragLine.setAttribute("y1", dot.y);
+      dragLine.setAttribute("x2", dot.x);
+      dragLine.setAttribute("y2", dot.y);
+      dragLine.classList.remove("hidden");
+
+      playTone("G4");
+      renderPlayerBoard();
+    }
+
+    function updateDrawing(svgCoords) {
+      if (!isDrawing || activeStartDot === null) return;
+
+      dragLine.setAttribute("x2", svgCoords.x);
+      dragLine.setAttribute("y2", svgCoords.y);
+
+      // Check if dragged onto another adjacent/target dot
+      const targetDot = findClosestDot(svgCoords.x, svgCoords.y, SNAP_RADIUS);
+      if (targetDot && targetDot.id !== activeStartDot) {
+        tryConnectDots(activeStartDot, targetDot.id);
+        // Seamlessly continue chaining stroke from targetDot
+        activeStartDot = targetDot.id;
+        dragLine.setAttribute("x1", targetDot.x);
+        dragLine.setAttribute("y1", targetDot.y);
+      }
+    }
+
+    function stopDrawing() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      dragLine.classList.add("hidden");
+      activeStartDot = null;
+      renderPlayerBoard();
+      checkWinCondition();
+    }
+
+    function tryConnectDots(p1, p2) {
+      if (p1 === p2) return;
+      const key = makeEdgeKey(p1, p2);
+
+      // If drawn line spans across a midpoint dot, split into collinear atomic segments
+      if (MIDPOINTS[key] !== undefined) {
+        const mid = MIDPOINTS[key];
+        tryConnectDots(p1, mid);
+        tryConnectDots(mid, p2);
+        return;
+      }
+
+      if (!playerEdges.has(key)) {
+        playerEdges.add(key);
+        actionHistory.push({ type: "add", key });
+        // Scale pitch depending on target matching
+        const targetEdgesSet = new Set(LEVELS[currentLevelIndex].edges.map(e => makeEdgeKey(e[0], e[1])));
+        if (targetEdgesSet.has(key)) {
+          playTone("E5");
+        } else {
+          playTone("B4");
+        }
+        renderPlayerBoard();
+        checkWinCondition();
+      }
+    }
+
+    function removeEdge(key) {
+      if (playerEdges.has(key)) {
+        playerEdges.delete(key);
+        actionHistory.push({ type: "remove", key });
+        playTone("C4");
+        renderPlayerBoard();
+        checkWinCondition();
+      }
+    }
+
+    // Event Listeners for Player Canvas
+    playerSvg.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const coords = getSvgCoordinates(e);
+      const dot = findClosestDot(coords.x, coords.y, SNAP_RADIUS + 5);
+
+      if (dot) {
+        startDrawing(dot);
+      }
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!isDrawing) return;
+      const coords = getSvgCoordinates(e);
+      updateDrawing(coords);
+    });
+
+    window.addEventListener("pointerup", (e) => {
+      if (isDrawing) {
+        stopDrawing();
+      }
+    });
+
+    window.addEventListener("pointercancel", (e) => {
+      if (isDrawing) {
+        stopDrawing();
+      }
+    });
+
+    function checkWinCondition() {
+      const currentLevel = LEVELS[currentLevelIndex];
+      const targetEdgeKeys = new Set(currentLevel.edges.map(([p1, p2]) => makeEdgeKey(p1, p2)));
+
+      // Check for exact equality
+      let isExactMatch = true;
+      if (playerEdges.size !== targetEdgeKeys.size) {
+        isExactMatch = false;
+      } else {
+        for (const edge of playerEdges) {
+          if (!targetEdgeKeys.has(edge)) {
+            isExactMatch = false;
+            break;
+          }
+        }
+      }
+
+      if (isExactMatch && !hasWon) {
+        handleVictory();
+      } else {
+        // Status updates
+        if (playerEdges.size === 0) {
+          statusBadge.textContent = "在下方連接點模仿上方圖形";
+          statusBadge.className = "text-xs font-medium px-3 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
+        } else {
+          // Count how many correct and wrong
+          let correctCount = 0;
+          let wrongCount = 0;
+          playerEdges.forEach(k => { 
+            if (targetEdgeKeys.has(k)) correctCount++; 
+            else wrongCount++;
+          });
+
+          if (wrongCount > 0) {
+            statusBadge.textContent = `有 ${wrongCount} 條線畫錯了（紅線），點擊即可清除`;
+            statusBadge.className = "text-xs font-medium px-3 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-700";
+          } else {
+            statusBadge.textContent = `進度: ${correctCount}/${targetEdgeKeys.size} 正確連線`;
+            statusBadge.className = "text-xs font-medium px-3 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700";
+          }
+        }
+      }
+    }
+
+    function handleVictory() {
+      hasWon = true;
+      playWinFanfare();
+
+      // Confetti burst
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (e) {}
+
+      statusBadge.textContent = "🎉 通關成功！";
+      statusBadge.className = "text-xs font-bold px-3 py-0.5 rounded-full bg-emerald-500 text-slate-950 border border-emerald-400 shadow-md animate-bounce";
+
+      // Show Victory Modal with smooth animation
+      setTimeout(() => {
+        victoryModal.classList.remove("hidden");
+        setTimeout(() => {
+          victoryModal.classList.remove("opacity-0");
+          modalCard.classList.remove("scale-90");
+          modalCard.classList.add("scale-100");
+        }, 20);
+      }, 500);
+    }
+
+    function loadLevel(index) {
+      if (index < 0) index = 0;
+      if (index >= LEVELS.length) index = LEVELS.length - 1;
+      
+      currentLevelIndex = index;
+      levelSelect.value = index;
+      hasWon = false;
+      playerEdges.clear();
+      actionHistory = [];
+      activeStartDot = null;
+      isDrawing = false;
+      
+      statusBadge.textContent = "用手指或滑鼠在下方連接點";
+      statusBadge.className = "text-xs font-medium px-3 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
+
+      // Close modal if open
+      victoryModal.classList.add("opacity-0");
+      modalCard.classList.add("scale-90");
+      modalCard.classList.remove("scale-100");
+      setTimeout(() => {
+        victoryModal.classList.add("hidden");
+      }, 300);
+
+      renderTargetBoard();
+      renderPlayerBoard();
+    }
+
+    // Level selector dropdown
+    levelSelect.addEventListener("change", (e) => {
+      loadLevel(parseInt(e.target.value, 10));
+    });
+
+    // Undo button
+    undoBtn.addEventListener("click", () => {
+      if (hasWon || actionHistory.length === 0) return;
+      const lastAction = actionHistory.pop();
+      if (lastAction.type === "add") {
+        playerEdges.delete(lastAction.key);
+      } else if (lastAction.type === "remove") {
+        playerEdges.add(lastAction.key);
+      }
+      playTone("F4");
+      renderPlayerBoard();
+      checkWinCondition();
+    });
+
+    // Clear button
+    clearBtn.addEventListener("click", () => {
+      if (hasWon || playerEdges.size === 0) return;
+      playerEdges.clear();
+      actionHistory = [];
+      playTone("D4");
+      renderPlayerBoard();
+      checkWinCondition();
+    });
+
+    // Prev / Next Navigation
+    prevBtn.addEventListener("click", () => {
+      if (currentLevelIndex > 0) {
+        loadLevel(currentLevelIndex - 1);
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentLevelIndex < LEVELS.length - 1) {
+        loadLevel(currentLevelIndex + 1);
+      } else {
+        loadLevel(0); // Loop back
+      }
+    });
+
+    // Modal buttons
+    replayLevelBtn.addEventListener("click", () => {
+      loadLevel(currentLevelIndex);
+    });
+
+    nextLevelModalBtn.addEventListener("click", () => {
+      if (currentLevelIndex < LEVELS.length - 1) {
+        loadLevel(currentLevelIndex + 1);
+      } else {
+        loadLevel(0);
+      }
+    });
+
+    // Sound toggle
+    soundToggle.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        soundIcon.className = "fa-solid fa-volume-high text-cyan-400";
+        initAudio();
+        playTone("A4");
+      } else {
+        soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+      }
+    });
+
+    window.onload = () => {
+      setupPlayerBoardStaticGuides();
+      loadLevel(0); // Load photo's exact pattern as Level 1
+    };
+  </script>
+</body>
+</html>
