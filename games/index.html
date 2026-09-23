@@ -382,8 +382,13 @@
 
     <footer class="footer">
       🎈 點擊任意遊戲即可開始遊玩・持續新增中！
+	  <br>
+	  Made with ❤️ by Jimin's Dad | © <span id="year"></span>. All rights reserved.
     </footer>
   </div>
-
+  <script>
+  const currentYear = new Date().getFullYear();
+  document.getElementById("year").textContent = Math.max(2026, currentYear);
+</script>
 </body>
 </html>
