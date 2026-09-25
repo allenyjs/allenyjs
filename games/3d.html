@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D 積木小偵探 - 空間積木數一數</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js for 3D graphics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls for fluid camera manipulation -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Tone.js for joyful kid-friendly audio feedback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <!-- Canvas Confetti for celebratory animations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      background: radial-gradient(circle at 50% 20%, #eff6ff 0%, #dbeafe 60%, #bfdbfe 100%);
+    }
+    .candy-btn {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.15);
+    }
+    .candy-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+    }
+    .num-btn {
+      box-shadow: 0 5px 0 #cbd5e1;
+    }
+    .num-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #cbd5e1;
+    }
+    .pulse-glow {
+      animation: pulseGlow 2s infinite alternate;
+    }
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+      to { box-shadow: 0 0 28px rgba(245, 158, 11, 0.7); }
+    }
+  </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden flex flex-col text-slate-800">
+  
+  <header class="w-full bg-white/80 backdrop-blur-md border-b-2 border-amber-200 px-4 py-2 flex items-center justify-between z-20 shrink-0 shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="w-10 h-10 rounded-2xl bg-amber-400 text-white flex items-center justify-center text-xl shadow-md">
+        <i class="fa-solid fa-cubes"></i>
+      </div>
+      <div>
+        <h1 class="text-base sm:text-lg font-black tracking-wide text-amber-700 leading-tight">3D 積木小偵探</h1>
+        <p class="text-[11px] sm:text-xs text-amber-600 font-bold">幼兒與小一空間感挑戰</p>
+      </div>
+    </div>
+
+    <!-- Difficulty & Level display -->
+    <div class="flex items-center gap-2">
+      <div id="levelTag" class="px-3 py-1 rounded-full text-xs font-black bg-blue-100 text-blue-700 border border-blue-300">
+        Level 1 入門
+      </div>
+      <div class="flex items-center bg-amber-50 border border-amber-300 rounded-full px-3 py-1 text-xs font-black text-amber-800">
+        <i class="fa-solid fa-star text-amber-400 mr-1 text-sm"></i>
+        <span>星星: </span>
+        <span id="starCount" class="ml-1 text-sm text-amber-600 font-black">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 relative flex flex-col md:flex-row overflow-hidden">
+    
+    <!-- 3D Canvas Box -->
+    <div id="canvasContainer" class="relative flex-1 w-full h-[55vh] md:h-full bg-transparent overflow-hidden cursor-grab active:cursor-grabbing">
+      
+      <!-- Top floating hint badge -->
+      <div class="absolute top-3 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border-2 border-sky-300 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-sky-800 shadow-md flex items-center gap-2 z-10 pointer-events-none select-none">
+        <i class="fa-solid fa-hand-pointer text-sky-500 animate-bounce"></i>
+        <span>用手指或滑鼠轉一轉，數數看共有幾顆？</span>
+      </div>
+
+      <!-- Quick viewpoint toolbar on left -->
+      <div class="absolute left-3 top-14 flex flex-col gap-2 z-10">
+        <button id="btnViewFront" title="看正面" class="candy-btn w-10 h-10 rounded-2xl bg-white border-2 border-sky-400 text-sky-600 font-black text-xs flex flex-col items-center justify-center hover:bg-sky-50">
+          <i class="fa-solid fa-eye text-sm"></i>
+          <span>正面</span>
+        </button>
+        <button id="btnViewBack" title="看背面" class="candy-btn w-10 h-10 rounded-2xl bg-white border-2 border-indigo-400 text-indigo-600 font-black text-xs flex flex-col items-center justify-center hover:bg-indigo-50">
+          <i class="fa-solid fa-rotate text-sm"></i>
+          <span>背面</span>
+        </button>
+        <button id="btnViewTop" title="由上看" class="candy-btn w-10 h-10 rounded-2xl bg-white border-2 border-teal-400 text-teal-600 font-black text-xs flex flex-col items-center justify-center hover:bg-teal-50">
+          <i class="fa-solid fa-arrow-down text-sm"></i>
+          <span>俯視</span>
+        </button>
+      </div>
+
+      <!-- Magic Helper Tools on right -->
+      <div class="absolute right-3 top-14 flex flex-col gap-2 z-10">
+        <!-- X-ray lens button -->
+        <button id="btnXRay" class="candy-btn px-3 py-2 rounded-2xl bg-violet-500 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 hover:bg-violet-600 border-2 border-violet-700 shadow-md">
+          <i class="fa-solid fa-wand-magic-sparkles text-yellow-300"></i>
+          <span id="xrayText">X光透視</span>
+        </button>
+        <!-- Explode / Disassemble button -->
+        <button id="btnExplode" class="candy-btn px-3 py-2 rounded-2xl bg-amber-500 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 hover:bg-amber-600 border-2 border-amber-700 shadow-md">
+          <i class="fa-solid fa-arrows-split-up-and-left text-white"></i>
+          <span id="explodeText">拆開數</span>
+        </button>
+        <!-- Reset perspective -->
+        <button id="btnResetView" class="candy-btn px-3 py-1.5 rounded-2xl bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1 hover:bg-slate-300 border border-slate-400">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>還原視角</span>
+        </button>
+      </div>
+
+      <!-- Hidden cube indicator notice -->
+      <div id="hiddenTipBanner" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-amber-50 border-2 border-amber-400 text-amber-900 px-4 py-1.5 rounded-2xl text-xs font-bold shadow-lg z-10 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb text-amber-500 text-base"></i>
+        <span>提示：有的積木被踩在腳底下喔！轉到背面或開 X 光找找看！</span>
+      </div>
+    </div>
+
+    <div class="w-full md:w-80 lg:w-96 bg-white/95 backdrop-blur-md border-t-2 md:border-t-0 md:border-l-2 border-sky-200 p-4 flex flex-col justify-between shrink-0 shadow-xl z-20">
+      
+      <!-- Level Switcher & Question Title -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-500">選擇難度關卡</span>
+          <div class="flex gap-1">
+            <button id="selectLevel1" class="px-3 py-1 rounded-xl text-xs font-black bg-blue-500 text-white shadow-sm border border-blue-600">Level 1 (簡單)</button>
+            <button id="selectLevel2" class="px-3 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-700 hover:bg-slate-300">Level 2 (進階)</button>
+          </div>
+        </div>
+
+        <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3 text-center mb-3">
+          <h2 class="text-base sm:text-lg font-black text-sky-900 leading-snug">
+            第 <span id="currentQNum" class="text-amber-500 text-xl font-black">1</span> / <span id="totalQNum" class="text-sky-700 text-sm font-black">5</span> 題：<span id="currentQName">小橫排</span>
+          </h2>
+          <p id="difficultyDesc" class="text-xs text-sky-700 font-bold mt-0.5">
+            所有積木都看得見，數數看！
+          </p>
+        </div>
+      </div>
+
+      <!-- Number Keypad (1 to 10) for Easy Kid Tapping -->
+      <div class="my-auto py-2">
+        <div class="text-xs font-bold text-slate-500 text-center mb-2">點選正確的方塊數量：</div>
+        <div class="grid grid-cols-5 gap-2 sm:gap-2.5 max-w-xs mx-auto">
+          <!-- Numbers 1 to 10 -->
+          <button onclick="handleKidAnswer(1)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">1</button>
+          <button onclick="handleKidAnswer(2)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">2</button>
+          <button onclick="handleKidAnswer(3)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">3</button>
+          <button onclick="handleKidAnswer(4)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">4</button>
+          <button onclick="handleKidAnswer(5)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">5</button>
+          
+          <button onclick="handleKidAnswer(6)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">6</button>
+          <button onclick="handleKidAnswer(7)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">7</button>
+          <button onclick="handleKidAnswer(8)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">8</button>
+          <button onclick="handleKidAnswer(9)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">9</button>
+          <button onclick="handleKidAnswer(10)" class="num-btn candy-btn h-12 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-black text-xl sm:text-2xl flex items-center justify-center">10</button>
+        </div>
+      </div>
+
+      <!-- Bottom Question Navigation -->
+      <div class="flex items-center gap-2 pt-2 border-t border-slate-200">
+        <button id="btnPrev" class="candy-btn flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 flex items-center justify-center gap-1">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>上一題</span>
+        </button>
+        <button id="btnNext" class="candy-btn flex-1 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs border-2 border-sky-700 flex items-center justify-center gap-1 shadow-md">
+          <span>下一題</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Answer feedback dialog -->
+  <div id="feedbackModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="modalBox" class="bg-white rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center border-4 border-amber-300 shadow-2xl transform scale-95 transition-all">
+      <div id="modalIcon" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-3">
+        🎉
+      </div>
+      <h3 id="modalTitle" class="text-xl font-black text-slate-800 mb-1">太棒了，答對了！</h3>
+      <p id="modalDesc" class="text-sm font-bold text-slate-600 mb-4">總共有 4 顆小積木！</p>
+      <div id="modalButtons" class="flex gap-2 justify-center">
+        <button id="modalActionBtn" class="candy-btn px-6 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-base border-2 border-amber-600 shadow-md">
+          下一關挑戰 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Questions Definition:
+       Coordinates: {x, y, z} where y is height (0=ground, 1=second layer, etc.)
+       All higher blocks MUST have a block beneath them (y-1) for physical grounding.
+    */
+    const questionBank = {
+      level1: [
+        {
+          id: 1,
+          name: "小橫排",
+          desc: "平躺在桌上的小積木，數數看有幾顆？",
+          hasHidden: false,
+          blocks: [
+            { x: -1, y: 0, z: 0 },
+            { x:  0, y: 0, z: 0 },
+            { x:  1, y: 0, z: 0 }
+          ]
+        },
+        {
+          id: 2,
+          name: "可愛 L 形",
+          desc: "像英文字母 L 的拐角造型，沒有藏起來的喔！",
+          hasHidden: false,
+          blocks: [
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            { x: 2, y: 0, z: 0 },
+            { x: 0, y: 0, z: 1 }
+          ]
+        },
+        {
+          id: 3,
+          name: "兩階小樓梯",
+          desc: "一步一步往上爬！右邊疊了兩層高。",
+          hasHidden: false,
+          blocks: [
+            { x: -0.5, y: 0, z: 0 },
+            { x:  0.5, y: 0, z: 0 },
+            { x:  0.5, y: 1, z: 0 }
+          ]
+        },
+        {
+          id: 4,
+          name: "2×2 小地毯",
+          desc: "四顆方塊整齊排成一個正方形！",
+          hasHidden: false,
+          blocks: [
+            { x: -0.5, y: 0, z: -0.5 },
+            { x:  0.5, y: 0, z: -0.5 },
+            { x: -0.5, y: 0, z:  0.5 },
+            { x:  0.5, y: 0, z:  0.5 }
+          ]
+        },
+        {
+          id: 5,
+          name: "歡樂小十字",
+          desc: "中間一顆、前後左右各一顆，全部看得到！",
+          hasHidden: false,
+          blocks: [
+            { x:  0, y: 0, z:  0 },
+            { x:  1, y: 0, z:  0 },
+            { x: -1, y: 0, z:  0 },
+            { x:  0, y: 0, z:  1 },
+            { x:  0, y: 0, z: -1 }
+          ]
+        }
+      ],
+      level2: [
+        {
+          id: 1,
+          name: "雙層高階梯",
+          desc: "仔細看！最高的那顆下面，踩著一顆看不見的積木喔！",
+          hasHidden: true,
+          blocks: [
+            { x: -1, y: 0, z: 0 },
+            { x:  0, y: 0, z: 0 },
+            { x:  0, y: 0, z: -1 },
+            { x:  0, y: 1, z: -1 },
+            { x:  1, y: 0, z: 0 }
+          ]
+        },
+        {
+          id: 2,
+          name: "轉角小城堡",
+          desc: "高塔立在轉角處，底下一定有積木撐著才不會掉下來！",
+          hasHidden: true,
+          blocks: [
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            { x: 0, y: 0, z: 1 },
+            { x: 0, y: 1, z: 0 },
+            { x: 0, y: 2, z: 0 },
+            { x: -1, y: 0, z: 0 }
+          ]
+        },
+        {
+          id: 3,
+          name: "3層金字塔階梯",
+          desc: "底層3顆、第2層2顆、最上層1顆，共有幾顆呢？",
+          hasHidden: true,
+          blocks: [
+            { x: -1, y: 0, z: 0 },
+            { x:  0, y: 0, z: 0 },
+            { x:  1, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+            { x: 1, y: 1, z: 0 },
+            { x: 1, y: 2, z: 0 }
+          ]
+        },
+        {
+          id: 4,
+          name: "後方小哨塔",
+          desc: "從正面看會被擋住，記得滑動畫面轉到背面看看！",
+          hasHidden: true,
+          blocks: [
+            { x: -0.5, y: 0, z: 0.5 },
+            { x:  0.5, y: 0, z: 0.5 },
+            { x: -0.5, y: 0, z: -0.5 },
+            { x:  0.5, y: 0, z: -0.5 },
+            { x: -0.5, y: 1, z: -0.5 },
+            { x:  0.5, y: 1, z: -0.5 },
+            { x:  0.5, y: 2, z: -0.5 }
+          ]
+        },
+        {
+          id: 5,
+          name: "小小積木船",
+          desc: "船身加上桅杆，總共有幾顆？開 X 光檢查看看！",
+          hasHidden: true,
+          blocks: [
+            { x: -1, y: 0, z: 0 },
+            { x:  0, y: 0, z: 0 },
+            { x:  1, y: 0, z: 0 },
+            { x:  0, y: 1, z: 0 },
+            { x:  0, y: 2, z: 0 },
+            { x:  0, y: 0, z: 1 },
+            { x:  0, y: 0, z: -1 },
+            { x:  0, y: 1, z: 1 }
+          ]
+        }
+      ]
+    };
+
+    // Game State
+    let currentMode = "level1";
+    let currentIndex = 0;
+    let stars = 0;
+    let isXRay = false;
+    let isExploded = false;
+    let cubeGroup = new THREE.Group();
+
+    const container = document.getElementById('canvasContainer');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f7ff);
+    scene.add(cubeGroup);
+
+    const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+    const defaultCamPos = new THREE.Vector3(4.5, 3.8, 5.5);
+    camera.position.copy(defaultCamPos);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Orbit Controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.minDistance = 3;
+    controls.maxDistance = 14;
+    controls.target.set(0, 0.8, 0);
+
+    // Environmental Lights
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xbfdbfe, 0.85);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+    dirLight.position.set(6, 10, 6);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 25;
+    const d = 4.5;
+    dirLight.shadow.camera.left = -d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = -d;
+    scene.add(dirLight);
+
+    // Cute Round Ground Plate
+    const groundGeo = new THREE.CylinderGeometry(3.6, 3.8, 0.25, 36);
+    const groundMat = new THREE.MeshStandardMaterial({ 
+      color: 0xffffff, 
+      roughness: 0.6,
+      metalness: 0.1
+    });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.position.y = -0.15;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // Cute base grid guide on plate
+    const grid = new THREE.GridHelper(5, 5, 0x93c5fd, 0xe2e8f0);
+    grid.position.y = -0.01;
+    scene.add(grid);
+
+    // Sound Synthesizers with Tone.js
+    let synth, chimeSynth;
+    function initAudio() {
+      if (!synth) {
+        synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "triangle" },
+          envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.3 }
+        }).toDestination();
+
+        chimeSynth = new Tone.MetalSynth({
+          frequency: 300,
+          envelope: { attack: 0.001, decay: 0.4, release: 0.2 },
+          harmonicity: 3.1,
+          modulationIndex: 16,
+          resonance: 4000,
+          octaves: 1.5
+        }).toDestination();
+        chimeSynth.volume.value = -12;
+      }
+    }
+
+    // Play fun sound effects
+    function playSound(type) {
+      try {
+        initAudio();
+        Tone.start();
+        const now = Tone.now();
+        if (type === 'correct') {
+          synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
+        } else if (type === 'wrong') {
+          synth.triggerAttackRelease(["Eb4", "D4"], "8n", now);
+        } else if (type === 'pop') {
+          synth.triggerAttackRelease(["G4"], "16n", now);
+        } else if (type === 'magic') {
+          synth.triggerAttackRelease(["D5", "F#5", "A5", "D6"], "16n", now, 0.05);
+        }
+      } catch (e) {
+        // Audio fallback
+      }
+    }
+
+    // Color palette for playful toy-like cubes
+    const cuteColors = [
+      0x38bdf8, // Sky Blue
+      0xfbbf24, // Bright Amber
+      0x34d399, // Mint Emerald
+      0xf472b6, // Cotton Pink
+      0xa78bfa, // Lilac Purple
+      0xf87171  // Coral Red
+    ];
+
+    const CUBE_SIZE = 0.94;
+    const SPACING = 1.0;
+
+    function buildCurrentQuestion() {
+      // Clear old cubes from the dedicated group
+      while (cubeGroup.children.length > 0) {
+        const obj = cubeGroup.children[0];
+        cubeGroup.remove(obj);
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          else obj.material.dispose();
+        }
+        // dispose edges/lines inside children
+        if (obj.children) {
+          obj.children.forEach(child => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) child.material.dispose();
+          });
+        }
+      }
+
+      const qList = questionBank[currentMode];
+      if (currentIndex >= qList.length) currentIndex = 0;
+      const currentQ = qList[currentIndex];
+      
+      // Update UI texts safely without overwriting child element IDs
+      const qNumEl = document.getElementById('currentQNum');
+      const totalQNumEl = document.getElementById('totalQNum');
+      const qNameEl = document.getElementById('currentQName');
+      const descEl = document.getElementById('difficultyDesc');
+      
+      if (qNumEl) qNumEl.innerText = currentIndex + 1;
+      if (totalQNumEl) totalQNumEl.innerText = qList.length;
+      if (qNameEl) qNameEl.innerText = currentQ.name;
+      if (descEl) descEl.innerText = currentQ.desc;
+      
+      const hiddenBanner = document.getElementById('hiddenTipBanner');
+      if (currentQ.hasHidden) {
+        hiddenBanner.classList.remove('hidden');
+      } else {
+        hiddenBanner.classList.add('hidden');
+      }
+
+      // Reset states
+      isXRay = false;
+      isExploded = false;
+      updateToolButtons();
+
+      // Find center offset to center question
+      let minX = Infinity, maxX = -Infinity;
+      let minZ = Infinity, maxZ = -Infinity;
+      currentQ.blocks.forEach(b => {
+        minX = Math.min(minX, b.x);
+        maxX = Math.max(maxX, b.x);
+        minZ = Math.min(minZ, b.z);
+        maxZ = Math.max(maxZ, b.z);
+      });
+      const offsetX = (minX + maxX) / 2;
+      const offsetZ = (minZ + maxZ) / 2;
+
+      // Create cubes
+      currentQ.blocks.forEach((b, idx) => {
+        const geom = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+        const edges = new THREE.EdgesGeometry(geom);
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ 
+          color: 0x1e293b, 
+          linewidth: 2,
+          transparent: true,
+          opacity: 0.75 
+        }));
+
+        const color = cuteColors[idx % cuteColors.length];
+        const mat = new THREE.MeshStandardMaterial({
+          color: color,
+          roughness: 0.25,
+          metalness: 0.1,
+          transparent: true,
+          opacity: 1.0
+        });
+
+        const mesh = new THREE.Mesh(geom, mat);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.add(line);
+
+        const worldX = (b.x - offsetX) * SPACING;
+        const worldY = b.y * SPACING + (CUBE_SIZE / 2);
+        const worldZ = (b.z - offsetZ) * SPACING;
+
+        mesh.position.set(worldX, worldY, worldZ);
+        mesh.userData = {
+          origPos: new THREE.Vector3(worldX, worldY, worldZ),
+          gridCoord: { ...b },
+          color: color,
+          index: idx + 1
+        };
+
+        cubeGroup.add(mesh);
+      });
+
+      // Keep viewing angle comfortable without camera animation lockups
+      setCameraView(4.5, 3.8, 5.5);
+    }
+
+    function toggleXRay() {
+      playSound('magic');
+      isXRay = !isXRay;
+      updateToolButtons();
+
+      const cubes = cubeGroup.children;
+      cubes.forEach(mesh => {
+        if (!mesh.userData.gridCoord) return;
+        if (isXRay) {
+          // Check if another cube is right above it
+          const isSupporting = cubes.some(other => 
+            other.userData.gridCoord &&
+            other.userData.gridCoord.x === mesh.userData.gridCoord.x &&
+            other.userData.gridCoord.z === mesh.userData.gridCoord.z &&
+            other.userData.gridCoord.y === mesh.userData.gridCoord.y + 1
+          );
+
+          if (isSupporting) {
+            mesh.material.opacity = 0.95;
+            mesh.material.color.setHex(0xf43f5e); // glowing red-pink
+            mesh.material.emissive.setHex(0x550011);
+          } else {
+            mesh.material.opacity = 0.22;
+            mesh.material.color.setHex(mesh.userData.color);
+            mesh.material.emissive.setHex(0x000000);
+          }
+        } else {
+          mesh.material.opacity = 1.0;
+          mesh.material.color.setHex(mesh.userData.color);
+          mesh.material.emissive.setHex(0x000000);
+        }
+      });
+    }
+
+    function toggleExplode() {
+      playSound('pop');
+      isExploded = !isExploded;
+      updateToolButtons();
+
+      cubeGroup.children.forEach(mesh => {
+        if (!mesh.userData.origPos) return;
+        const orig = mesh.userData.origPos;
+        if (isExploded) {
+          const dirX = orig.x * 0.75 + (orig.x === 0 ? 0.35 : 0);
+          const dirY = (mesh.userData.gridCoord.y + 0.4) * 0.7;
+          const dirZ = orig.z * 0.75 + (orig.z === 0 ? 0.35 : 0);
+          mesh.position.set(orig.x + dirX, orig.y + dirY, orig.z + dirZ);
+        } else {
+          mesh.position.copy(orig);
+        }
+      });
+    }
+
+    function updateToolButtons() {
+      const xrayBtn = document.getElementById('btnXRay');
+      const xrayText = document.getElementById('xrayText');
+      if (isXRay) {
+        xrayBtn.classList.replace('bg-violet-500', 'bg-pink-600');
+        xrayText.innerText = "關閉透視";
+      } else {
+        xrayBtn.classList.replace('bg-pink-600', 'bg-violet-500');
+        xrayText.innerText = "X光透視";
+      }
+
+      const expBtn = document.getElementById('btnExplode');
+      const expText = document.getElementById('explodeText');
+      if (isExploded) {
+        expBtn.classList.replace('bg-amber-500', 'bg-emerald-600');
+        expText.innerText = "組裝回去";
+      } else {
+        expBtn.classList.replace('bg-emerald-600', 'bg-amber-500');
+        expText.innerText = "拆開數";
+      }
+    }
+
+    // Safe, reliable camera view setting compatible with OrbitControls
+    function setCameraView(x, y, z) {
+      camera.position.set(x, y, z);
+      controls.target.set(0, 0.8, 0);
+      controls.update();
+    }
+
+    document.getElementById('btnResetView').addEventListener('click', () => {
+      playSound('pop');
+      setCameraView(4.5, 3.8, 5.5);
+    });
+    document.getElementById('btnViewFront').addEventListener('click', () => {
+      playSound('pop');
+      setCameraView(0, 2.5, 7.5);
+    });
+    document.getElementById('btnViewBack').addEventListener('click', () => {
+      playSound('pop');
+      setCameraView(0, 2.8, -7.5);
+    });
+    document.getElementById('btnViewTop').addEventListener('click', () => {
+      playSound('pop');
+      setCameraView(0.01, 8.5, 0.01);
+    });
+    document.getElementById('btnXRay').addEventListener('click', toggleXRay);
+    document.getElementById('btnExplode').addEventListener('click', toggleExplode);
+
+    function handleKidAnswer(selectedNumber) {
+      const currentQ = questionBank[currentMode][currentIndex];
+      const correctAnswer = currentQ.blocks.length;
+
+      const modal = document.getElementById('feedbackModal');
+      const modalIcon = document.getElementById('modalIcon');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalDesc = document.getElementById('modalDesc');
+      const actionBtn = document.getElementById('modalActionBtn');
+
+      if (selectedNumber === correctAnswer) {
+        // Correct!
+        playSound('correct');
+        stars += 1;
+        document.getElementById('starCount').innerText = stars;
+
+        confetti({
+          particleCount: 70,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+
+        modalIcon.className = "w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-3 bg-emerald-100 text-emerald-600";
+        modalIcon.innerHTML = '<i class="fa-solid fa-crown text-amber-500"></i>';
+        modalTitle.innerText = "答對了！太厲害了！";
+        modalTitle.className = "text-xl font-black text-emerald-700 mb-1";
+        modalDesc.innerHTML = `這裡總共有 <strong class="text-emerald-600 text-lg">${correctAnswer}</strong> 顆小積木！🎉`;
+
+        actionBtn.innerText = "下一題挑戰 🚀";
+        actionBtn.onclick = () => {
+          modal.classList.add('hidden');
+          nextQuestion();
+        };
+
+      } else {
+        // Try again / Wrong
+        playSound('wrong');
+        modalIcon.className = "w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-3 bg-amber-100 text-amber-600";
+        modalIcon.innerHTML = '<i class="fa-solid fa-rotate text-amber-500"></i>';
+        modalTitle.innerText = "再數一次看看喔！";
+        modalTitle.className = "text-xl font-black text-amber-700 mb-1";
+        
+        if (currentQ.hasHidden) {
+          modalDesc.innerHTML = `你選了 ${selectedNumber} 顆。<br><span class="text-xs text-sky-700 font-bold">小秘訣：按右邊的「<strong>X光透視</strong>」或「<strong>拆開數</strong>」，看看有沒有被壓在下面的積木喔！</span>`;
+        } else {
+          modalDesc.innerHTML = `你選了 ${selectedNumber} 顆。<br>用手指輕輕轉動積木，一顆一顆慢慢數看看！`;
+        }
+
+        actionBtn.innerText = "我再來試試看 💪";
+        actionBtn.onclick = () => {
+          modal.classList.add('hidden');
+        };
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+      const qList = questionBank[currentMode];
+      if (currentIndex < qList.length - 1) {
+        currentIndex++;
+      } else {
+        currentIndex = 0;
+      }
+      buildCurrentQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+      } else {
+        currentIndex = questionBank[currentMode].length - 1;
+      }
+      buildCurrentQuestion();
+    }
+
+    document.getElementById('btnNext').addEventListener('click', nextQuestion);
+    document.getElementById('btnPrev').addEventListener('click', prevQuestion);
+
+    const lvl1Btn = document.getElementById('selectLevel1');
+    const lvl2Btn = document.getElementById('selectLevel2');
+    const levelTag = document.getElementById('levelTag');
+
+    lvl1Btn.addEventListener('click', () => {
+      playSound('pop');
+      currentMode = "level1";
+      currentIndex = 0;
+      lvl1Btn.className = "px-3 py-1 rounded-xl text-xs font-black bg-blue-500 text-white shadow-sm border border-blue-600";
+      lvl2Btn.className = "px-3 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-700 hover:bg-slate-300";
+      levelTag.innerText = "Level 1 入門";
+      levelTag.className = "px-3 py-1 rounded-full text-xs font-black bg-blue-100 text-blue-700 border border-blue-300";
+      buildCurrentQuestion();
+    });
+
+    lvl2Btn.addEventListener('click', () => {
+      playSound('pop');
+      currentMode = "level2";
+      currentIndex = 0;
+      lvl2Btn.className = "px-3 py-1 rounded-xl text-xs font-black bg-purple-600 text-white shadow-sm border border-purple-700";
+      lvl1Btn.className = "px-3 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-700 hover:bg-slate-300";
+      levelTag.innerText = "Level 2 進階";
+      levelTag.className = "px-3 py-1 rounded-full text-xs font-black bg-purple-100 text-purple-700 border border-purple-300";
+      buildCurrentQuestion();
+    });
+
+    window.addEventListener('resize', onWindowResize, false);
+    function onWindowResize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+
+      const time = Date.now() * 0.0015;
+      groundMesh.position.y = -0.15 + Math.sin(time) * 0.015;
+
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function() {
+      buildCurrentQuestion();
+      animate();
+    };
+  </script>
+</body>
+</html>
