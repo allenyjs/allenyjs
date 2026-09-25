@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>歡樂益智童萌島 🎮 兒童小遊戲大廳</title>
+  <script>
+    if (new URLSearchParams(window.location.search).get('v') === '2') {
+      document.documentElement.classList.add('is-v2');
+    }
+  </script>
   <!-- Google Fonts: 圓體字風格與可愛字型 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -186,6 +191,14 @@
       background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%);
     }
 
+    .banner-tictactoe {
+      background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+    }
+
+    .banner-3d {
+      background: linear-gradient(135deg, #ffe259 0%, #ffa751 100%);
+    }
+
     .banner-coming-soon {
       background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
     }
@@ -221,9 +234,28 @@
       color: #c2185b;
     }
 
+    .tag-tictactoe {
+      background: #ede7f6;
+      color: #512da8;
+    }
+
+    .tag-3d {
+      background: #fff8e1;
+      color: #ff8f00;
+    }
+
     .tag-upcoming {
       background: #f3e5f5;
       color: #7b1fa2;
+    }
+
+    /* v=2 專屬遊戲卡片預設隱藏，帶有 ?v=2 參數時才顯示 */
+    .v2-only {
+      display: none;
+    }
+
+    .is-v2 .v2-only {
+      display: flex;
     }
 
     .card-title {
@@ -361,6 +393,42 @@
         </div>
       </a>
 
+      <!-- 遊戲 3 (v=2 顯示)：圈圈叉叉益智對決 -->
+      <a href="tic_tac_toe.html" class="game-card v2-only">
+        <div class="card-banner banner-tictactoe">
+          ⭕❌
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="tag tag-tictactoe">⚔️ 雙人對決</span>
+            <span class="tag">🤖 智慧 AI</span>
+          </div>
+          <h2 class="card-title">圈圈叉叉益智對決</h2>
+          <p class="card-desc">經典好玩的井字棋對戰！可以單人挑戰電腦 AI，也可以跟家人好友輪流下棋，比比看誰先連成一線！</p>
+          <div class="btn-play">
+            開始遊戲 🚀
+          </div>
+        </div>
+      </a>
+
+      <!-- 遊戲 4 (v=2 顯示)：3D 積木小偵探 -->
+      <a href="3d.html" class="game-card v2-only">
+        <div class="card-banner banner-3d">
+          🧊
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="tag tag-3d">🎲 3D 空間</span>
+            <span class="tag">👀 視角觀察</span>
+          </div>
+          <h2 class="card-title">3D 積木小偵探</h2>
+          <p class="card-desc">旋轉 3D 積木舞台數一數共有幾顆方塊！支援 X 光透視與拆解輔助，啟發立體空間想像力！</p>
+          <div class="btn-play">
+            開始遊戲 🚀
+          </div>
+        </div>
+      </a>
+
       <!-- 預告卡片（方便未來新增遊戲時複製替換） -->
       <div class="game-card card-disabled">
         <div class="card-banner banner-coming-soon">
@@ -389,6 +457,12 @@
   <script>
   const currentYear = new Date().getFullYear();
   document.getElementById("year").textContent = Math.max(2026, currentYear);
+
+  // 判斷網址 query string：當取得參數 v=2 時顯示 tic_tac_toe.html 及 3d.html
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('v') === '2') {
+    document.documentElement.classList.add('is-v2');
+  }
 </script>
 </body>
 </html>

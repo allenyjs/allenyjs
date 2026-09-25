@@ -39,6 +39,15 @@
     @keyframes drawLine {
       to { stroke-dashoffset: 0; }
     }
+    .footer {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-3 sm:p-5 font-sans selection:bg-indigo-500">
@@ -132,7 +141,7 @@
 
   </main>
 
-  <footer class="w-full max-w-md flex items-center justify-between gap-2 pt-2">
+  <div class="w-full max-w-md flex items-center justify-between gap-2 pt-2">
     <button id="undoBtn" class="flex-1 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl font-medium text-xs sm:text-sm border border-slate-700 shadow flex items-center justify-center gap-1.5 transition-all">
       <i class="fa-solid fa-rotate-left"></i> 上一步
     </button>
@@ -145,6 +154,12 @@
     <button id="nextBtn" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all" title="下一關">
       <i class="fa-solid fa-chevron-right"></i>
     </button>
+  </div>
+
+  <footer class="footer">
+      🎈 點擊任意遊戲即可開始遊玩・持續新增中！
+	  <br>
+	  Made with ❤️ by Jimin's Dad | © <span id="year"></span>. All rights reserved.
   </footer>
 
   <div id="victoryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
@@ -850,6 +865,10 @@
       setupPlayerBoardStaticGuides();
       loadLevel(0); // Load photo's exact pattern as Level 1
     };
+
+    const currentYear = new Date().getFullYear();
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = Math.max(2026, currentYear);
   </script>
 </body>
 </html>

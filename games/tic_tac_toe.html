@@ -73,12 +73,34 @@
       height: 100%;
       z-index: 50;
     }
+
+    .footer {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body class="bg-mesh text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 antialiased">
   <canvas id="confettiCanvas"></canvas>
 
-  <main class="w-full max-w-md mx-auto flex flex-col items-center gap-5">
+  <!-- 回首頁按鈕（畫面最左上角） -->
+  <a href="index.html" 
+     class="fixed top-3 left-3 sm:top-4 sm:left-4 z-40 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 hover:text-white border border-slate-700 hover:border-indigo-400 shadow-lg backdrop-blur text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 select-none no-underline"
+     title="返回首頁大廳"
+     aria-label="返回首頁大廳">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>回首頁</span>
+  </a>
+
+  <main class="w-full max-w-md mx-auto flex flex-col items-center gap-5 pt-8 sm:pt-0">
     
     <!-- Header: Title & Sound Toggle -->
     <header class="w-full flex items-center justify-between px-2">
@@ -193,6 +215,12 @@
         清空比分
       </button>
     </div>
+
+    <footer class="footer">
+      🎈 點擊任意遊戲即可開始遊玩・持續新增中！
+	  <br>
+	  Made with ❤️ by Jimin's Dad | © <span id="year"></span>. All rights reserved.
+    </footer>
 
   </main>
 
@@ -772,6 +800,10 @@
 
     // Initialize display
     updateTurnUI();
+
+    const currentYear = new Date().getFullYear();
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = Math.max(2026, currentYear);
   </script>
 </body>
 </html>

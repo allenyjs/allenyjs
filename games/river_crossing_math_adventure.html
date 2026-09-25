@@ -115,6 +115,15 @@
       box-shadow: 0 4px 0 #1b382b, 0 8px 12px rgba(0, 0, 0, 0.3);
       transform: translateY(6px);
     }
+    .footer {
+      margin-top: 10px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-400 selection:text-slate-900">
@@ -455,11 +464,16 @@
     </div>
   </main>
 
-  <!-- Footer / Status Message Bar -->
   <footer class="w-full max-w-4xl mx-auto px-4 py-3">
     <div id="status-bar" class="w-full bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl py-2 px-4 text-center text-xs sm:text-sm text-slate-300 flex items-center justify-center gap-2 transition-all">
       <span>💡 點擊第一排算式結果為 <strong class="text-amber-400 target-inline-num">3</strong> 的石頭，開始渡河！</span>
     </div>
+  </footer>
+
+  <footer class="footer">
+      🎈 點擊任意遊戲即可開始遊玩・持續新增中！
+	  <br>
+	  Made with ❤️ by Jimin's Dad | © <span id="year"></span>. All rights reserved.
   </footer>
   <!-- Help / Instructions Modal -->
   <div id="info-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -1248,6 +1262,10 @@
       // Initialize default round (Easy mode: 10以內加法，隨機數字 3~10)
       initializeRound();
     });
+
+    const currentYear = new Date().getFullYear();
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = Math.max(2026, currentYear);
   </script>
 </body>
 </html>
