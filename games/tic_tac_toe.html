@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>圈圈叉叉 Tic-Tac-Toe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    
+    /* Dynamic animated gradients */
+    .bg-mesh {
+      background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.15) 0%, transparent 40%),
+                  #0f172a;
+    }
+
+    /* SVG Stroke draw animations */
+    .draw-x-1 {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawLine 0.28s ease-out forwards;
+    }
+    .draw-x-2 {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawLine 0.28s ease-out 0.14s forwards;
+    }
+    .draw-o {
+      stroke-dasharray: 260;
+      stroke-dashoffset: 260;
+      animation: drawLine 0.35s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* Subtle board cell hover & scale */
+    .cell-btn {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cell-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Pulse effect on active turn */
+    @keyframes subtlePulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+      50% { transform: scale(1.03); box-shadow: 0 0 16px 2px rgba(99, 102, 241, 0.3); }
+    }
+    .active-turn {
+      animation: subtlePulse 2s infinite;
+    }
+
+    /* Confetti canvas */
+    #confettiCanvas {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body class="bg-mesh text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 antialiased">
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="w-full max-w-md mx-auto flex flex-col items-center gap-5">
+    
+    <!-- Header: Title & Sound Toggle -->
+    <header class="w-full flex items-center justify-between px-2">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-300 to-rose-400">
+          TIC-TAC-TOE
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">圈圈叉叉益智對決</p>
+      </div>
+
+      <button id="soundToggleBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 transition-colors shadow-sm" title="音效切換">
+        <svg id="soundIconOn" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <svg id="soundIconOff" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mode Controls -->
+    <div class="w-full bg-slate-900/70 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/80 flex flex-col gap-2">
+      <div class="grid grid-cols-2 gap-1.5">
+        <button id="modePvP" class="py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+          雙人對戰 (PvP)
+        </button>
+        <button id="modePvE" class="py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/60">
+          單人對電腦 (AI)
+        </button>
+      </div>
+
+      <!-- AI Difficulty Options (Hidden in PvP) -->
+      <div id="aiDifficultyContainer" class="hidden grid grid-cols-3 gap-1 px-1 pt-1 border-t border-slate-800/60">
+        <button data-level="easy" class="diff-btn py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          簡單新手
+        </button>
+        <button data-level="medium" class="diff-btn py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+          普通中階
+        </button>
+        <button data-level="hard" class="diff-btn py-1.5 text-xs font-bold rounded-lg bg-rose-600/30 text-rose-400 border border-rose-500/40 transition">
+          不敗魔王
+        </button>
+      </div>
+    </div>
+
+    <!-- Scoreboard & Status -->
+    <div class="w-full grid grid-cols-3 gap-2">
+      <!-- Player X -->
+      <div id="cardPlayerX" class="relative bg-slate-900/80 border-2 border-cyan-500/60 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-300">
+        <span class="text-xs font-semibold text-cyan-400 tracking-wider">玩家 X</span>
+        <span id="scoreX" class="text-2xl font-black text-white mt-0.5">0</span>
+        <div id="indicatorX" class="w-2 h-2 rounded-full bg-cyan-400 mt-1 shadow-[0_0_8px_#22d3ee]"></div>
+      </div>
+
+      <!-- Ties -->
+      <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-3 flex flex-col items-center justify-center text-slate-400">
+        <span class="text-xs font-semibold tracking-wider">平手局</span>
+        <span id="scoreTies" class="text-2xl font-black text-slate-300 mt-0.5">0</span>
+        <div class="w-2 h-2 rounded-full bg-slate-600 mt-1"></div>
+      </div>
+
+      <!-- Player O -->
+      <div id="cardPlayerO" class="relative bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-300">
+        <span id="labelPlayerO" class="text-xs font-semibold text-rose-400 tracking-wider">玩家 O</span>
+        <span id="scoreO" class="text-2xl font-black text-white mt-0.5">0</span>
+        <div id="indicatorO" class="w-2 h-2 rounded-full bg-transparent mt-1"></div>
+      </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div id="turnBanner" class="text-sm font-semibold text-slate-300 bg-slate-800/40 px-4 py-1.5 rounded-full border border-slate-700/40 flex items-center gap-2">
+      <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+      <span id="turnMessage">輪到 玩家 X 下棋</span>
+    </div>
+
+    <!-- Board Container -->
+    <div class="relative w-full aspect-square bg-slate-900/90 p-3 rounded-3xl border border-slate-800 shadow-2xl shadow-black/50 backdrop-blur-md">
+      <!-- 3x3 Cells -->
+      <div id="board" class="w-full h-full grid grid-cols-3 grid-rows-3 gap-3">
+        <!-- Cells generated dynamically or static for reliability -->
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="0"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="1"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="2"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="3"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="4"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="5"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="6"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="7"></button>
+        <button class="cell-btn rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 flex items-center justify-center cursor-pointer overflow-hidden relative" data-index="8"></button>
+      </div>
+
+      <!-- Winning Stroke Overlay SVG -->
+      <svg id="winningLineSvg" class="absolute inset-0 w-full h-full pointer-events-none p-3 hidden" viewBox="0 0 300 300">
+        <line id="winningLine" x1="0" y1="0" x2="0" y2="0" stroke="#facc15" stroke-width="8" stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="400" style="transition: stroke-dashoffset 0.4s ease-out; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.7));" />
+      </svg>
+    </div>
+
+    <!-- Action Controls -->
+    <div class="w-full flex items-center justify-between gap-3 px-1">
+      <button id="btnUndo" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 font-semibold text-sm transition active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2M3 10l6-6m-6 6l6 6"/></svg>
+        悔棋
+      </button>
+
+      <button id="btnRestart" class="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        重新開始
+      </button>
+
+      <button id="btnResetScore" class="py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-900/40 hover:text-rose-300 hover:border-rose-500/50 border border-slate-700/60 text-slate-400 font-medium text-xs transition active:scale-95" title="清除所有比分">
+        清空比分
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Result Modal Popup -->
+  <div id="resultModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl transform scale-90 transition-transform duration-300" id="modalCard">
+      <div id="modalIconContainer" class="w-16 h-16 mx-auto mb-3 flex items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-400">
+        <!-- SVG will be placed by JS -->
+      </div>
+      <h3 id="modalTitle" class="text-2xl font-black text-white mb-1">X 獲得勝利！</h3>
+      <p id="modalSubtitle" class="text-xs text-slate-400 mb-5">連成一線，贏得精彩！</p>
+      
+      <button id="modalActionBtn" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/25 active:scale-95 transition">
+        再來一局
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // --- Web Audio Synthesizer (Zero external dependencies) ---
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playMove(isX = true) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = isX ? 'triangle' : 'sine';
+        const freq = isX ? 440 : 587.33; // A4 vs D5
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.3, this.ctx.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      }
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C chord
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const startTime = this.ctx.currentTime + i * 0.08;
+          gain.gain.setValueAtTime(0.18, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.35);
+        });
+      }
+      playDraw() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      }
+    }
+
+    const sound = new SoundFX();
+
+    class ConfettiEffect {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.animId = null;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      fire() {
+        const colors = ['#38bdf8', '#818cf8', '#fb7185', '#facc15', '#4ade80'];
+        this.particles = [];
+        for (let i = 0; i < 90; i++) {
+          this.particles.push({
+            x: this.canvas.width * 0.5,
+            y: this.canvas.height * 0.45,
+            vx: (Math.random() - 0.5) * 16,
+            vy: (Math.random() - 0.7) * 18,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 10,
+            opacity: 1,
+            decay: Math.random() * 0.015 + 0.008
+          });
+        }
+        if (!this.animId) {
+          this.update();
+        }
+      }
+      update() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        let active = false;
+        for (let p of this.particles) {
+          if (p.opacity > 0) {
+            active = true;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.4; // gravity
+            p.vx *= 0.98;
+            p.rotation += p.rotationSpeed;
+            p.opacity -= p.decay;
+
+            this.ctx.save();
+            this.ctx.translate(p.x, p.y);
+            this.ctx.rotate((p.rotation * Math.PI) / 180);
+            this.ctx.globalAlpha = Math.max(0, p.opacity);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+            this.ctx.restore();
+          }
+        }
+        if (active) {
+          this.animId = requestAnimationFrame(() => this.update());
+        } else {
+          cancelAnimationFrame(this.animId);
+          this.animId = null;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+    }
+
+    const confetti = new ConfettiEffect(document.getElementById('confettiCanvas'));
+
+    const WINNING_COMBOS = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+      [0, 4, 8], [2, 4, 6]             // Diagonals
+    ];
+
+    // Coordinate mapping for 300x300 overlay SVG line
+    const LINE_COORDINATES = [
+      { x1: 25, y1: 50, x2: 275, y2: 50 },     // Row 0
+      { x1: 25, y1: 150, x2: 275, y2: 150 },   // Row 1
+      { x1: 25, y1: 250, x2: 275, y2: 250 },   // Row 2
+      { x1: 50, y1: 25, x2: 50, y2: 275 },     // Col 0
+      { x1: 150, y1: 25, x2: 150, y2: 275 },   // Col 1
+      { x1: 250, y1: 25, x2: 250, y2: 275 },   // Col 2
+      { x1: 30, y1: 30, x2: 270, y2: 270 },    // Diagonal TL-BR
+      { x1: 270, y1: 30, x2: 30, y2: 270 }     // Diagonal TR-BL
+    ];
+
+    let boardState = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let isGameOver = false;
+    let gameMode = 'pvp'; // 'pvp' or 'pve'
+    let aiDifficulty = 'hard'; // 'easy', 'medium', 'hard'
+    let moveHistory = []; // for undo support
+
+    const scores = { X: 0, O: 0, ties: 0 };
+
+    const cells = document.querySelectorAll('.cell-btn');
+    const turnMessage = document.getElementById('turnMessage');
+    const scoreXElem = document.getElementById('scoreX');
+    const scoreOElem = document.getElementById('scoreO');
+    const scoreTiesElem = document.getElementById('scoreTies');
+    const cardPlayerX = document.getElementById('cardPlayerX');
+    const cardPlayerO = document.getElementById('cardPlayerO');
+    const indicatorX = document.getElementById('indicatorX');
+    const indicatorO = document.getElementById('indicatorO');
+    const labelPlayerO = document.getElementById('labelPlayerO');
+    const winningLineSvg = document.getElementById('winningLineSvg');
+    const winningLine = document.getElementById('winningLine');
+    const btnUndo = document.getElementById('btnUndo');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnResetScore = document.getElementById('btnResetScore');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIconOn = document.getElementById('soundIconOn');
+    const soundIconOff = document.getElementById('soundIconOff');
+
+    const modePvPBtn = document.getElementById('modePvP');
+    const modePvEBtn = document.getElementById('modePvE');
+    const aiDifficultyContainer = document.getElementById('aiDifficultyContainer');
+    const diffButtons = document.querySelectorAll('.diff-btn');
+
+    const resultModal = document.getElementById('resultModal');
+    const modalCard = document.getElementById('modalCard');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const modalIconContainer = document.getElementById('modalIconContainer');
+    const modalActionBtn = document.getElementById('modalActionBtn');
+
+    // SVG templates
+    const X_SVG = `
+      <svg class="w-14 h-14 md:w-16 md:h-16 text-cyan-400" viewBox="0 0 100 100" fill="none">
+        <line x1="22" y1="22" x2="78" y2="78" stroke="currentColor" stroke-width="12" stroke-linecap="round" class="draw-x-1" />
+        <line x1="78" y1="22" x2="22" y2="78" stroke="currentColor" stroke-width="12" stroke-linecap="round" class="draw-x-2" />
+      </svg>
+    `;
+
+    const O_SVG = `
+      <svg class="w-14 h-14 md:w-16 md:h-16 text-rose-400" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="32" stroke="currentColor" stroke-width="12" stroke-linecap="round" class="draw-o" />
+      </svg>
+    `;
+
+    function updateTurnUI() {
+      if (isGameOver) return;
+
+      const isX = currentPlayer === 'X';
+      const oName = gameMode === 'pve' ? '電腦 (AI)' : '玩家 O';
+
+      turnMessage.textContent = isX ? '輪到 玩家 X 下棋' : `輪到 ${oName} 下棋`;
+
+      if (isX) {
+        cardPlayerX.className = 'relative bg-slate-900/90 border-2 border-cyan-500/80 rounded-2xl p-3 flex flex-col items-center justify-center active-turn transition-all duration-300';
+        cardPlayerO.className = 'relative bg-slate-900/40 border border-slate-800 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-300';
+        indicatorX.className = 'w-2 h-2 rounded-full bg-cyan-400 mt-1 shadow-[0_0_8px_#22d3ee]';
+        indicatorO.className = 'w-2 h-2 rounded-full bg-transparent mt-1';
+      } else {
+        cardPlayerO.className = 'relative bg-slate-900/90 border-2 border-rose-500/80 rounded-2xl p-3 flex flex-col items-center justify-center active-turn transition-all duration-300';
+        cardPlayerX.className = 'relative bg-slate-900/40 border border-slate-800 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-300';
+        indicatorO.className = 'w-2 h-2 rounded-full bg-rose-400 mt-1 shadow-[0_0_8px_#fb7185]';
+        indicatorX.className = 'w-2 h-2 rounded-full bg-transparent mt-1';
+      }
+
+      btnUndo.disabled = moveHistory.length === 0 || (gameMode === 'pve' && currentPlayer === 'O');
+    }
+
+    function renderCell(index, player) {
+      const cell = cells[index];
+      cell.innerHTML = player === 'X' ? X_SVG : O_SVG;
+      cell.classList.remove('cursor-pointer');
+      cell.classList.add('cursor-default');
+    }
+
+    function checkWinner(state) {
+      for (let i = 0; i < WINNING_COMBOS.length; i++) {
+        const [a, b, c] = WINNING_COMBOS[i];
+        if (state[a] && state[a] === state[b] && state[a] === state[c]) {
+          return { winner: state[a], comboIndex: i, cells: [a, b, c] };
+        }
+      }
+      if (state.every(cell => cell !== null)) {
+        return { winner: 'Tie' };
+      }
+      return null;
+    }
+
+    function handleMove(index) {
+      if (boardState[index] !== null || isGameOver) return;
+
+      boardState[index] = currentPlayer;
+      moveHistory.push({ index, player: currentPlayer });
+      renderCell(index, currentPlayer);
+      sound.playMove(currentPlayer === 'X');
+
+      const result = checkWinner(boardState);
+
+      if (result) {
+        handleGameEnd(result);
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        updateTurnUI();
+
+        // If PvE mode and it's O's turn (AI)
+        if (gameMode === 'pve' && currentPlayer === 'O' && !isGameOver) {
+          triggerAIMove();
+        }
+      }
+    }
+
+    function drawWinningLine(comboIndex) {
+      const coords = LINE_COORDINATES[comboIndex];
+      winningLine.setAttribute('x1', coords.x1);
+      winningLine.setAttribute('y1', coords.y1);
+      winningLine.setAttribute('x2', coords.x2);
+      winningLine.setAttribute('y2', coords.y2);
+      winningLine.style.strokeDashoffset = '400';
+      winningLineSvg.classList.remove('hidden');
+
+      setTimeout(() => {
+        winningLine.style.strokeDashoffset = '0';
+      }, 20);
+    }
+
+    function handleGameEnd(result) {
+      isGameOver = true;
+      btnUndo.disabled = true;
+
+      if (result.winner === 'Tie') {
+        scores.ties++;
+        scoreTiesElem.textContent = scores.ties;
+        turnMessage.textContent = '雙方平手！';
+        sound.playDraw();
+        showResultModal('tie');
+      } else {
+        const isX = result.winner === 'X';
+        if (isX) scores.X++; else scores.O++;
+        scoreXElem.textContent = scores.X;
+        scoreOElem.textContent = scores.O;
+
+        drawWinningLine(result.comboIndex);
+
+        // Highlight cells
+        result.cells.forEach(idx => {
+          cells[idx].classList.add('ring-2', isX ? 'ring-cyan-400' : 'ring-rose-400', 'bg-slate-800');
+        });
+
+        sound.playWin();
+        confetti.fire();
+
+        setTimeout(() => {
+          showResultModal(result.winner);
+        }, 600);
+      }
+    }
+
+    function showResultModal(outcome) {
+      if (outcome === 'tie') {
+        modalTitle.textContent = '平手和局！';
+        modalSubtitle.textContent = '勢均力敵，不相上下！';
+        modalIconContainer.className = 'w-16 h-16 mx-auto mb-3 flex items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400';
+        modalIconContainer.innerHTML = `
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h8m-8-4h8m-8 8h8" /></svg>
+        `;
+      } else {
+        const isX = outcome === 'X';
+        const isPvE = gameMode === 'pve';
+        const winnerName = isX ? '玩家 X' : (isPvE ? '電腦 AI' : '玩家 O');
+
+        modalTitle.textContent = `${winnerName} 獲得勝利！`;
+        modalSubtitle.textContent = isX ? '策略高超，連成一線！' : (isPvE ? '被不敗演算法擊潰了，再挑戰一次吧！' : '技高一籌，精彩絕倫！');
+        modalIconContainer.className = `w-16 h-16 mx-auto mb-3 flex items-center justify-center rounded-2xl ${isX ? 'bg-cyan-500/20 text-cyan-400' : 'bg-rose-500/20 text-rose-400'}`;
+        modalIconContainer.innerHTML = isX
+          ? `<svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`
+          : `<svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="8" /></svg>`;
+      }
+
+      resultModal.classList.remove('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-90');
+      modalCard.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      resultModal.classList.add('opacity-0', 'pointer-events-none');
+      modalCard.classList.remove('scale-100');
+      modalCard.classList.add('scale-90');
+    }
+
+    function triggerAIMove() {
+      // Disable cell taps while AI thinking
+      cells.forEach(c => c.style.pointerEvents = 'none');
+      turnMessage.textContent = '電腦思考中...';
+
+      const delay = Math.random() * 260 + 240;
+
+      setTimeout(() => {
+        if (isGameOver) return;
+        let chosenIndex;
+
+        if (aiDifficulty === 'easy') {
+          chosenIndex = getRandomMove();
+        } else if (aiDifficulty === 'medium') {
+          // 65% optimal, 35% random
+          chosenIndex = Math.random() < 0.65 ? getBestMove() : getRandomMove();
+        } else {
+          // Hard: Unbeatable Minimax
+          chosenIndex = getBestMove();
+        }
+
+        cells.forEach(c => c.style.pointerEvents = 'auto');
+        if (chosenIndex !== undefined && chosenIndex !== null) {
+          handleMove(chosenIndex);
+        }
+      }, delay);
+    }
+
+    function getRandomMove() {
+      const available = boardState.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+      if (available.length === 0) return null;
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    function getBestMove() {
+      // Minimax algorithm where AI is 'O' (maximizing) and human is 'X' (minimizing)
+      let bestScore = -Infinity;
+      let move = null;
+
+      for (let i = 0; i < 9; i++) {
+        if (boardState[i] === null) {
+          boardState[i] = 'O';
+          let score = minimax(boardState, 0, false);
+          boardState[i] = null;
+          if (score > bestScore) {
+            bestScore = score;
+            move = i;
+          }
+        }
+      }
+      return move !== null ? move : getRandomMove();
+    }
+
+    function minimax(state, depth, isMaximizing) {
+      const res = checkWinner(state);
+      if (res) {
+        if (res.winner === 'O') return 10 - depth;
+        if (res.winner === 'X') return depth - 10;
+        if (res.winner === 'Tie') return 0;
+      }
+
+      if (isMaximizing) {
+        let best = -Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (state[i] === null) {
+            state[i] = 'O';
+            best = Math.max(best, minimax(state, depth + 1, false));
+            state[i] = null;
+          }
+        }
+        return best;
+      } else {
+        let best = Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (state[i] === null) {
+            state[i] = 'X';
+            best = Math.min(best, minimax(state, depth + 1, true));
+            state[i] = null;
+          }
+        }
+        return best;
+      }
+    }
+
+    function restartRound() {
+      closeModal();
+      boardState = Array(9).fill(null);
+      moveHistory = [];
+      isGameOver = false;
+      currentPlayer = 'X';
+
+      winningLineSvg.classList.add('hidden');
+      winningLine.style.strokeDashoffset = '400';
+
+      cells.forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('ring-2', 'ring-cyan-400', 'ring-rose-400', 'bg-slate-800');
+        cell.classList.add('cursor-pointer');
+        cell.classList.remove('cursor-default');
+        cell.style.pointerEvents = 'auto';
+      });
+
+      updateTurnUI();
+    }
+
+    function undoMove() {
+      if (moveHistory.length === 0 || isGameOver) return;
+
+      if (gameMode === 'pve') {
+        // In PvE, undo both the AI's move and player's move
+        if (moveHistory.length >= 2) {
+          const aiStep = moveHistory.pop();
+          boardState[aiStep.index] = null;
+          cells[aiStep.index].innerHTML = '';
+
+          const playerStep = moveHistory.pop();
+          boardState[playerStep.index] = null;
+          cells[playerStep.index].innerHTML = '';
+
+          currentPlayer = 'X';
+        } else if (moveHistory.length === 1) {
+          const step = moveHistory.pop();
+          boardState[step.index] = null;
+          cells[step.index].innerHTML = '';
+          currentPlayer = 'X';
+        }
+      } else {
+        // PvP undo 1 step
+        const lastStep = moveHistory.pop();
+        boardState[lastStep.index] = null;
+        cells[lastStep.index].innerHTML = '';
+        currentPlayer = lastStep.player;
+      }
+
+      updateTurnUI();
+    }
+
+    function resetScores() {
+      scores.X = 0;
+      scores.O = 0;
+      scores.ties = 0;
+      scoreXElem.textContent = '0';
+      scoreOElem.textContent = '0';
+      scoreTiesElem.textContent = '0';
+      restartRound();
+    }
+
+    cells.forEach((cell, idx) => {
+      cell.addEventListener('click', () => {
+        if (gameMode === 'pve' && currentPlayer === 'O') return;
+        handleMove(idx);
+      });
+    });
+
+    btnRestart.addEventListener('click', restartRound);
+    btnUndo.addEventListener('click', undoMove);
+    btnResetScore.addEventListener('click', resetScores);
+    modalActionBtn.addEventListener('click', restartRound);
+
+    // Mode Switchers
+    modePvPBtn.addEventListener('click', () => {
+      if (gameMode === 'pvp') return;
+      gameMode = 'pvp';
+      modePvPBtn.className = 'py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+      modePvEBtn.className = 'py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/60';
+      aiDifficultyContainer.classList.add('hidden');
+      labelPlayerO.textContent = '玩家 O';
+      restartRound();
+    });
+
+    modePvEBtn.addEventListener('click', () => {
+      if (gameMode === 'pve') return;
+      gameMode = 'pve';
+      modePvEBtn.className = 'py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+      modePvPBtn.className = 'py-2 px-3 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/60';
+      aiDifficultyContainer.classList.remove('hidden');
+      labelPlayerO.textContent = '電腦 (AI)';
+      restartRound();
+    });
+
+    // Difficulty Switchers
+    diffButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        aiDifficulty = btn.getAttribute('data-level');
+        diffButtons.forEach(b => {
+          b.className = 'diff-btn py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition';
+        });
+        btn.className = 'diff-btn py-1.5 text-xs font-bold rounded-lg bg-rose-600/30 text-rose-400 border border-rose-500/40 transition';
+        restartRound();
+      });
+    });
+
+    // Sound toggle
+    soundToggleBtn.addEventListener('click', () => {
+      sound.muted = !sound.muted;
+      soundIconOn.classList.toggle('hidden', sound.muted);
+      soundIconOff.classList.toggle('hidden', !sound.muted);
+    });
+
+    // Initialize display
+    updateTurnUI();
+  </script>
+</body>
+</html>
