@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>奇幻木工坊 2.5D - 兒童輪廓辨識益智遊戲</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at 50% 20%, #fffbeb 0%, #fef3c7 55%, #fde68a 100%);
+        }
+
+        /* 2.5D Board Tilted Surface Effect */
+        .board-25d {
+            background: linear-gradient(165deg, #f6d59e 0%, #e5b876 100%);
+            box-shadow: 
+                0 16px 0 #b88342,
+                0 22px 35px rgba(92, 56, 18, 0.35),
+                inset 0 4px 8px rgba(255, 255, 255, 0.65),
+                inset 0 -4px 8px rgba(146, 98, 41, 0.35);
+            border: 5px solid #fdf0d5;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Wood grain subtle overlay */
+        .board-25d::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-image: repeating-linear-gradient(
+                12deg,
+                rgba(255,255,255,0.06) 0px,
+                rgba(255,255,255,0.06) 14px,
+                rgba(139, 90, 43, 0.04) 14px,
+                rgba(139, 90, 43, 0.04) 28px
+            );
+            pointer-events: none;
+        }
+
+        /* Pass-through mode board style (Hollow Box Top) */
+        .board-passthrough {
+            background: linear-gradient(165deg, #a7f3d0 0%, #6ee7b7 100%);
+            box-shadow: 
+                0 18px 0 #059669,
+                0 24px 35px rgba(4, 120, 87, 0.35),
+                inset 0 4px 8px rgba(255, 255, 255, 0.75),
+                inset 0 -4px 8px rgba(5, 150, 105, 0.35);
+            border: 5px solid #ecfdf5;
+        }
+
+        /* Tactile 3D UI Buttons */
+        .btn-3d {
+            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+        }
+
+        /* Tray Dock Styling */
+        .tray-dock {
+            background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(254,243,199,0.95) 100%);
+            box-shadow: 
+                0 -6px 25px rgba(180, 130, 70, 0.18),
+                inset 0 3px 0 rgba(255, 255, 255, 0.9);
+            border-top: 4px solid #fde68a;
+        }
+
+        /* Animations for matched characters */
+        @keyframes happyBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-8px) scale(1.05, 0.96); }
+            70% { transform: translateY(-3px) scale(0.98, 1.03); }
+        }
+        .animate-happy {
+            animation: happyBounce 2s infinite ease-in-out;
+            transform-origin: center bottom;
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            20% { transform: translateX(-14px) rotate(-6deg); }
+            40% { transform: translateX(12px) rotate(6deg); }
+            60% { transform: translateX(-9px) rotate(-4deg); }
+            80% { transform: translateX(6px) rotate(2deg); }
+        }
+        .animate-shake {
+            animation: wrongShake 0.45s ease-in-out;
+        }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.25; transform: scale(0.97); }
+            50% { opacity: 0.7; transform: scale(1.02); }
+        }
+        .hint-glow {
+            animation: pulseHint 1.6s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden select-none">
+
+    <header class="w-full px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 z-30 bg-white/75 backdrop-blur-md border-b-4 border-amber-200/80 shadow-sm shrink-0">
+        <!-- Brand & Theme Selector -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- 回首頁按鈕（畫面最左上角） -->
+            <a href="index.html" 
+               class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 hover:text-amber-900 border-2 border-amber-300 shadow-sm text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 select-none no-underline shrink-0"
+               title="返回首頁大廳"
+               aria-label="返回首頁大廳">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>回首頁</span>
+            </a>
+
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md border-2 border-white shrink-0">
+                <i class="fa-solid fa-shapes text-lg sm:text-2xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base sm:text-xl font-black text-amber-950 tracking-tight">奇幻形狀洞洞板</h1>
+                    <span class="hidden md:inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">2.5D 觸控原型</span>
+                </div>
+                <p id="modeSubtitle" class="text-xs text-amber-700 font-medium">直覺外輪廓配對・大範圍磁吸輔助</p>
+            </div>
+        </div>
+
+        <!-- Core Switcher 1: Age Mode (2-4 yrs vs 4-6 yrs) -->
+        <div class="flex items-center bg-amber-100/90 p-1 rounded-2xl border-2 border-amber-300 shadow-inner">
+            <button id="btnAge24" onclick="switchAgeMode('2-4')" class="btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all bg-gradient-to-b from-emerald-400 to-emerald-500 text-white shadow-[0_3px_0_#047857]">
+                <span class="text-base sm:text-lg">🌱</span>
+                <div class="text-left leading-tight">
+                    <div>2-4 歲啟蒙</div>
+                    <div class="text-[10px] font-normal opacity-90 hidden sm:block">直覺填入・無旋轉</div>
+                </div>
+            </button>
+            <button id="btnAge46" onclick="switchAgeMode('4-6')" class="btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all text-amber-900 hover:bg-amber-200/60">
+                <span class="text-base sm:text-lg">🚀</span>
+                <div class="text-left leading-tight">
+                    <div>4-6 歲進階</div>
+                    <div class="text-[10px] font-normal opacity-75 hidden sm:block">旋轉對齊・干擾項</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Core Switcher 2: Action Type (Embed vs Pass-Through) & Tools -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center bg-sky-100/90 p-1 rounded-2xl border-2 border-sky-300 shadow-inner">
+                <button id="btnActEmbed" onclick="switchActionType('embed')" class="btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_0_#0369a1]">
+                    🧩 嵌入嵌板
+                </button>
+                <button id="btnActPass" onclick="switchActionType('passthrough')" class="btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-sky-900 hover:bg-sky-200/50">
+                    🕳️ 穿過孔洞
+                </button>
+            </div>
+
+            <!-- Hint Button -->
+            <button onclick="triggerVisualHint()" title="提示特徵" class="btn-3d w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-b from-yellow-300 to-amber-400 text-amber-950 font-black shadow-[0_4px_0_#d97706] border-2 border-white flex items-center justify-center text-base sm:text-lg">
+                <i class="fa-solid fa-lightbulb"></i>
+            </button>
+
+            <!-- Design Spec Modal Button -->
+            <button onclick="toggleDesignModal(true)" title="規劃設計說明" class="btn-3d px-3 h-10 sm:h-11 rounded-2xl bg-gradient-to-b from-purple-500 to-indigo-600 text-white font-bold shadow-[0_4px_0_#4338ca] border-2 border-white flex items-center gap-1.5 text-xs sm:text-sm">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span class="hidden lg:inline">設計規格</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="w-full px-4 py-1.5 flex items-center justify-between bg-amber-50/70 border-b border-amber-200/60 z-20 shrink-0">
+        <!-- Theme Selection Pills -->
+        <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <button onclick="selectTheme(0)" id="themeTab0" class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-amber-500 text-white shadow-sm flex items-center gap-1.5 shrink-0 transition-all">
+                <span>🦁</span> 動物夥伴
+            </button>
+            <button onclick="selectTheme(1)" id="themeTab1" class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-white text-amber-900 border border-amber-300 flex items-center gap-1.5 shrink-0 transition-all">
+                <span>🌿</span> 植物與果實
+            </button>
+            <button onclick="selectTheme(2)" id="themeTab2" class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-white text-amber-900 border border-amber-300 flex items-center gap-1.5 shrink-0 transition-all">
+                <span>🧑‍🚀</span> 人物與奇幻角色
+            </button>
+            <button onclick="selectTheme(3)" id="themeTab3" class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-white text-amber-900 border border-amber-300 flex items-center gap-1.5 shrink-0 transition-all">
+                <span>🦕</span> 恐龍大冒險
+            </button>
+        </div>
+
+        <!-- Stars / Progress Counter -->
+        <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center gap-1 bg-white px-3 py-1 rounded-full border-2 border-amber-300 shadow-sm">
+                <i class="fa-solid fa-star text-amber-400 text-sm animate-pulse"></i>
+                <span id="starCount" class="font-black text-amber-900 text-xs sm:text-sm">0</span>
+            </div>
+            <button onclick="resetCurrentBoard()" class="text-xs font-bold text-amber-800 hover:text-amber-600 bg-amber-200/70 px-2.5 py-1 rounded-xl flex items-center gap-1 active:scale-95">
+                <i class="fa-solid fa-rotate-right"></i> 重新洗牌
+            </button>
+        </div>
+    </div>
+
+    <main class="relative flex-1 w-full flex flex-col items-center justify-between overflow-hidden p-2 sm:p-4">
+        
+        <!-- Dynamic Instruction Banner / Voice Bubble -->
+        <div id="speechBubble" class="z-20 px-4 py-1.5 rounded-full bg-white/95 border-2 border-amber-300 shadow-md flex items-center gap-2 text-amber-950 font-bold text-xs sm:text-sm transition-all duration-300 mb-1">
+            <span id="bubbleEmoji" class="text-lg">👆</span>
+            <span id="bubbleText">用手指拖曳下方的立體圖塊，放進形狀一樣的凹洞裡吧！</span>
+            <button onclick="speakCurrentInstruction()" class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center hover:bg-amber-200">
+                <i class="fa-solid fa-volume-high text-xs"></i>
+            </button>
+        </div>
+
+        <!-- 2.5D Interactive Stage Container -->
+        <div class="relative w-full max-w-5xl flex-1 flex items-center justify-center min-h-0">
+            <!-- SVG Game Canvas covering both the 2.5D Board and the Dragging Space -->
+            <svg id="gameSvg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" class="w-full h-full max-h-full drop-shadow-sm overflow-visible">
+                <defs>
+                    <!-- Deep Recessed Hole Inner Shadow Filter -->
+                    <filter id="holeInnerShadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feOffset dx="0" dy="8"/>
+                        <feGaussianBlur stdDeviation="6" result="offset-blur"/>
+                        <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
+                        <feFlood flood-color="#291707" flood-opacity="0.65" result="color"/>
+                        <feComposite operator="in" in="color" in2="inverse" result="shadow"/>
+                        <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
+                    </filter>
+
+                    <!-- Floating Piece Drop Shadow (Resting) -->
+                    <filter id="pieceShadowRest" x="-30%" y="-30%" width="160%" height="160%">
+                        <feDropShadow dx="0" dy="10" stdDeviation="6" flood-color="#451a03" flood-opacity="0.32"/>
+                    </filter>
+
+                    <!-- Floating Piece Drop Shadow (Picked Up / High Z-Axis) -->
+                    <filter id="pieceShadowDrag" x="-40%" y="-40%" width="180%" height="180%">
+                        <feDropShadow dx="6" dy="26" stdDeviation="12" flood-color="#1c1917" flood-opacity="0.42"/>
+                    </filter>
+
+                    <!-- Wood & Board Gradients -->
+                    <linearGradient id="woodBoardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f8dfa8"/>
+                        <stop offset="50%" stop-color="#ecc37e"/>
+                        <stop offset="100%" stop-color="#dea95b"/>
+                    </linearGradient>
+                    <linearGradient id="woodBoardSide" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#b07632"/>
+                        <stop offset="50%" stop-color="#c68b43"/>
+                        <stop offset="100%" stop-color="#966122"/>
+                    </linearGradient>
+
+                    <!-- Pass-Through Box Gradients -->
+                    <linearGradient id="boxBoardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#a7f3d0"/>
+                        <stop offset="50%" stop-color="#6ee7b7"/>
+                        <stop offset="100%" stop-color="#34d399"/>
+                    </linearGradient>
+                    <linearGradient id="boxBoardSide" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#047857"/>
+                        <stop offset="50%" stop-color="#059669"/>
+                        <stop offset="100%" stop-color="#065f46"/>
+                    </linearGradient>
+
+                    <!-- Recessed Hole Floor Pattern (Embed Mode) -->
+                    <pattern id="recessedWoodFloor" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <rect width="20" height="20" fill="#7c4d25"/>
+                        <path d="M0 10 Q10 7 20 10" stroke="#693f1c" stroke-width="2" fill="none"/>
+                    </pattern>
+
+                    <!-- Pass-Through Deep Tunnel Pattern -->
+                    <radialGradient id="tunnelAbyss" cx="50%" cy="45%" r="60%">
+                        <stop offset="0%" stop-color="#0f172a"/>
+                        <stop offset="70%" stop-color="#1e293b"/>
+                        <stop offset="100%" stop-color="#334155"/>
+                    </radialGradient>
+
+                    <!-- Dynamic Clip Paths for Pass-Through Holes -->
+                    <g id="dynamicHoleClips"></g>
+                </defs>
+
+                <!-- 1. 2.5D Main Puzzle Board Base -->
+                <g id="boardGroup">
+                    <!-- Board Drop Shadow -->
+                    <rect x="65" y="34" width="870" height="335" rx="44" fill="rgba(69, 26, 3, 0.22)" />
+                    <!-- Board 2.5D Extruded Front Thickness Wall -->
+                    <rect id="boardThicknessWall" x="60" y="24" width="880" height="335" rx="42" fill="url(#woodBoardSide)" />
+                    <!-- Board Top Surface -->
+                    <rect id="boardSurfaceRect" x="60" y="10" width="880" height="330" rx="42" fill="url(#woodBoardGrad)" stroke="#fef3c7" stroke-width="5" />
+                    <!-- Subtle Board Inner Rim -->
+                    <rect x="78" y="26" width="844" height="298" rx="30" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="3" stroke-dasharray="12 8" />
+                </g>
+
+                <!-- 2. Recessed Holes Layer -->
+                <g id="holesLayer"></g>
+
+                <!-- 3. Pass-Through Collection Window (Only shown in Pass-Through mode) -->
+                <g id="passThroughDrawer" class="hidden">
+                    <rect x="280" y="343" width="440" height="36" rx="14" fill="#064e3b" stroke="#6ee7b7" stroke-width="3"/>
+                    <text x="500" y="366" text-anchor="middle" fill="#a7f3d0" font-size="15" font-weight="bold">✨ 穿過洞口掉進秘密基地的夥伴 ✨</text>
+                </g>
+
+                <!-- 4. Bottom Piece Spawn Tray Background inside SVG -->
+                <g id="trayBackgroundLayer">
+                    <rect x="40" y="392" width="920" height="218" rx="34" fill="rgba(255, 255, 255, 0.78)" stroke="#fde68a" stroke-width="4" />
+                    <text id="trayLabelText" x="500" y="600" text-anchor="middle" fill="#b45309" font-size="13" font-weight="bold" opacity="0.75">
+                        💡 拖曳積木到上方凹洞（4-6歲進階模式可點擊積木旋轉角度）
+                    </text>
+                </g>
+
+                <!-- 5. Interactive 2.5D Pieces Layer -->
+                <g id="piecesLayer"></g>
+
+                <!-- 6. Particle & Celebration Confetti Layer -->
+                <g id="fxLayer" pointer-events="none"></g>
+            </svg>
+
+            <!-- Floating Rotation Control Pill (For 4-6 yrs mode when a piece is selected) -->
+            <div id="rotationControlHud" class="hidden absolute bottom-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-3xl border-4 border-indigo-400 shadow-xl flex items-center gap-3 z-30">
+                <div class="text-xs font-black text-indigo-950 leading-tight">
+                    <div>角度對齊器</div>
+                    <div id="hudAngleText" class="text-indigo-600">目前偏轉：90°</div>
+                </div>
+                <button onclick="rotateSelectedPiece(-45)" class="btn-3d w-11 h-11 rounded-2xl bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-black text-lg flex items-center justify-center border-2 border-indigo-300 shadow-[0_3px_0_#818cf8]">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button onclick="rotateSelectedPiece(45)" class="btn-3d w-11 h-11 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-black text-lg flex items-center justify-center border-2 border-indigo-300 shadow-[0_3px_0_#3730a3]">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Level Complete Celebration Overlay -->
+    <div id="winOverlay" class="fixed inset-0 bg-amber-950/50 backdrop-blur-sm z-40 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[36px] max-w-md w-full p-6 sm:p-8 text-center border-8 border-amber-300 shadow-2xl transform transition-all scale-100">
+            <div class="text-6xl mb-3 animate-bounce">🎉</div>
+            <h2 id="winTitle" class="text-2xl sm:text-3xl font-black text-amber-950 mb-2">太棒了！全部配對成功！</h2>
+            <p id="winDesc" class="text-amber-700 font-medium text-sm sm:text-base mb-6">你的眼睛真敏銳，把所有形狀都放進對的凹洞裡了！</p>
+            <div id="winCollectedBadges" class="flex items-center justify-center gap-4 mb-6 py-3 px-4 bg-amber-50 rounded-2xl border-2 border-amber-200"></div>
+            <div class="flex gap-3 justify-center">
+                <button onclick="nextRound()" class="btn-3d flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-b from-emerald-400 to-emerald-500 text-white font-black text-lg shadow-[0_5px_0_#047857] border-2 border-white flex items-center justify-center gap-2">
+                    <span>下一關挑戰</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Game Design Spec & Pedagogical Comparison Modal -->
+    <div id="designModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-6">
+        <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[88vh] flex flex-col border-4 border-purple-300 shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-compass-drafting text-xl"></i>
+                    <h3 class="text-lg sm:text-xl font-black">2.5D 兒童形狀辨識遊戲・雙階段規劃架構</h3>
+                </div>
+                <button onclick="toggleDesignModal(false)" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-5 text-slate-700 text-sm sm:text-base leading-relaxed">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200">
+                        <div class="font-black text-emerald-900 text-base mb-2 flex items-center gap-2">
+                            <span>🌱 2-4 歲啟蒙模式設計重點</span>
+                        </div>
+                        <ul class="list-disc list-inside space-y-1.5 text-emerald-950 text-xs sm:text-sm">
+                            <li><strong>題數與特徵：</strong>每局 3 個高反差外輪廓（如長脖子長頸鹿 vs. 圓耳朵小熊），無干擾項。</li>
+                            <li><strong>零旋轉門檻：</strong>所有立體圖塊預設為 0° 正向，專注訓練「圖底關係（Figure-Ground）」與手眼拖曳協調。</li>
+                            <li><strong>寬容磁吸判定：</strong>當手指拖曳進入正確孔洞半徑 <code>75px</code> 內即自動吸附對齊。</li>
+                            <li><strong>自動鷹架提示：</strong>若嘗試放錯 2 次，正確孔洞會自動閃爍內部虛線特徵引導。</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-200">
+                        <div class="font-black text-indigo-900 text-base mb-2 flex items-center gap-2">
+                            <span>🚀 4-6 歲進階模式設計重點</span>
+                        </div>
+                        <ul class="list-disc list-inside space-y-1.5 text-indigo-950 text-xs sm:text-sm">
+                            <li><strong>心理旋轉訓練 (Mental Rotation)：</strong>圖塊出場時隨機偏轉 45°、90° 或 -45°，孩子需先點擊圖塊上的旋轉環或轉向鈕對準角度才能填入。</li>
+                            <li><strong>局部特徵辨識＋干擾項：</strong>板上 3 個孔洞，但下方提供 4 個圖塊（含 1 個外廓近似的干擾項），訓練觀察局部凹凸細節。</li>
+                            <li><strong>精準吸附判定：</strong>需同時滿足「位置對準」與「角度完全吻合 (0°)」。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-200">
+                    <div class="font-black text-amber-900 text-base mb-2">👁️ 2.5D 凹陷孔洞與「嵌入 vs. 穿過」觸控回饋設計</div>
+                    <p class="text-xs sm:text-sm text-amber-950 mb-2">
+                        在純平面的觸控螢幕上，為了讓幼兒一眼看出「這是凹下去的洞」以及「我手上的積木有厚度」：
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                        <div class="bg-white p-3 rounded-xl border border-amber-200">
+                            <strong class="text-sky-700">🧩 嵌入嵌板模式：</strong>孔洞底部有深色木紋與內側壁厚度。當圖塊嵌入後，積木厚度縮減為與板面齊平，並從靜態木塊變成<strong>會眨眼、搖擺的活潑角色</strong>。
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-amber-200">
+                            <strong class="text-emerald-700">🕳️ 穿過孔洞模式：</strong>孔洞內部為深邃通道並帶有孔洞遮罩（SVG ClipPath）。對準放開後，積木會<strong>順著洞口縮小穿過去</strong>，掉進下方的秘密基地收集槽！
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-3 bg-slate-100 border-t flex justify-end">
+                <button onclick="toggleDesignModal(false)" class="btn-3d px-6 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm">
+                    回到遊戲試玩
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 2.5D Silhouette Shape Database
+         * Every shape has a highly distinctive irregular outer contour (silhouettePath)
+         * centered around (0,0) within roughly a 150x150 bounding box, plus innerArt for the top face.
+         */
+        const THEMES = [
+            {
+                id: 'animals',
+                name: '動物夥伴',
+                items: [
+                    {
+                        id: 'giraffe',
+                        name: '長頸鹿',
+                        color: '#fbbf24',
+                        sideColor: '#b45309',
+                        // Distinct tall neck, ossicones, four legs, tail
+                        silhouettePath: 'M -15,-72 C -15,-82 -5,-82 -5,-72 L -3,-66 C 5,-68 18,-62 18,-50 C 18,-40 6,-38 2,-34 L 8,10 C 28,12 42,20 46,36 L 46,72 C 46,78 34,78 34,72 L 32,46 L 12,46 L 12,72 C 12,78 0,78 0,72 L -2,44 L -16,44 L -18,72 C -18,78 -30,78 -30,72 L -30,22 C -30,8 -20,4 -14,-2 L -20,-52 C -30,-54 -34,-64 -24,-68 Z',
+                        innerArt: `
+                            <circle cx="-10" cy="-56" r="4" fill="#451a03"/>
+                            <circle cx="-11" cy="-57" r="1.5" fill="#fff"/>
+                            <circle cx="-2" cy="10" r="7" fill="#d97706" opacity="0.7"/>
+                            <circle cx="18" cy="24" r="9" fill="#d97706" opacity="0.7"/>
+                            <circle cx="-16" cy="28" r="6" fill="#d97706" opacity="0.7"/>
+                            <circle cx="-8" cy="-18" r="5" fill="#d97706" opacity="0.7"/>
+                            <path d="M -22,-58 Q -16,-52 -10,-56" stroke="#78350f" stroke-width="2" fill="none"/>
+                        `
+                    },
+                    {
+                        id: 'rabbit',
+                        name: '長耳兔',
+                        color: '#f472b6',
+                        sideColor: '#9d174d',
+                        // Two tall bunny ears, plump cheeks, round tail on right
+                        silhouettePath: 'M -28,-30 C -38,-68 -24,-84 -14,-76 C -6,-70 -6,-46 -6,-32 C 2,-32 6,-32 10,-32 C 14,-48 18,-76 30,-74 C 42,-72 36,-42 24,-26 C 42,-14 48,8 38,26 C 54,24 62,38 52,50 C 44,60 28,58 20,66 L -34,66 C -52,66 -56,46 -42,36 C -54,16 -48,-16 -28,-30 Z',
+                        innerArt: `
+                            <path d="M -22,-38 C -27,-60 -20,-70 -15,-64 C -11,-58 -12,-42 -14,-36 Z" fill="#fbcfe8"/>
+                            <path d="M 15,-36 C 18,-54 22,-66 27,-64 C 32,-62 28,-44 21,-32 Z" fill="#fbcfe8"/>
+                            <circle cx="-18" cy="-4" r="5" fill="#500724"/>
+                            <circle cx="12" cy="-4" r="5" fill="#500724"/>
+                            <ellipse cx="-3" cy="6" rx="6" ry="4" fill="#db2777"/>
+                            <path d="M -9,12 Q -3,18 3,12" stroke="#500724" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <circle cx="44" cy="40" r="8" fill="#fdf2f8"/>
+                        `
+                    },
+                    {
+                        id: 'elephant',
+                        name: '大耳朵象',
+                        color: '#60a5fa',
+                        sideColor: '#1e40af',
+                        // Curled trunk on left, big floppy ear on right, sturdy legs
+                        silhouettePath: 'M -62,-6 C -74,-6 -76,-24 -64,-26 C -56,-28 -54,-18 -48,-18 C -46,-38 -28,-54 -4,-54 C 24,-54 58,-44 64,-12 C 70,16 54,36 44,40 L 44,68 C 44,76 26,76 26,68 L 24,48 L -6,48 L -8,68 C -8,76 -26,76 -26,68 L -26,28 C -42,26 -50,12 -48,-2 C -54,-2 -58,-6 -62,-6 Z',
+                        innerArt: `
+                            <path d="M 8,-36 C 34,-38 52,-22 48,6 C 44,26 24,28 12,16 C 4,8 4,-20 8,-36 Z" fill="#93c5fd"/>
+                            <circle cx="-24" cy="-20" r="5" fill="#172554"/>
+                            <circle cx="-25" cy="-22" r="2" fill="#fff"/>
+                            <circle cx="-34" cy="-8" r="6" fill="#f472b6" opacity="0.55"/>
+                        `
+                    },
+                    {
+                        id: 'whale',
+                        name: '噴水鯨魚',
+                        color: '#38bdf8',
+                        sideColor: '#0369a1',
+                        // Big round whale head on left, raised fluke tail on right, water spout on top
+                        silhouettePath: 'M -16,-42 C -20,-58 -38,-66 -42,-54 C -44,-46 -30,-42 -24,-38 C -56,-34 -72,-8 -68,24 C -64,46 -40,54 -6,54 C 26,54 46,42 56,20 C 66,24 76,16 72,4 C 68,-6 58,-2 52,-6 C 58,-18 70,-28 60,-36 C 50,-44 38,-26 36,-10 C 28,12 10,16 -8,-12 C -4,-28 -8,-36 -16,-42 Z',
+                        innerArt: `
+                            <path d="M -52,26 Q -20,24 12,42 Q -24,48 -52,26 Z" fill="#e0f2fe"/>
+                            <circle cx="-42" cy="4" r="5.5" fill="#082f49"/>
+                            <circle cx="-44" cy="2" r="2" fill="#fff"/>
+                            <path d="M -20,-46 Q -28,-62 -40,-56" stroke="#bae6fd" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        `
+                    }
+                ]
+            },
+            {
+                id: 'plants',
+                name: '植物與果實',
+                items: [
+                    {
+                        id: 'pinetree',
+                        name: '三層松樹',
+                        color: '#34d399',
+                        sideColor: '#047857',
+                        // Distinct 3-tiered evergreen pine tree with trunk
+                        silhouettePath: 'M 0,-76 L 34,-34 L 18,-34 L 48,4 L 28,4 L 60,44 L 16,44 L 16,74 C 16,80 -16,80 -16,74 L -16,44 L -60,44 L -28,4 L -48,4 L -18,-34 L -34,-34 Z',
+                        innerArt: `
+                            <rect x="-12" y="42" width="24" height="32" rx="4" fill="#92400e"/>
+                            <circle cx="0" cy="-46" r="5" fill="#fde047"/>
+                            <circle cx="-18" cy="-8" r="5" fill="#fb7185"/>
+                            <circle cx="20" cy="22" r="5" fill="#38bdf8"/>
+                            <circle cx="-22" cy="28" r="5" fill="#fde047"/>
+                            <circle cx="0" cy="14" r="4.5" fill="#fff" opacity="0.8"/>
+                        `
+                    },
+                    {
+                        id: 'mushroom',
+                        name: '波點蘑菇',
+                        color: '#fb7185',
+                        sideColor: '#be123c',
+                        // Wide dome cap + curved stem base
+                        silhouettePath: 'M 0,-70 C 48,-70 72,-28 66,0 C 62,14 44,14 26,14 L 30,56 C 32,72 14,76 0,76 C -14,76 -32,72 -30,56 L -26,14 C -44,14 -62,14 -66,0 C -72,-28 -48,-70 0,-70 Z',
+                        innerArt: `
+                            <path d="M -22,14 L 22,14 L 25,58 C 25,68 -25,68 -25,58 Z" fill="#fef3c7"/>
+                            <circle cx="-28" cy="-26" r="11" fill="#fff" opacity="0.9"/>
+                            <circle cx="24" cy="-32" r="13" fill="#fff" opacity="0.9"/>
+                            <circle cx="2" cy="-50" r="8" fill="#fff" opacity="0.9"/>
+                            <circle cx="0" cy="-14" r="9" fill="#fff" opacity="0.9"/>
+                            <circle cx="-10" cy="36" r="4" fill="#451a03"/>
+                            <circle cx="10" cy="36" r="4" fill="#451a03"/>
+                            <path d="M -5,44 Q 0,49 5,44" stroke="#451a03" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        `
+                    },
+                    {
+                        id: 'cactus',
+                        name: '沙漠仙人掌',
+                        color: '#4ade80',
+                        sideColor: '#15803d',
+                        // Central stem with asymmetric left and right raised arms
+                        silhouettePath: 'M 0,-72 C 16,-72 22,-60 22,-44 L 22,-10 L 38,-10 L 38,-38 C 38,-50 56,-50 56,-38 L 56,4 C 56,14 46,18 22,18 L 22,68 C 22,76 -22,76 -22,68 L -22,30 L -40,30 C -52,30 -58,22 -58,10 L -58,-22 C -58,-34 -40,-34 -40,-22 L -40,8 L -22,8 L -22,-44 C -22,-60 -16,-72 0,-72 Z',
+                        innerArt: `
+                            <path d="M 0,-60 L 0,60 M -10,-48 L -10,56 M 10,-48 L 10,56" stroke="#166534" stroke-width="2" stroke-dasharray="6 6" opacity="0.45"/>
+                            <circle cx="-6" cy="-58" r="7" fill="#f43f5e"/>
+                            <circle cx="6" cy="-60" r="6" fill="#fb7185"/>
+                            <circle cx="-9" cy="-18" r="4" fill="#052e16"/>
+                            <circle cx="9" cy="-18" r="4" fill="#052e16"/>
+                            <path d="M -5,-8 Q 0,-2 5,-8" stroke="#052e16" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        `
+                    },
+                    {
+                        id: 'banana',
+                        name: '彎彎香蕉',
+                        color: '#facc15',
+                        sideColor: '#a16207',
+                        // Distinct crescent banana with stem tip
+                        silhouettePath: 'M -48,-62 C -38,-72 -22,-66 -24,-52 C -20,-12 12,24 58,34 C 72,36 70,56 52,62 C 2,76 -54,36 -60,-28 C -62,-44 -54,-56 -48,-62 Z',
+                        innerArt: `
+                            <path d="M -42,-58 C -34,-64 -26,-58 -28,-50" stroke="#713f12" stroke-width="6" stroke-linecap="round" fill="none"/>
+                            <path d="M -38,-20 Q -16,32 42,46" stroke="#fef08a" stroke-width="6" stroke-linecap="round" fill="none"/>
+                            <circle cx="-22" cy="4" r="4.5" fill="#422006"/>
+                            <circle cx="-4" cy="18" r="4.5" fill="#422006"/>
+                            <path d="M -18,18 Q -16,26 -8,22" stroke="#422006" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        `
+                    }
+                ]
+            },
+            {
+                id: 'characters',
+                name: '人物與奇幻角色',
+                items: [
+                    {
+                        id: 'astronaut',
+                        name: '小小太空人',
+                        color: '#a78bfa',
+                        sideColor: '#5b21b6',
+                        // Big helmet with antenna on top, wide outstretched arms & space boots
+                        silhouettePath: 'M -4,-78 C -4,-84 4,-84 4,-78 L 4,-64 C 28,-60 42,-42 40,-18 C 58,-16 68,-4 62,10 C 58,20 42,16 32,14 L 32,42 L 40,66 C 44,76 22,80 18,68 L 8,46 L -8,46 L -18,68 C -22,80 -44,76 -40,66 L -32,42 L -32,14 C -42,16 -58,20 -62,10 C -68,-4 -58,-16 -40,-18 C -42,-42 -28,-60 -4,-64 Z',
+                        innerArt: `
+                            <rect x="-26" y="-48" width="52" height="34" rx="16" fill="#1e1b4b" stroke="#e0e7ff" stroke-width="3"/>
+                            <path d="M -16,-38 Q -6,-44 8,-38" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+                            <circle cx="-10" cy="-28" r="3.5" fill="#38bdf8"/>
+                            <circle cx="10" cy="-28" r="3.5" fill="#38bdf8"/>
+                            <rect x="-14" y="6" width="28" height="22" rx="5" fill="#ede9fe"/>
+                            <circle cx="0" cy="17" r="6" fill="#f43f5e"/>
+                        `
+                    },
+                    {
+                        id: 'witch',
+                        name: '魔法小女巫',
+                        color: '#c084fc',
+                        sideColor: '#6b21a8',
+                        // Pointed crooked hat, wide hat brim, flowing cape silhouette
+                        silhouettePath: 'M 8,-80 C 18,-80 20,-62 18,-44 L 62,-32 C 74,-28 70,-16 56,-16 L 34,-16 C 42,-2 40,16 30,24 L 52,66 C 56,74 36,76 0,76 C -36,76 -56,74 -52,66 L -30,24 C -40,16 -42,-2 -34,-16 L -56,-16 C -70,-16 -74,-28 -62,-32 L -20,-44 C -14,-64 -4,-80 8,-80 Z',
+                        innerArt: `
+                            <path d="M -38,-26 L 38,-26" stroke="#facc15" stroke-width="6" stroke-linecap="round"/>
+                            <circle cx="0" cy="2" r="22" fill="#fde68a"/>
+                            <circle cx="-8" cy="0" r="4" fill="#3b0764"/>
+                            <circle cx="8" cy="0" r="4" fill="#3b0764"/>
+                            <path d="M -6,10 Q 0,15 6,10" stroke="#3b0764" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <polygon points="0,34 -16,66 16,66" fill="#facc15" opacity="0.4"/>
+                        `
+                    },
+                    {
+                        id: 'crownking',
+                        name: '皇冠小國王',
+                        color: '#fb923c',
+                        sideColor: '#9a3412',
+                        // Three-pointed crown top, round royal cape & scepter on right
+                        silhouettePath: 'M -36,-68 L -16,-48 L 0,-74 L 16,-48 L 36,-68 L 32,-26 C 46,-14 50,8 40,24 L 54,4 C 60,-4 72,4 66,14 L 44,54 C 40,68 24,74 0,74 C -28,74 -48,64 -46,42 C -44,24 -38,16 -34,12 C -44,-2 -42,-16 -32,-26 Z',
+                        innerArt: `
+                            <path d="M -28,-32 L -32,-56 L -14,-40 L 0,-62 L 14,-40 L 32,-56 L 28,-32 Z" fill="#fef08a"/>
+                            <circle cx="0" cy="-46" r="4.5" fill="#ef4444"/>
+                            <circle cx="0" cy="-2" r="22" fill="#ffedd5"/>
+                            <circle cx="-8" cy="-4" r="4" fill="#431407"/>
+                            <circle cx="8" cy="-4" r="4" fill="#431407"/>
+                            <path d="M -8,8 Q 0,14 8,8" stroke="#431407" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        `
+                    },
+                    {
+                        id: 'mermaid',
+                        name: '小美人魚',
+                        color: '#2dd4bf',
+                        sideColor: '#0f766e',
+                        // Flowing hair on left, curved fish tail with twin fin on bottom right
+                        silhouettePath: 'M -8,-70 C 16,-70 30,-52 28,-28 C 44,-22 50,-4 38,8 C 28,18 22,20 18,36 C 28,38 48,30 58,40 C 66,48 54,60 42,58 C 46,68 34,80 22,72 C 12,64 10,54 2,52 C -22,48 -34,26 -30,2 C -48,4 -60,-12 -52,-28 C -44,-44 -28,-70 -8,-70 Z',
+                        innerArt: `
+                            <circle cx="0" cy="-38" r="18" fill="#fde68a"/>
+                            <circle cx="-6" cy="-40" r="3.5" fill="#134e4a"/>
+                            <circle cx="6" cy="-40" r="3.5" fill="#134e4a"/>
+                            <path d="M -5,-30 Q 0,-26 5,-30" stroke="#134e4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M -16,18 Q 0,26 14,18" stroke="#99f6e4" stroke-width="4" fill="none" stroke-linecap="round"/>
+                            <path d="M -14,32 Q 0,40 12,32" stroke="#99f6e4" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        `
+                    }
+                ]
+            },
+            {
+                id: 'dinos',
+                name: '恐龍大冒險',
+                items: [
+                    {
+                        id: 'trex',
+                        name: '大嘴暴龍',
+                        color: '#a3e635',
+                        sideColor: '#3f6212',
+                        // Big blocky head facing left, tiny arm, thick tail on right
+                        silhouettePath: 'M -52,-64 L -6,-64 C 12,-64 20,-50 18,-30 L 16,-8 C 36,2 56,16 70,12 C 78,10 78,24 66,32 C 52,42 34,44 18,44 L 22,68 C 24,76 4,76 4,68 L -2,44 L -14,44 L -18,68 C -20,76 -38,76 -36,68 L -30,34 C -42,32 -48,22 -42,14 L -26,10 L -26,-12 L -52,-12 C -64,-12 -68,-26 -56,-32 L -36,-34 L -56,-42 C -66,-48 -64,-64 -52,-64 Z',
+                        innerArt: `
+                            <circle cx="-18" cy="-48" r="5" fill="#1a2e05"/>
+                            <circle cx="-20" cy="-50" r="2" fill="#fff"/>
+                            <polygon points="-48,-36 -42,-28 -36,-36" fill="#fff"/>
+                            <polygon points="-34,-36 -28,-28 -22,-36" fill="#fff"/>
+                            <path d="M 4,-22 L 16,-22 M 6,-8 L 22,-8" stroke="#4d7c0f" stroke-width="5" stroke-linecap="round"/>
+                        `
+                    },
+                    {
+                        id: 'stegosaurus',
+                        name: '背板劍龍',
+                        color: '#fb7185',
+                        sideColor: '#9f1239',
+                        // Low small head on left, 3 distinct dorsal plates on back, spiked tail on right
+                        silhouettePath: 'M -66,18 C -76,18 -76,0 -62,-2 L -42,-6 L -38,-32 L -20,-18 L -6,-52 L 14,-22 L 32,-44 L 42,-12 C 54,-4 68,6 74,18 C 78,28 66,34 52,32 L 44,64 C 44,72 26,72 26,64 L 22,42 L -14,42 L -18,64 C -18,72 -36,72 -36,64 L -36,30 L -66,18 Z',
+                        innerArt: `
+                            <polygon points="-34,-24 -24,-14 -38,-8" fill="#fda4af"/>
+                            <polygon points="-4,-42 10,-18 -14,-14" fill="#fda4af"/>
+                            <polygon points="28,-34 36,-12 18,-14" fill="#fda4af"/>
+                            <circle cx="-56" cy="8" r="4" fill="#4c0519"/>
+                        `
+                    },
+                    {
+                        id: 'triceratops',
+                        name: '三角龍',
+                        color: '#f59e0b',
+                        sideColor: '#92400e',
+                        // Big frill crown & front horns on left, sturdy four legs
+                        silhouettePath: 'M -72,-8 C -80,-14 -72,-26 -62,-18 L -52,-12 L -66,-34 C -72,-44 -58,-52 -50,-40 L -36,-24 C -36,-48 -14,-66 8,-52 C 22,-42 20,-22 14,-10 C 42,-10 62,4 68,26 C 72,40 58,44 50,38 L 46,66 C 46,74 28,74 28,66 L 26,44 L -6,44 L -8,66 C -8,74 -26,74 -26,66 L -28,36 C -48,36 -62,22 -58,4 Z',
+                        innerArt: `
+                            <path d="M -18,-42 C -6,-52 10,-40 6,-18" stroke="#fde68a" stroke-width="6" stroke-linecap="round" fill="none"/>
+                            <circle cx="-38" cy="2" r="5" fill="#451a03"/>
+                            <circle cx="-40" cy="0" r="2" fill="#fff"/>
+                        `
+                    },
+                    {
+                        id: 'pterosaur',
+                        name: '飛翔翼龍',
+                        color: '#38bdf8',
+                        sideColor: '#1d4ed8',
+                        // Long crest head at top, wide bat-like wings left and right
+                        silhouettePath: 'M -8,-72 C 12,-76 38,-68 36,-56 C 34,-48 16,-48 8,-44 L 16,-24 L 74,-34 C 82,-34 80,-14 64,2 C 48,18 32,14 20,20 L 24,54 C 26,64 10,66 6,54 L 0,34 L -6,54 C -10,66 -26,64 -24,54 L -20,20 C -32,14 -48,18 -64,2 C -80,-14 -82,-34 -74,-34 L -16,-24 L -12,-46 L -34,-50 C -44,-52 -42,-64 -30,-64 Z',
+                        innerArt: `
+                            <path d="M -62,-22 Q -40,-2 -18,8 M 62,-22 Q 40,-2 18,8" stroke="#bae6fd" stroke-width="5" stroke-linecap="round" fill="none"/>
+                            <circle cx="-8" cy="-56" r="4" fill="#082f49"/>
+                        `
+                    }
+                ]
+            }
+        ];
+
+        let state = {
+            ageMode: '2-4',          // '2-4' or '4-6'
+            actionType: 'embed',     // 'embed' or 'passthrough'
+            themeIndex: 0,
+            stars: 0,
+            holes: [],               // Array of target holes on the board
+            pieces: [],              // Array of draggable 2.5D blocks in tray
+            selectedPieceId: null,   // Piece currently selected for rotation in 4-6 mode
+            draggingPiece: null,     // Active dragged piece object
+            dragOffset: { x: 0, y: 0 },
+            wrongAttempts: 0,
+            hintActive: false
+        };
+
+        // Tone.js Sound Synthesizer Setup
+        let audioReady = false;
+        let polySynth, woodSynth, membraneSynth;
+
+        async function initAudio() {
+            if (audioReady) return;
+            try {
+                await Tone.start();
+                polySynth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.02, decay: 0.2, sustain: 0.1, release: 0.6 }
+                }).toDestination();
+                polySynth.volume.value = -6;
+
+                woodSynth = new Tone.Synth({
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.005, decay: 0.09, sustain: 0, release: 0.08 }
+                }).toDestination();
+                woodSynth.volume.value = -2;
+
+                membraneSynth = new Tone.MembraneSynth({
+                    pitchDecay: 0.06,
+                    octaves: 3,
+                    envelope: { attack: 0.005, decay: 0.25, sustain: 0 }
+                }).toDestination();
+                membraneSynth.volume.value = -6;
+
+                audioReady = true;
+            } catch (e) {
+                console.warn('Audio init skipped:', e);
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioReady) return;
+            try {
+                const now = Tone.now();
+                if (type === 'pickup') {
+                    woodSynth.triggerAttackRelease('G5', '32n', now);
+                } else if (type === 'rotate') {
+                    woodSynth.triggerAttackRelease('C6', '32n', now);
+                } else if (type === 'embed') {
+                    // Tactile wooden click + cheerful chord
+                    membraneSynth.triggerAttackRelease('G3', '16n', now);
+                    polySynth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '8n', now + 0.06);
+                } else if (type === 'passthrough') {
+                    // Sliding whoosh down + chime
+                    woodSynth.triggerAttackRelease('G5', '16n', now);
+                    woodSynth.triggerAttackRelease('D5', '16n', now + 0.08);
+                    polySynth.triggerAttackRelease(['G4', 'B4', 'D5', 'G5'], '8n', now + 0.18);
+                } else if (type === 'bounce') {
+                    // Gentle rubbery boing (never harsh!)
+                    membraneSynth.triggerAttackRelease('C2', '8n', now);
+                    woodSynth.triggerAttackRelease('Eb4', '16n', now + 0.05);
+                } else if (type === 'win') {
+                    polySynth.triggerAttackRelease(['C5', 'E5', 'G5'], '8n', now);
+                    polySynth.triggerAttackRelease(['F5', 'A5', 'C6'], '8n', now + 0.18);
+                    polySynth.triggerAttackRelease(['G5', 'B5', 'D6', 'G6'], '4n', now + 0.36);
+                }
+            } catch (e) {}
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'zh-TW';
+                utter.rate = 1.0;
+                utter.pitch = 1.15;
+                window.speechSynthesis.speak(utter);
+            } catch (e) {}
+        }
+
+        function speakCurrentInstruction() {
+            const text = document.getElementById('bubbleText').textContent;
+            speakText(text);
+        }
+
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function setupBoardRound() {
+            state.wrongAttempts = 0;
+            state.hintActive = false;
+            state.selectedPieceId = null;
+            updateRotationHud();
+
+            const theme = THEMES[state.themeIndex];
+            const shuffledItems = shuffleArray(theme.items);
+
+            // Both modes display 3 distinct target holes on the upper 2.5D board
+            const holeCount = 3;
+            const targetItems = shuffledItems.slice(0, holeCount);
+            const holePositions = [
+                { x: 235, y: 175 },
+                { x: 500, y: 175 },
+                { x: 765, y: 175 }
+            ];
+
+            state.holes = targetItems.map((item, idx) => ({
+                holeId: `hole_${idx}`,
+                item: item,
+                x: holePositions[idx].x,
+                y: holePositions[idx].y,
+                filled: false,
+                scale: 0.92
+            }));
+
+            // Prepare pieces for the bottom tray
+            let piecePool = [...targetItems];
+            if (state.ageMode === '4-6' && shuffledItems.length > holeCount) {
+                // Add 1 distractor shape in 4-6 yrs mode!
+                piecePool.push(shuffledItems[holeCount]);
+            }
+            piecePool = shuffleArray(piecePool);
+
+            const trayCount = piecePool.length;
+            const traySpacing = trayCount === 3 ? 250 : 205;
+            const startX = 500 - ((trayCount - 1) * traySpacing) / 2;
+
+            const possibleAngles = [45, 90, -45, -90, 135];
+
+            state.pieces = piecePool.map((item, idx) => {
+                // In 2-4 yrs mode: angle is always 0
+                // In 4-6 yrs mode: spawn rotated so child practices mental rotation!
+                const initialAngle = state.ageMode === '2-4'
+                    ? 0
+                    : possibleAngles[Math.floor(Math.random() * possibleAngles.length)];
+
+                return {
+                    pieceId: `piece_${item.id}`,
+                    item: item,
+                    homeX: startX + idx * traySpacing,
+                    homeY: 495,
+                    x: startX + idx * traySpacing,
+                    y: 495,
+                    angle: initialAngle,
+                    scale: 0.92,
+                    matched: false,
+                    passedThrough: false
+                };
+            });
+
+            renderBoardAndPieces();
+        }
+
+        function renderBoardAndPieces() {
+            const holesLayer = document.getElementById('holesLayer');
+            const piecesLayer = document.getElementById('piecesLayer');
+            const clipDefs = document.getElementById('dynamicHoleClips');
+            const boardSurface = document.getElementById('boardSurfaceRect');
+            const boardWall = document.getElementById('boardThicknessWall');
+            const drawer = document.getElementById('passThroughDrawer');
+
+            holesLayer.innerHTML = '';
+            piecesLayer.innerHTML = '';
+            clipDefs.innerHTML = '';
+
+            // Style board according to Embed vs Pass-Through mode
+            if (state.actionType === 'embed') {
+                boardSurface.setAttribute('fill', 'url(#woodBoardGrad)');
+                boardSurface.setAttribute('stroke', '#fef3c7');
+                boardWall.setAttribute('fill', 'url(#woodBoardSide)');
+                drawer.classList.add('hidden');
+            } else {
+                boardSurface.setAttribute('fill', 'url(#boxBoardGrad)');
+                boardSurface.setAttribute('stroke', '#ecfdf5');
+                boardWall.setAttribute('fill', 'url(#boxBoardSide)');
+                drawer.classList.remove('hidden');
+            }
+
+            // 1. Render Each Recessed 2.5D Hole
+            state.holes.forEach((hole, index) => {
+                // Create clipPath for each hole so inner 2.5D side walls and pass-through animations clip cleanly
+                const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                clip.setAttribute('id', `clip_${hole.holeId}`);
+                const clipPathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                clipPathEl.setAttribute('d', hole.item.silhouettePath);
+                clip.appendChild(clipPathEl);
+                clipDefs.appendChild(clip);
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('id', hole.holeId);
+                g.setAttribute('transform', `translate(${hole.x}, ${hole.y}) scale(${hole.scale})`);
+
+                const wallColor = state.actionType === 'embed' ? '#45220a' : '#064e3b';
+                const floorFill = state.actionType === 'embed' ? 'url(#recessedWoodFloor)' : 'url(#tunnelAbyss)';
+                const rimHighlight = state.actionType === 'embed' ? '#fde68a' : '#d1fae5';
+
+                // Outer bevel highlight (bottom edge catching light)
+                let holeHtml = `
+                    <path d="${hole.item.silhouettePath}" transform="translate(0, 4)" fill="none" stroke="${rimHighlight}" stroke-width="6" opacity="0.85"/>
+                    <!-- Hole Floor -->
+                    <path d="${hole.item.silhouettePath}" fill="${floorFill}" filter="url(#holeInnerShadow)"/>
+                    <!-- Clipped 2.5D Recessed Inner Wall (Gives genuine 2.5D depth inside the cutout!) -->
+                    <g clip-path="url(#clip_${hole.holeId})">
+                        <path d="${hole.item.silhouettePath}" transform="translate(0, 13)" fill="none" stroke="${wallColor}" stroke-width="26" opacity="0.75"/>
+                `;
+
+                if (state.actionType === 'passthrough') {
+                    // Add subtle depth rings inside the pass-through tunnel
+                    holeHtml += `
+                        <circle cx="0" cy="20" r="45" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.3"/>
+                        <circle cx="0" cy="28" r="22" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4"/>
+                    `;
+                }
+
+                // Optional Scaffolding Hint inside the hole (shown when Hint button clicked or after mistakes)
+                if (state.hintActive && !hole.filled) {
+                    holeHtml += `
+                        <g class="hint-glow" opacity="0.55">
+                            <path d="${hole.item.silhouettePath}" fill="${hole.item.color}" opacity="0.35"/>
+                            ${hole.item.innerArt}
+                        </g>
+                    `;
+                }
+
+                holeHtml += `
+                    </g>
+                    <!-- Crisp Top Rim Outline of the Recessed Hole -->
+                    <path d="${hole.item.silhouettePath}" fill="none" stroke="${wallColor}" stroke-width="3.5" opacity="0.85"/>
+                `;
+
+                // If hole is already filled in Embed Mode, render the embedded lively character flush inside!
+                if (hole.filled && state.actionType === 'embed') {
+                    holeHtml += `
+                        <g class="animate-happy">
+                            <path d="${hole.item.silhouettePath}" transform="translate(0, 3)" fill="${hole.item.sideColor}"/>
+                            <path d="${hole.item.silhouettePath}" fill="${hole.item.color}" stroke="#ffffff" stroke-width="3"/>
+                            ${hole.item.innerArt}
+                        </g>
+                    `;
+                }
+
+                // Label badge underneath the hole
+                const labelText = state.ageMode === '2-4' || hole.filled || state.hintActive
+                    ? hole.item.name
+                    : '？ 觀察輪廓';
+
+                holeHtml += `
+                    <g transform="translate(0, 108)">
+                        <rect x="-58" y="-16" width="116" height="30" rx="15" fill="rgba(255,255,255,0.88)" stroke="rgba(180,83,9,0.3)" stroke-width="2"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#78350f" font-size="15" font-weight="900">${labelText}</text>
+                    </g>
+                `;
+
+                g.innerHTML = holeHtml;
+                holesLayer.appendChild(g);
+            });
+
+            // 2. Render Passed-Through Mini Badges in the Secret Base Drawer (if in Pass-Through Mode)
+            if (state.actionType === 'passthrough') {
+                let passedIdx = 0;
+                state.holes.forEach((hole) => {
+                    if (hole.filled) {
+                        const badgeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        const bx = 375 + passedIdx * 125;
+                        badgeG.setAttribute('transform', `translate(${bx}, 360) scale(0.24)`);
+                        badgeG.innerHTML = `
+                            <path d="${hole.item.silhouettePath}" fill="${hole.item.color}" stroke="#fff" stroke-width="8"/>
+                            ${hole.item.innerArt}
+                        `;
+                        holesLayer.appendChild(badgeG);
+                        passedIdx++;
+                    }
+                });
+            }
+
+            // 3. Render Each Draggable 2.5D Extruded Block in the Tray
+            state.pieces.forEach((piece) => {
+                if (piece.matched) return;
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('id', piece.pieceId);
+                g.setAttribute('class', 'cursor-grab active:cursor-grabbing');
+                g.style.touchAction = 'none';
+
+                updatePieceTransform(g, piece, false);
+                g.innerHTML = buildExtrudedPieceSvg(piece, false);
+
+                // Attach Pointer Events for smooth Touchscreen & Mouse drag
+                g.addEventListener('pointerdown', (e) => onPiecePointerDown(e, piece));
+                piecesLayer.appendChild(g);
+            });
+        }
+
+        function buildExtrudedPieceSvg(piece, isDragging) {
+            const depthLayers = isDragging ? 13 : 9;
+            let extrusionHtml = '';
+
+            // Stack offset layers along the screen's vertical axis (so rotation stays true to 2.5D gravity!)
+            for (let d = depthLayers; d >= 1; d--) {
+                extrusionHtml += `
+                    <path d="${piece.item.silhouettePath}" 
+                          transform="translate(0, ${d * 1.2}) rotate(${piece.angle})" 
+                          fill="${piece.item.sideColor}" />
+                `;
+            }
+
+            // Selection / Rotation Ring for 4-6 yrs mode
+            const isSelected = state.ageMode === '4-6' && state.selectedPieceId === piece.pieceId;
+            const needsRotation = piece.angle % 360 !== 0;
+
+            let rotationBadgeHtml = '';
+            if (state.ageMode === '4-6') {
+                const badgeColor = needsRotation ? '#4f46e5' : '#10b981';
+                const badgeLabel = needsRotation ? `${piece.angle}° 點擊轉向` : `0° 角度已對齊`;
+                rotationBadgeHtml = `
+                    <g transform="translate(0, 96)">
+                        <rect x="-56" y="-14" width="112" height="26" rx="13" fill="${badgeColor}" stroke="#ffffff" stroke-width="2"/>
+                        <text x="0" y="3" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">🔄 ${badgeLabel}</text>
+                    </g>
+                `;
+            }
+
+            const selectionHalo = isSelected
+                ? `<circle cx="0" cy="0" r="88" fill="none" stroke="#6366f1" stroke-width="3.5" stroke-dasharray="10 6" opacity="0.85"/>`
+                : '';
+
+            return `
+                ${selectionHalo}
+                <g filter="${isDragging ? 'url(#pieceShadowDrag)' : 'url(#pieceShadowRest)'}">
+                    <!-- 2.5D Extruded Side Thickness -->
+                    ${extrusionHtml}
+                    <!-- Top 2.5D Face with Artwork -->
+                    <g transform="rotate(${piece.angle})">
+                        <path d="${piece.item.silhouettePath}" fill="${piece.item.color}" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"/>
+                        ${piece.item.innerArt}
+                    </g>
+                </g>
+                ${rotationBadgeHtml}
+            `;
+        }
+
+        function updatePieceTransform(gElement, piece, isDragging) {
+            const liftY = isDragging ? -18 : 0;
+            const currentScale = isDragging ? piece.scale * 1.07 : piece.scale;
+            gElement.setAttribute('transform', `translate(${piece.x}, ${piece.y + liftY}) scale(${currentScale})`);
+        }
+
+        let pointerDownTime = 0;
+        let pointerStartPos = { x: 0, y: 0 };
+        let hasDraggedSignificantly = false;
+
+        function screenToSvgCoords(clientX, clientY) {
+            const svg = document.getElementById('gameSvg');
+            const pt = svg.createSVGPoint();
+            pt.x = clientX;
+            pt.y = clientY;
+            const ctm = svg.getScreenCTM();
+            if (!ctm) return { x: 0, y: 0 };
+            return pt.matrixTransform(ctm.inverse());
+        }
+
+        function onPiecePointerDown(e, piece) {
+            e.preventDefault();
+            e.stopPropagation();
+            initAudio();
+
+            const svgPt = screenToSvgCoords(e.clientX, e.clientY);
+            pointerDownTime = performance.now();
+            pointerStartPos = { x: svgPt.x, y: svgPt.y };
+            hasDraggedSignificantly = false;
+
+            state.draggingPiece = piece;
+            state.selectedPieceId = piece.pieceId;
+            state.dragOffset = {
+                x: piece.x - svgPt.x,
+                y: piece.y - svgPt.y
+            };
+
+            // Bring grabbed piece to front of SVG layer
+            const el = document.getElementById(piece.pieceId);
+            if (el && el.parentNode) {
+                el.parentNode.appendChild(el);
+                el.innerHTML = buildExtrudedPieceSvg(piece, true);
+                updatePieceTransform(el, piece, true);
+            }
+
+            playSound('pickup');
+            updateRotationHud();
+
+            window.addEventListener('pointermove', onWindowPointerMove, { passive: false });
+            window.addEventListener('pointerup', onWindowPointerUp);
+            window.addEventListener('pointercancel', onWindowPointerUp);
+        }
+
+        function onWindowPointerMove(e) {
+            if (!state.draggingPiece) return;
+            e.preventDefault();
+
+            const piece = state.draggingPiece;
+            const svgPt = screenToSvgCoords(e.clientX, e.clientY);
+
+            const moveDist = Math.hypot(svgPt.x - pointerStartPos.x, svgPt.y - pointerStartPos.y);
+            if (moveDist > 8) {
+                hasDraggedSignificantly = true;
+            }
+
+            piece.x = Math.max(60, Math.min(940, svgPt.x + state.dragOffset.x));
+            piece.y = Math.max(60, Math.min(570, svgPt.y + state.dragOffset.y));
+
+            // Magnetic preview glow when hovering near a hole
+            const snapRadius = state.ageMode === '2-4' ? 82 : 68;
+            state.holes.forEach((hole) => {
+                if (hole.filled) return;
+                const d = Math.hypot(piece.x - hole.x, piece.y - hole.y);
+                const holeEl = document.getElementById(hole.holeId);
+                if (holeEl) {
+                    if (d < snapRadius) {
+                        holeEl.setAttribute('transform', `translate(${hole.x}, ${hole.y}) scale(${hole.scale * 1.05})`);
+                    } else {
+                        holeEl.setAttribute('transform', `translate(${hole.x}, ${hole.y}) scale(${hole.scale})`);
+                    }
+                }
+            });
+
+            const el = document.getElementById(piece.pieceId);
+            if (el) {
+                updatePieceTransform(el, piece, true);
+            }
+        }
+
+        function onWindowPointerUp(e) {
+            if (!state.draggingPiece) return;
+            const piece = state.draggingPiece;
+            state.draggingPiece = null;
+
+            window.removeEventListener('pointermove', onWindowPointerMove);
+            window.removeEventListener('pointerup', onWindowPointerUp);
+            window.removeEventListener('pointercancel', onWindowPointerUp);
+
+            // Reset hole hover scales
+            state.holes.forEach((hole) => {
+                const holeEl = document.getElementById(hole.holeId);
+                if (holeEl) {
+                    holeEl.setAttribute('transform', `translate(${hole.x}, ${hole.y}) scale(${hole.scale})`);
+                }
+            });
+
+            // Quick tap in 4-6 yrs mode rotates the piece by 45 degrees!
+            const elapsed = performance.now() - pointerDownTime;
+            if (!hasDraggedSignificantly && elapsed < 320 && state.ageMode === '4-6') {
+                rotateSelectedPiece(45);
+                return;
+            }
+
+            evaluatePieceDrop(piece);
+        }
+
+        function evaluatePieceDrop(piece) {
+            const snapRadius = state.ageMode === '2-4' ? 82 : 68;
+            let closestHole = null;
+            let minDistance = Infinity;
+
+            state.holes.forEach((hole) => {
+                if (hole.filled) return;
+                const d = Math.hypot(piece.x - hole.x, piece.y - hole.y);
+                if (d < minDistance) {
+                    minDistance = d;
+                    closestHole = hole;
+                }
+            });
+
+            // Case 1: Dropped near an open hole
+            if (closestHole && minDistance <= snapRadius) {
+                const isSameShape = closestHole.item.id === piece.item.id;
+                const normalizedAngle = ((piece.angle % 360) + 360) % 360;
+                const isAngleAligned = state.ageMode === '2-4' || normalizedAngle === 0;
+
+                if (isSameShape && isAngleAligned) {
+                    // SUCCESS MATCH!
+                    handleCorrectMatch(piece, closestHole);
+                    return;
+                } else if (isSameShape && !isAngleAligned) {
+                    // Right shape, but rotated in 4-6 yrs mode!
+                    playSound('bounce');
+                    setInstructionBubble('🔄', `哇！這是「${piece.item.name}」的洞，但角度歪了，點一下積木把它轉正吧！`);
+                    speakText(`形狀對了！點一下積木轉正角度喔`);
+                    bouncePieceBack(piece);
+                    return;
+                } else {
+                    // Wrong hole silhouette!
+                    state.wrongAttempts++;
+                    playSound('bounce');
+                    setInstructionBubble('👀', `咚咚！「${piece.item.name}」跟這個洞的形狀不一樣喔，再仔細看看邊緣特徵！`);
+                    if (state.ageMode === '2-4' && state.wrongAttempts >= 2 && !state.hintActive) {
+                        state.hintActive = true;
+                        setInstructionBubble('💡', `我幫你在洞洞裡點亮了小提示，找找看誰長得一模一樣！`);
+                    }
+                    bouncePieceBack(piece);
+                    return;
+                }
+            }
+
+            // Case 2: Dropped in empty space -> smoothly return to home slot in tray
+            animatePieceToHome(piece);
+        }
+
+        function handleCorrectMatch(piece, hole) {
+            piece.matched = true;
+            hole.filled = true;
+            state.stars++;
+            document.getElementById('starCount').textContent = state.stars;
+
+            setInstructionBubble('🌟', `好棒喔！成功把「${piece.item.name}」${state.actionType === 'embed' ? '嵌入木板' : '穿過洞口'}了！`);
+            speakText(`太棒了！是${piece.item.name}`);
+
+            if (state.actionType === 'embed') {
+                playSound('embed');
+                spawnConfetti(hole.x, hole.y, piece.item.color);
+                renderBoardAndPieces();
+                checkWinCondition();
+            } else {
+                // Pass-Through Animation: Slide piece into the hole clipped by the hole's contour!
+                playSound('passthrough');
+                animatePassThroughHole(piece, hole);
+            }
+        }
+
+        function animatePassThroughHole(piece, hole) {
+            const el = document.getElementById(piece.pieceId);
+            const holeEl = document.getElementById(hole.holeId);
+            if (!el || !holeEl) {
+                renderBoardAndPieces();
+                checkWinCondition();
+                return;
+            }
+
+            // Move piece into hole center and shrink/slide down inside the hole's clipPath!
+            const passGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            passGroup.setAttribute('clip-path', `url(#clip_${hole.holeId})`);
+            const innerDrop = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            innerDrop.innerHTML = `
+                <path d="${piece.item.silhouettePath}" fill="${piece.item.color}" stroke="#fff" stroke-width="3"/>
+                ${piece.item.innerArt}
+            `;
+            passGroup.appendChild(innerDrop);
+            holeEl.appendChild(passGroup);
+            el.remove();
+
+            spawnConfetti(hole.x, hole.y, piece.item.color);
+
+            let start = null;
+            const duration = 520;
+            function step(ts) {
+                if (!start) start = ts;
+                const p = Math.min(1, (ts - start) / duration);
+                const dy = p * 95;
+                const sc = 1 - p * 0.65;
+                const op = 1 - p * 0.7;
+                innerDrop.setAttribute('transform', `translate(0, ${dy}) scale(${sc})`);
+                innerDrop.setAttribute('opacity', op);
+                if (p < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    renderBoardAndPieces();
+                    checkWinCondition();
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        function bouncePieceBack(piece) {
+            const el = document.getElementById(piece.pieceId);
+            if (el) {
+                el.classList.add('animate-shake');
+                setTimeout(() => {
+                    el.classList.remove('animate-shake');
+                    animatePieceToHome(piece);
+                }, 380);
+            } else {
+                animatePieceToHome(piece);
+            }
+        }
+
+        function animatePieceToHome(piece) {
+            const startX = piece.x;
+            const startY = piece.y;
+            const duration = 240;
+            let startTime = null;
+
+            function step(ts) {
+                if (!startTime) startTime = ts;
+                const t = Math.min(1, (ts - startTime) / duration);
+                const ease = 1 - Math.pow(1 - t, 3);
+                piece.x = startX + (piece.homeX - startX) * ease;
+                piece.y = startY + (piece.homeY - startY) * ease;
+                const el = document.getElementById(piece.pieceId);
+                if (el) {
+                    updatePieceTransform(el, piece, false);
+                    if (t === 1) {
+                        el.innerHTML = buildExtrudedPieceSvg(piece, false);
+                    }
+                }
+                if (t < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function rotateSelectedPiece(deltaDeg) {
+            if (state.ageMode !== '4-6') return;
+            const piece = state.pieces.find(p => p.pieceId === state.selectedPieceId && !p.matched)
+                       || state.pieces.find(p => !p.matched);
+            if (!piece) return;
+
+            state.selectedPieceId = piece.pieceId;
+            piece.angle = (piece.angle + deltaDeg) % 360;
+            if (piece.angle > 180) piece.angle -= 360;
+            if (piece.angle <= -180) piece.angle += 360;
+
+            playSound('rotate');
+            const el = document.getElementById(piece.pieceId);
+            if (el) {
+                el.innerHTML = buildExtrudedPieceSvg(piece, false);
+            }
+            updateRotationHud();
+        }
+
+        function updateRotationHud() {
+            const hud = document.getElementById('rotationControlHud');
+            const angleText = document.getElementById('hudAngleText');
+            if (state.ageMode !== '4-6') {
+                hud.classList.add('hidden');
+                return;
+            }
+            const piece = state.pieces.find(p => p.pieceId === state.selectedPieceId && !p.matched)
+                       || state.pieces.find(p => !p.matched);
+            if (!piece) {
+                hud.classList.add('hidden');
+                return;
+            }
+            hud.classList.remove('hidden');
+            const norm = ((piece.angle % 360) + 360) % 360;
+            angleText.textContent = norm === 0
+                ? `${piece.item.name}：0° 已對正！`
+                : `${piece.item.name}：偏轉 ${piece.angle}°`;
+        }
+
+        function spawnConfetti(cx, cy, mainColor) {
+            const fxLayer = document.getElementById('fxLayer');
+            const colors = [mainColor, '#fde047', '#38bdf8', '#fb7185', '#4ade80'];
+
+            for (let i = 0; i < 20; i++) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                const r = 5 + Math.random() * 6;
+                const color = colors[i % colors.length];
+                circle.setAttribute('cx', cx);
+                circle.setAttribute('cy', cy);
+                circle.setAttribute('r', r);
+                circle.setAttribute('fill', color);
+                fxLayer.appendChild(circle);
+
+                const angle = (Math.PI * 2 * i) / 20 + (Math.random() - 0.5) * 0.3;
+                const speed = 45 + Math.random() * 75;
+                const tx = cx + Math.cos(angle) * speed;
+                const ty = cy + Math.sin(angle) * speed;
+
+                let start = null;
+                function animateParticle(ts) {
+                    if (!start) start = ts;
+                    const p = Math.min(1, (ts - start) / 600);
+                    const curX = cx + (tx - cx) * p;
+                    const curY = cy + (ty - cy) * p + (p * p * 35);
+                    circle.setAttribute('cx', curX);
+                    circle.setAttribute('cy', curY);
+                    circle.setAttribute('opacity', 1 - p);
+                    if (p < 1) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        circle.remove();
+                    }
+                }
+                requestAnimationFrame(animateParticle);
+            }
+        }
+
+        function checkWinCondition() {
+            const allFilled = state.holes.every(h => h.filled);
+            if (!allFilled) return;
+
+            setTimeout(() => {
+                playSound('win');
+                const winOverlay = document.getElementById('winOverlay');
+                const badgesContainer = document.getElementById('winCollectedBadges');
+                badgesContainer.innerHTML = '';
+
+                state.holes.forEach(h => {
+                    const div = document.createElement('div');
+                    div.className = 'flex flex-col items-center gap-1';
+                    div.innerHTML = `
+                        <svg viewBox="-85 -90 170 180" class="w-16 h-16 drop-shadow">
+                            <path d="${h.item.silhouettePath}" fill="${h.item.color}" stroke="#fff" stroke-width="6"/>
+                            ${h.item.innerArt}
+                        </svg>
+                        <span class="text-xs font-black text-amber-900">${h.item.name}</span>
+                    `;
+                    badgesContainer.appendChild(div);
+                });
+
+                winOverlay.classList.remove('hidden');
+                winOverlay.classList.add('flex');
+            }, 450);
+        }
+
+        function switchAgeMode(mode) {
+            state.ageMode = mode;
+            const btn24 = document.getElementById('btnAge24');
+            const btn46 = document.getElementById('btnAge46');
+            const subtitle = document.getElementById('modeSubtitle');
+
+            if (mode === '2-4') {
+                btn24.className = 'btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all bg-gradient-to-b from-emerald-400 to-emerald-500 text-white shadow-[0_3px_0_#047857]';
+                btn46.className = 'btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all text-amber-900 hover:bg-amber-200/60';
+                subtitle.textContent = '🌱 2-4歲啟蒙：直覺外輪廓配對・無須旋轉・大範圍磁吸';
+                setInstructionBubble('🌱', '已切換至「2-4 歲啟蒙模式」：觀察形狀外框，直接拖進一樣的洞裡吧！');
+            } else {
+                btn46.className = 'btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all bg-gradient-to-b from-indigo-500 to-indigo-600 text-white shadow-[0_3px_0_#3730a3]';
+                btn24.className = 'btn-3d flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black text-xs sm:text-sm transition-all text-amber-900 hover:bg-amber-200/60';
+                subtitle.textContent = '🚀 4-6歲進階：點擊積木旋轉角度對齊・含干擾項細節挑戰';
+                setInstructionBubble('🚀', '已切換至「4-6 歲進階模式」：先點擊歪斜的積木轉正 0°，還要小心多出來的干擾圖塊喔！');
+            }
+
+            setupBoardRound();
+        }
+
+        function switchActionType(type) {
+            state.actionType = type;
+            const btnEmbed = document.getElementById('btnActEmbed');
+            const btnPass = document.getElementById('btnActPass');
+
+            if (type === 'embed') {
+                btnEmbed.className = 'btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_0_#0369a1]';
+                btnPass.className = 'btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-sky-900 hover:bg-sky-200/50';
+                setInstructionBubble('🧩', '嵌入模式：把積木嵌進木板凹槽裡，讓角色動起來！');
+            } else {
+                btnPass.className = 'btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-b from-emerald-500 to-teal-600 text-white shadow-[0_3px_0_#065f46]';
+                btnEmbed.className = 'btn-3d px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-sky-900 hover:bg-sky-200/50';
+                setInstructionBubble('🕳️', '穿過模式：對準中空的深洞，讓圖塊穿過去掉進秘密基地！');
+            }
+
+            renderBoardAndPieces();
+        }
+
+        function selectTheme(idx) {
+            state.themeIndex = idx;
+            for (let i = 0; i < 4; i++) {
+                const tab = document.getElementById(`themeTab${i}`);
+                if (i === idx) {
+                    tab.className = 'px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-amber-500 text-white shadow-sm flex items-center gap-1.5 shrink-0 transition-all';
+                } else {
+                    tab.className = 'px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-white text-amber-900 border border-amber-300 flex items-center gap-1.5 shrink-0 transition-all';
+                }
+            }
+            setupBoardRound();
+        }
+
+        function triggerVisualHint() {
+            state.hintActive = !state.hintActive;
+            playSound('pickup');
+            if (state.hintActive) {
+                setInstructionBubble('💡', '已在凹洞底部點亮「內部特徵提示」，觀察看看誰的輪廓與花紋一樣吧！');
+            } else {
+                setInstructionBubble('👆', '已關閉特徵提示，靠自己的眼睛挑戰看看吧！');
+            }
+            renderBoardAndPieces();
+        }
+
+        function resetCurrentBoard() {
+            playSound('pickup');
+            setupBoardRound();
+        }
+
+        function nextRound() {
+            const winOverlay = document.getElementById('winOverlay');
+            winOverlay.classList.add('hidden');
+            winOverlay.classList.remove('flex');
+            selectTheme((state.themeIndex + 1) % THEMES.length);
+        }
+
+        function toggleDesignModal(show) {
+            const modal = document.getElementById('designModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function setInstructionBubble(emoji, text) {
+            document.getElementById('bubbleEmoji').textContent = emoji;
+            document.getElementById('bubbleText').textContent = text;
+        }
+
+        // Initialize on window load
+        window.onload = function () {
+            setupBoardRound();
+        };
+    </script>
+</body>
+</html>
