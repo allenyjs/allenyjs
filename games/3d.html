@@ -10,6 +10,24 @@
 
     gtag('config', 'G-ZKT87BYQM5');
   </script>
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      const isGhPages = window.location.hostname.endsWith('github.io') && window.location.pathname.startsWith('/allenyjs');
+      await OneSignal.init({
+        appId: "8425c686-c9aa-40cc-98dd-43cfb1ab8b44",
+        ...(isGhPages ? {
+          serviceWorkerPath: "allenyjs/OneSignalSDKWorker.js",
+          serviceWorkerParam: { scope: "/allenyjs/" }
+        } : {}),
+        notifyButton: {
+          enable: true,
+        },
+      });
+    });
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>3D 積木小偵探 - 空間積木數一數</title>
